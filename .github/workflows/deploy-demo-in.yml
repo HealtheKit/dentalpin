@@ -1,0 +1,70 @@
+name: Deploy demo.dentalpin.in
+
+# Manual replacement for Coolify's git-watch deploy of
+# docker-compose.demo-in.yml. Coolify used to: pull the branch, build the
+# images on the server, and terminate TLS via its own Traefik proxy. This
+# workflow does the first two over SSH; Caddy now terminates TLS itself
+# (see Caddyfile.demo-in / docker-compose.demo-in.yml).
+#
+# Requires these repository secrets:
+#   SSH_HOST         - demo server hostname or IP
+#   SSH_USER         - SSH user (needs docker + docker compose access)
+#   SSH_PRIVATE_KEY  - private key matching a deploy key authorized on the server
+#   DEPLOY_PATH      - absolute path to the git checkout on the server
+#                      (must already contain a .env with POSTGRES_PASSWORD,
+#                      SECRET_KEY, PUBLIC_URL, etc. — see
+#                      docker-compose.demo-in.yml for the full list)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch or tag to deploy
+        required: true
+        default: feat/payment-gateways-razorpay
+
+permissions:
+  contents: read
+
+env:
+  # Must match scripts/dentalpin-reset-demo.sh's COMPOSE_PROJECT.
+  COMPOSE_PROJECT: dentalpin-demo-in
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy over SSH
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -s <<EOF
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+            git fetch origin "$REF"
+            git checkout "$REF"
+            git reset --hard "origin/$REF"
+            docker compose -p "$COMPOSE_PROJECT" -f docker-compose.demo-in.yml up -d --build
+            docker image prune -f
+          EOF
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 60); do
+            if ssh -i ~/.ssh/id_deploy "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+              "docker exec \$(docker ps -q --filter label=com.docker.compose.project=$COMPOSE_PROJECT --filter label=com.docker.compose.service=backend) \
+               python -c 'import urllib.request,sys; sys.exit(0 if urllib.request.urlopen(\"http://localhost:8000/health\", timeout=2).status == 200 else 1)'"; then
+              echo "backend healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "backend did not become healthy in time"
+          exit 1

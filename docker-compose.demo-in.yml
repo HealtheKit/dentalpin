@@ -1,18 +1,15 @@
-# demo.dentalpin.in — Coolify + Docker deployment of the
-# feat/payment-gateways-razorpay branch.
+# demo.dentalpin.in — Docker deployment of the
+# feat/payment-gateways-razorpay branch, driven by
+# .github/workflows/deploy-demo-in.yml (workflow_dispatch, SSH deploy).
 #
 # Same shape as upstream docker-compose.prod.yml (Caddy fronts both
 # services on ONE origin, so there is no CORS and no second subdomain),
 # but built from this branch's source instead of prebuilt GHCR images,
 # because the Razorpay module only exists on this branch.
 #
-# TLS is terminated by Coolify's own proxy (Traefik) in front of the
-# `caddy` service, so Caddy itself listens on plain :80 inside the
-# network — that is what PUBLIC_URL=:80 does to the repo Caddyfile,
-# whose site address is `{$PUBLIC_URL:http://localhost}`.
-#
-# In Coolify: Docker Compose resource → this file → set the domain on
-# the `caddy` service to https://demo.dentalpin.in
+# Caddy provisions its own Let's Encrypt certificate directly (ports
+# 80/443 published below) — there is no proxy in front of it. Set
+# PUBLIC_URL=https://demo.dentalpin.in in the server's .env file.
 
 services:
   db:
@@ -20,7 +17,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-dental_clinic}
       POSTGRES_USER: ${POSTGRES_USER:-dental}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Coolify}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -37,7 +34,7 @@ services:
       dockerfile: Dockerfile
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-dental}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-dental_clinic}
-      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in Coolify}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
       BUDGET_PUBLIC_SECRET_KEY: ${BUDGET_PUBLIC_SECRET_KEY:-}
       ENVIRONMENT: production
       # Same origin as the browser, so this is only a belt-and-braces value.
@@ -95,19 +92,15 @@ services:
 
   caddy:
     image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
     environment:
-      # Tells Coolify which service+port to publish. Set the value to
-      # https://demo.dentalpin.in in the Coolify environment editor.
-      SERVICE_FQDN_CADDY_80: ${PUBLIC_URL:-https://demo.dentalpin.in}
+      PUBLIC_URL: ${PUBLIC_URL:-https://demo.dentalpin.in}
     volumes:
-      # Caddyfile.demo-in is upstream's Caddyfile with the site address
-      # hardcoded to :80 — plain HTTP inside the Docker network, because
-      # Coolify's proxy owns 80/443 on the host and terminates TLS.
       - ./Caddyfile.demo-in:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-    expose:
-      - "80"
     depends_on:
       - frontend
       - backend

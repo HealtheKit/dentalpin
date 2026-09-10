@@ -13,14 +13,16 @@
 #                  && chmod 644 /etc/cron.d/dentalpin-reset-demo'
 set -euo pipefail
 
-COOLIFY_PROJECT="wz49q8rmlqkhh9qun1kwgge8"
+# Must match the `-p` project name used by
+# .github/workflows/deploy-demo-in.yml's `docker compose` invocation.
+COMPOSE_PROJECT="dentalpin-demo-in"
 LANG_ARG="${1:-es}"
 LOG_TAG="dentalpin-reset"
 log() { logger -t "$LOG_TAG" -- "$*"; echo "[$(date -Is)] $*"; }
 
 find_container() {
   docker ps -q \
-    --filter "label=com.docker.compose.project=$COOLIFY_PROJECT" \
+    --filter "label=com.docker.compose.project=$COMPOSE_PROJECT" \
     --filter "label=com.docker.compose.service=$1" \
     --filter "status=running" | head -1
 }

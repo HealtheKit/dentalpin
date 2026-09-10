@@ -1,11 +1,10 @@
-# Single origin for demo.dentalpin.in, behind Coolify's proxy.
-#
-# Identical to the repo's root Caddyfile except the site address: this
-# one is a bare :80, because Coolify's Traefik terminates TLS for
-# demo.dentalpin.in on the host and forwards plain HTTP to this
-# container. Nothing here ever talks to Let's Encrypt.
+# Single origin for demo.dentalpin.in. Identical to the repo's root
+# Caddyfile: PUBLIC_URL doubles as the site address, so Caddy itself
+# provisions the Let's Encrypt certificate (see docker-compose.demo-in.yml,
+# which publishes 80/443 directly on this container — no Coolify/Traefik
+# in front of it anymore).
 
-:80 {
+{$PUBLIC_URL:http://localhost} {
 	handle /api/* {
 		reverse_proxy backend:8000 {
 			# The copilot streams SSE; without this Caddy buffers the
@@ -25,8 +24,6 @@
 	encode gzip
 
 	header {
-		# HSTS is still correct: the browser only ever sees https via
-		# Coolify's proxy, which is the origin this header applies to.
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
