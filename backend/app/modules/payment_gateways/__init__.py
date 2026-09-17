@@ -35,7 +35,7 @@ class PaymentGatewaysModule(BaseModule):
         "name": "payment_gateways",
         "version": "0.1.0",
         "summary": "Provider-neutral payment gateway contract, registry, and PaymentRequest lifecycle.",
-        "author": "tresundios",
+        "author": "DentalPin Core Team",
         "license": "BSL-1.1",
         "category": "official",
         "depends": ["patients", "budget", "payments"],

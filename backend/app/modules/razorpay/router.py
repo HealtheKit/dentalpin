@@ -123,6 +123,11 @@ async def webhook(
     await RazorpaySettingsService.record_webhook_received(db, settings, event_type)
 
     adapter = RazorpayAdapter()
+    # Bound up front (not just inside the try) so both except branches
+    # below can safely pass it to _rollback_and_record_webhook_error —
+    # a payload parse_webhook_event itself rejects would otherwise leave
+    # it unbound in the except blocks.
+    event = None
     try:
         event = await adapter.parse_webhook_event(db, clinic_id=clinic_id, payload=payload)
         if event is not None:
@@ -133,38 +138,80 @@ async def webhook(
         await RazorpaySettingsService.record_webhook_processed(db, settings)
     except GatewayError as exc:
         # A data problem (amount mismatch, illegal transition) — not
-        # transient, so retries won't help. Log for webhook health but
-        # still 200 so Razorpay stops retrying.
+        # transient, so retries won't help; still answers 200 so
+        # Razorpay stops retrying. Transactionally symmetric with the
+        # Exception branch below: confirm() can flush a Payment +
+        # allocations before failing later in the same call, so a plain
+        # commit here would persist that half-applied confirmation
+        # alongside the error record.
         logger.warning("razorpay webhook GatewayError for clinic %s: %s", clinic_id, exc)
-        await RazorpaySettingsService.record_webhook_error(db, settings, str(exc))
+        await _rollback_and_record_webhook_error(
+            db, clinic_id=clinic_id, event=event, event_type=event_type, message=str(exc)
+        )
         return {"ok": True}
     except Exception as exc:  # noqa: BLE001 - transient failure: let Razorpay retry
         logger.exception("razorpay webhook processing failed for clinic %s", clinic_id)
-        # Roll back first: by this point in the request `confirm()` may
-        # already have flushed a Payment + allocations (or a
-        # PaymentRequest state change) before failing later on, and a
-        # plain commit here would persist that half-applied confirmation
-        # alongside the error record — a retry would then land on
-        # partially-committed state instead of a clean one (review
-        # follow-up, PR #470). Rolling back expires every ORM instance
-        # from this transaction, including `settings`, so it must not be
-        # touched again — re-fetch a fresh row instead.
-        await db.rollback()
-        fresh_settings = await RazorpaySettingsService.get_settings(db, clinic_id)
-        if fresh_settings is not None:
-            # Re-apply the received bookkeeping too — it was flushed
-            # earlier in this same (now rolled-back) transaction, so it
-            # needs the same fresh-row treatment as the error record.
-            await RazorpaySettingsService.record_webhook_received(db, fresh_settings, event_type)
-            await RazorpaySettingsService.record_webhook_error(db, fresh_settings, str(exc)[:500])
-            # Commit only this clean error-recording work — never the
-            # failed confirmation attempt rolled back above.
-            await db.commit()
+        await _rollback_and_record_webhook_error(
+            db, clinic_id=clinic_id, event=event, event_type=event_type, message=str(exc)[:500]
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="internal error"
         )
 
     return {"ok": True}
+
+
+async def _rollback_and_record_webhook_error(
+    db: AsyncSession,
+    *,
+    clinic_id: UUID,
+    event,  # adapters.GatewayWebhookEvent | None — whatever this attempt got to
+    event_type: str | None,
+    message: str,
+) -> None:
+    """Roll back any partial state this webhook attempt flushed — e.g.
+    ``PaymentRequestService.confirm()`` can flush a Payment + allocations
+    before failing later in the same call — then record the failure
+    against freshly-fetched rows. ``rollback()`` expires every ORM
+    instance already loaded in this transaction (``settings``, a locked
+    request/refund row), so none of them is safe to touch again; every
+    row this writes to is re-fetched after the rollback.
+
+    Also re-applies the ``raw_status_snapshot`` merge
+    ``PaymentRequestService.apply_webhook_event`` makes for a
+    payment-type event (``last_event_type``/``last_event_id``) — that
+    write is deliberately-retained audit data (which event was rejected
+    and why), not part of the failed confirmation attempt, and the
+    rollback above discards it along with everything else unless it's
+    redone here. Refund-type events never write that field, so there's
+    nothing to restore for them.
+    """
+    await db.rollback()
+
+    if (
+        event is not None
+        and not event.event_type.startswith("refund_")
+        and event.provider_reference
+    ):
+        request = await PaymentRequestService.get_locked_by_provider_reference(
+            db, clinic_id, "razorpay", event.provider_reference
+        )
+        if request is not None:
+            request.raw_status_snapshot = {
+                **(request.raw_status_snapshot or {}),
+                "last_event_type": event.event_type,
+                "last_event_id": event.provider_event_id,
+            }
+            await db.flush()
+
+    fresh_settings = await RazorpaySettingsService.get_settings(db, clinic_id)
+    if fresh_settings is None:
+        return
+    await RazorpaySettingsService.record_webhook_received(db, fresh_settings, event_type)
+    await RazorpaySettingsService.record_webhook_error(db, fresh_settings, message)
+    # Commit only this clean receipt/error-recording work — never a
+    # failed confirmation attempt rolled back above.
+    await db.commit()
 
 
 async def _dispatch_payment_event(db: AsyncSession, clinic_id: UUID, event) -> None:
