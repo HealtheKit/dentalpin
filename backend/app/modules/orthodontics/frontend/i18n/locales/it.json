@@ -64,7 +64,9 @@
       "noNext": "Senza prossimo controllo",
       "save": "Salva controllo",
       "history": "Controlli",
-      "empty": "Ancora nessun controllo"
+      "empty": "Ancora nessun controllo",
+      "appointment": "Appuntamento",
+      "session": "Rata incassata"
     },
     "card": {
       "title": "Ortodonzia",
@@ -94,6 +96,26 @@
     "errors": {
       "saveFailed": "Salvataggio non riuscito. Riprova.",
       "loadFailed": "Impossibile caricare i dati ortodontici."
+    },
+    "plan": {
+      "title": "Piano di trattamento",
+      "link": "Collega piano",
+      "unlink": "Scollega piano",
+      "noLink": "Nessun piano collegato (i pazienti trasferiti possono essere seguiti senza piano)",
+      "paid": "{n} pagate",
+      "pending": "{n} in attesa",
+      "generate": "Genera rate",
+      "collect": "Incassa rata",
+      "downPayment": "Acconto",
+      "months": "Mesi",
+      "monthlyAmount": "Importo mensile",
+      "closeSuggested": "Caso trasferito con piano collegato: valutare la chiusura del piano."
+    },
+    "settings": {
+      "title": "Cataloghi chip",
+      "wires": "Archi (uno per riga)",
+      "procedures": "Procedure (una per riga)",
+      "save": "Salva cataloghi"
     }
   }
 }

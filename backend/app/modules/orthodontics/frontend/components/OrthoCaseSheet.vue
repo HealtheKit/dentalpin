@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
  * Orthodontic case sheet: header, in-mouth-now wires, Month X of ~N
- * progress, status chips, photo evolution (media attachments +
- * before/after pairing), register-control sheet, controls timeline.
+ * progress, status chips, plan link + installments widget, photo
+ * evolution (media attachments + before/after pairing),
+ * register-control sheet, controls timeline.
  * Reused by the patient sub-tab and the /orthodontics inbox.
  */
-import type { OrthoCase, OrthoControl, OrthoSettings } from '../composables/useOrthodontics'
+import type { OrthoCase, OrthoControl, OrthoInstallments, OrthoSettings } from '../composables/useOrthodontics'
 import { PERMISSIONS } from '~~/app/config/permissions'
 import { orthoMonth } from '../utils/orthoMonth'
 
@@ -15,18 +16,21 @@ const { t, te, locale } = useI18n()
 const toast = useToast()
 const { can } = usePermissions()
 const api = useApi()
-const { getCase, changeStatus, listControls, registerControl, getSettings } = useOrthodontics()
+const { getCase, changeStatus, listControls, registerControl, getSettings, linkPlan, unlinkPlan, generateSchedule, getInstallments } = useOrthodontics()
 
 const canControl = computed(() => can(PERMISSIONS.orthodontics.controlsWrite))
 const canWriteCase = computed(() => can(PERMISSIONS.orthodontics.casesWrite))
 // Upload creates a media document, then links it: both grants are needed.
 const canPhoto = computed(() => can(PERMISSIONS.documents.write) && can(PERMISSIONS.attachments.write))
 const canAttach = computed(() => can(PERMISSIONS.attachments.read))
+const canPlans = computed(() => can(PERMISSIONS.treatmentPlans.read))
+const canAgenda = computed(() => can(PERMISSIONS.appointments.read))
 
 const item = ref<OrthoCase | null>(null)
 const controls = ref<OrthoControl[]>([])
 const settings = ref<OrthoSettings | null>(null)
 const attachments = ref<{ id: string, document: { id: string } | null }[]>([])
+const installments = ref<OrthoInstallments | null>(null)
 const isLoading = ref(false)
 
 const showControl = ref(false)
@@ -38,6 +42,9 @@ const ctlHygiene = ref<'good' | 'fair' | 'poor' | null>(null)
 const ctlAligner = ref<number | null>(null)
 const ctlNotes = ref('')
 const ctlWeeks = ref<number | null>(4)
+const ctlAppointment = ref<string | null>(null)
+const ctlSession = ref<string | null>(null)
+const upcomingAppointments = ref<{ id: string, start_time: string }[]>([])
 
 const showStatus = ref(false)
 const newStatus = ref('')
@@ -56,6 +63,16 @@ const allowedStatuses = computed(() => {
   if (!current) return []
   return [current, ...(VALID_TRANSITIONS[current] ?? []).filter(s => s !== current)]
 })
+
+const showPlan = ref(false)
+const patientPlans = ref<{ id: string, plan_number: string, status: string, items: { id: string }[] }[]>([])
+const pickedPlan = ref('')
+const pickedItem = ref('')
+
+const showSchedule = ref(false)
+const schedDown = ref(0)
+const schedMonths = ref(12)
+const schedAmount = ref(0)
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
@@ -87,6 +104,14 @@ async function refresh() {
     item.value = await getCase(props.caseId)
     controls.value = await listControls(props.caseId)
     settings.value = await getSettings()
+    installments.value = null
+    if (item.value.treatment_plan_id) {
+      try {
+        installments.value = await getInstallments(props.caseId)
+      } catch {
+        installments.value = null
+      }
+    }
     if (canAttach.value) {
       const res = await api.get<{ data: { id: string, document: { id: string } | null }[] }>(
         '/api/v1/media/attachments',
@@ -107,8 +132,26 @@ function toggleProcedure(key: string) {
   else ctlProcedures.value.push(key)
 }
 
+async function openControl() {
+  ctlAppointment.value = null
+  ctlSession.value = null
+  upcomingAppointments.value = []
+  if (canAgenda.value && item.value) {
+    try {
+      const res = await api.get<{ data: { id: string, start_time: string }[] }>(
+        '/api/v1/agenda/appointments',
+        { params: { patient_id: item.value.patient_id } }
+      )
+      upcomingAppointments.value = res.data
+    } catch {
+      upcomingAppointments.value = []
+    }
+  }
+  showControl.value = true
+}
+
 async function saveControl() {
-  try {
+<  try {
     await registerControl(props.caseId, {
       upper_wire: ctlUpper.value,
       lower_wire: ctlLower.value,
@@ -117,7 +160,9 @@ async function saveControl() {
       aligner_number: ctlAligner.value,
       hygiene: ctlHygiene.value,
       notes: ctlNotes.value || null,
-      next_control_weeks: ctlWeeks.value
+      next_control_weeks: ctlWeeks.value,
+      appointment_id: ctlAppointment.value,
+      session_id: ctlSession.value
     })
   } catch {
     notifyError('saveFailed')
@@ -131,6 +176,8 @@ async function saveControl() {
   ctlHygiene.value = null
   ctlAligner.value = null
   ctlNotes.value = ''
+  ctlAppointment.value = null
+  ctlSession.value = null
   await refresh()
 }
 
@@ -145,6 +192,50 @@ async function saveStatus() {
   showStatus.value = false
   newStatus.value = ''
   statusNote.value = ''
+  await refresh()
+}
+
+async function openPlanPicker() {
+  pickedPlan.value = ''
+  pickedItem.value = ''
+  patientPlans.value = []
+  if (canPlans.value && item.value) {
+    try {
+      const res = await api.get<{ data: { id: string, plan_number: string, status: string, items: { id: string }[] }[] }>(
+        `/api/v1/treatment-plans/treatment-plans/patient/${item.value.patient_id}`
+      )
+      patientPlans.value = res.data
+    } catch {
+      patientPlans.value = []
+    }
+  }
+  showPlan.value = true
+}
+
+const pickedPlanItems = computed(() => {
+  const plan = patientPlans.value.find(p => p.id === pickedPlan.value)
+  return plan ? plan.items : []
+})
+
+async function savePlanLink() {
+  if (!pickedPlan.value || !pickedItem.value) return
+  item.value = await linkPlan(props.caseId, pickedPlan.value, pickedItem.value)
+  showPlan.value = false
+  await refresh()
+}
+
+async function removePlanLink() {
+  item.value = await unlinkPlan(props.caseId)
+  await refresh()
+}
+
+async function saveSchedule() {
+  installments.value = await generateSchedule(props.caseId, {
+    down_payment: schedDown.value,
+    months: schedMonths.value,
+    monthly_amount: schedAmount.value
+  })
+  showSchedule.value = false
 }
 
 async function onPhotoPicked(event: Event) {
@@ -214,7 +305,7 @@ watch(() => props.caseId, refresh, { immediate: true })
             v-if="canControl && !isTerminal"
             size="sm"
             icon="i-lucide-plus"
-            @click="showControl = true"
+            @click="openControl()"
           >
             {{ t('orthodontics.control.new') }}
           </UButton>
@@ -225,6 +316,79 @@ watch(() => props.caseId, refresh, { immediate: true })
             @click="showStatus = true"
           >
             {{ t('orthodontics.case.changeStatus') }}
+          </UButton>
+        </div>
+      </div>
+    </UCard>
+
+    <UAlert
+      v-if="item.plan_close_suggested"
+      class="mt-3"
+      color="warning"
+      :title="t('orthodontics.plan.closeSuggested')"
+    />
+
+    <UCard
+      v-if="canPlans"
+      class="mt-3"
+    >
+      <template #header>
+        <div class="flex items-center justify-between">
+          <span class="font-semibold">{{ t('orthodontics.plan.title') }}</span>
+          <div class="flex gap-2">
+            <UButton
+              v-if="canWriteCase && !item.treatment_plan_id"
+              size="sm"
+              variant="soft"
+              @click="openPlanPicker()"
+            >
+              {{ t('orthodontics.plan.link') }}
+            </UButton>
+            <UButton
+              v-if="canWriteCase && item.treatment_plan_id"
+              size="sm"
+              variant="soft"
+              @click="removePlanLink()"
+            >
+              {{ t('orthodontics.plan.unlink') }}
+            </UButton>
+          </div>
+        </div>
+      </template>
+      <div
+        v-if="!item.treatment_plan_id"
+        class="text-sm text-gray-500"
+      >
+        {{ t('orthodontics.plan.noLink') }}
+      </div>
+      <div v-else-if="installments">
+        <div class="mb-2 text-sm">
+          {{ t('orthodontics.plan.paid', { n: installments.paid_count }) }} ·
+          {{ t('orthodontics.plan.pending', { n: installments.pending_count }) }}
+        </div>
+        <div class="mb-2 flex flex-wrap gap-1">
+          <UBadge
+            v-for="s in installments.sessions"
+            :key="s.id"
+            :label="`${s.sequence} · ${s.status}`"
+            :variant="s.status === 'completed' ? 'solid' : 'soft'"
+            size="sm"
+          />
+        </div>
+        <div class="flex gap-2">
+          <UButton
+            v-if="canWriteCase && installments.sessions.length === 0"
+            size="sm"
+            variant="soft"
+            @click="showSchedule = true"
+          >
+            {{ t('orthodontics.plan.generate') }}
+          </UButton>
+          <UButton
+            size="sm"
+            :to="`/payments?patient_id=${item.patient_id}`"
+          >
+            {{ t('orthodontics.plan.collect') }}
           </UButton>
         </div>
       </div>
@@ -414,6 +578,26 @@ watch(() => props.caseId, refresh, { immediate: true })
               {{ t('orthodontics.control.noNext') }}
             </UButton>
           </div>
+          <div
+            v-if="upcomingAppointments.length > 0"
+            class="flex items-center gap-2"
+          >
+            <span class="text-sm">{{ t('orthodontics.control.appointment') }}:</span>
+            <USelect
+              v-model="ctlAppointment"
+              :options="[{ label: '—', value: null }, ...upcomingAppointments.map(a => ({ label: formatDate(a.start_time), value: a.id }))]"
+            />
+          </div>
+          <div
+            v-if="installments && installments.sessions.some(s => s.status === 'pending')"
+            class="flex items-center gap-2"
+          >
+            <span class="text-sm">{{ t('orthodontics.control.session') }}:</span>
+            <USelect
+              v-model="ctlSession"
+              :options="[{ label: '—', value: null }, ...installments.sessions.filter(s => s.status === 'pending').map(s => ({ label: `${s.sequence} · ${s.label}`, value: s.id }))]"
+            />
+          </div>
         </div>
       </template>
       <template #footer>
@@ -450,6 +634,67 @@ watch(() => props.caseId, refresh, { immediate: true })
           :disabled="!newStatus"
           @click="saveStatus"
         >
+          {{ t('orthodontics.case.save') }}
+        </UButton>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="showPlan"
+      :title="t('orthodontics.plan.link')"
+    >
+      <template #body>
+        <div class="space-y-3">
+          <USelect
+            v-model="pickedPlan"
+            :options="patientPlans.map(p => ({ label: `${p.plan_number} · ${p.status}`, value: p.id }))"
+            :placeholder="t('orthodontics.plan.title')"
+          />
+          <USelect
+            v-if="pickedPlanItems.length > 0"
+            v-model="pickedItem"
+            :options="pickedPlanItems.map((it, idx) => ({ label: `Item ${idx + 1}`, value: it.id }))"
+          />
+        </div>
+      </template>
+      <template #footer>
+        <UButton
+          :disabled="!pickedPlan || !pickedItem"
+          @click="savePlanLink"
+        >
+          {{ t('orthodontics.case.save') }}
+        </UButton>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="showSchedule"
+      :title="t('orthodontics.plan.generate')"
+    >
+      <template #body>
+        <div class="space-y-3">
+          <UInput
+            v-model.number="schedDown"
+            type="number"
+            min="0"
+            :placeholder="t('orthodontics.plan.downPayment')"
+          />
+          <UInput
+            v-model.number="schedMonths"
+            type="number"
+            min="1"
+            :placeholder="t('orthodontics.plan.months')"
+          />
+          <UInput
+            v-model.number="schedAmount"
+            type="number"
+            min="0"
+            :placeholder="t('orthodontics.plan.monthlyAmount')"
+          />
+        </div>
+      </template>
+      <template #footer>
+        <UButton @click="saveSchedule">
           {{ t('orthodontics.case.save') }}
         </UButton>
       </template>

@@ -64,7 +64,9 @@
       "noNext": "Brak następnej kontroli",
       "save": "Zapisz kontrolę",
       "history": "Kontrole",
-      "empty": "Brak kontroli"
+      "empty": "Brak kontroli",
+      "appointment": "Wizyta",
+      "session": "Pobrana rata"
     },
     "card": {
       "title": "Ortodoncja",
@@ -94,6 +96,26 @@
     "errors": {
       "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
       "loadFailed": "Nie udało się wczytać danych ortodontycznych."
+    },
+    "plan": {
+      "title": "Plan leczenia",
+      "link": "Powiąż plan",
+      "unlink": "Odepnij plan",
+      "noLink": "Brak powiązanego planu (pacjentów przekazanych można prowadzić bez planu)",
+      "paid": "{n} opłaconych",
+      "pending": "{n} oczekujących",
+      "generate": "Generuj raty",
+      "collect": "Pobierz ratę",
+      "downPayment": "Zaliczka",
+      "months": "Miesiące",
+      "monthlyAmount": "Kwota miesięczna",
+      "closeSuggested": "Przypadek przekazany dalej z powiązanym planem: rozważ zamknięcie planu."
+    },
+    "settings": {
+      "title": "Katalogi chipów",
+      "wires": "Łuki (jeden na wiersz)",
+      "procedures": "Zabiegi (jeden na wiersz)",
+      "save": "Zapisz katalogi"
     }
   }
 }

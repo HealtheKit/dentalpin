@@ -44,6 +44,22 @@ export interface OrthoSettings {
   procedures: string[]
 }
 
+export interface OrthoSession {
+  id: string
+  sequence: number
+  label: string | null
+  amount: number
+  status: string
+}
+
+export interface OrthoInstallments {
+  treatment_plan_id: string
+  plan_item_id: string
+  sessions: OrthoSession[]
+  paid_count: number
+  pending_count: number
+}
+
 export function useOrthodontics() {
   const api = useApi()
 
@@ -97,5 +113,47 @@ export function useOrthodontics() {
     return response.data
   }
 
-  return { listCases, getCase, createCase, changeStatus, listControls, registerControl, getSettings }
+  async function linkPlan(caseId: string, treatment_plan_id: string, plan_item_id: string): Promise<OrthoCase> {
+    const response = await api.post<ApiResponse<OrthoCase>>(
+      `/api/v1/orthodontics/cases/${caseId}/plan-link`,
+      { treatment_plan_id, plan_item_id }
+    )
+    return response.data
+  }
+
+  async function unlinkPlan(caseId: string): Promise<OrthoCase> {
+    const response = await api.delete<ApiResponse<OrthoCase>>(
+      `/api/v1/orthodontics/cases/${caseId}/plan-link`
+    )
+    return response.data
+  }
+
+  async function generateSchedule(caseId: string, payload: {
+    down_payment: number
+    months: number
+    monthly_amount: number
+  }): Promise<OrthoInstallments> {
+    const response = await api.post<ApiResponse<OrthoInstallments>>(
+      `/api/v1/orthodontics/cases/${caseId}/schedule`,
+      payload
+    )
+    return response.data
+  }
+
+  async function getInstallments(caseId: string): Promise<OrthoInstallments> {
+    const response = await api.get<ApiResponse<OrthoInstallments>>(
+      `/api/v1/orthodontics/cases/${caseId}/installments`
+    )
+    return response.data
+  }
+
+  async function updateSettings(wires: string[], procedures: string[]): Promise<OrthoSettings> {
+    const response = await api.put<ApiResponse<OrthoSettings>>(
+      '/api/v1/orthodontics/settings',
+      { wires, procedures }
+    )
+    return response.data
+  }
+
+  return { listCases, getCase, createCase, changeStatus, listControls, registerControl, getSettings, linkPlan, unlinkPlan, generateSchedule, getInstallments, updateSettings }
 }

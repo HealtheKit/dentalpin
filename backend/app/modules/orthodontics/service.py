@@ -1,4 +1,10 @@
-"""Orthodontics service (issue #270, slice-a: clinical tracking, no money code)."""
+"""Orthodontics service (issue #270).
+
+Slice-a: clinical tracking. Slice-b: optional treatment-plan link
+(one quote, monthly collection via plan sessions), recall upsert,
+appointment link, session audit pointer. No money is ever written
+here — collection stays in the payments screen (ADR 0010).
+"""
 
 from __future__ import annotations
 
@@ -9,7 +15,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.events import EventType, event_bus
+from app.modules.agenda.models import Appointment
 from app.modules.patients.models import Patient
+from app.modules.recalls.service import RecallService
+from app.modules.treatment_plan.service import TreatmentPlanService
 
 from .defaults import DEFAULT_PROCEDURES, DEFAULT_WIRES
 from .models import CASE_STATUSES, OrthoCase, OrthoControl, OrthoSettings
@@ -83,6 +92,33 @@ async def _require_member(db: AsyncSession, clinic_id: UUID, user_id: UUID) -> N
         raise ValueError("Invalid member for this clinic")
 
 
+async def _require_appointment(
+    db: AsyncSession, clinic_id: UUID, patient_id: UUID, appointment_id: UUID
+) -> None:
+    result = await db.execute(
+        select(Appointment.id).where(
+            Appointment.id == appointment_id,
+            Appointment.clinic_id == clinic_id,
+            Appointment.patient_id == patient_id,
+        )
+    )
+    if result.scalar_one_or_none() is None:
+        raise ValueError("Invalid appointment for this patient and clinic")
+
+
+async def _require_plan_item(
+    db: AsyncSession, clinic_id: UUID, patient_id: UUID, plan_id: UUID, item_id: UUID
+) -> None:
+    """The linked plan must belong to the case's patient; the item must
+    belong to the plan. Read through TreatmentPlanService so plan-side
+    invariants (deleted_at, scoping) stay in one place."""
+    plan = await TreatmentPlanService.get(db, clinic_id, plan_id)
+    if plan is None or plan.patient_id != patient_id:
+        raise ValueError("Invalid treatment plan for this patient and clinic")
+    if all(item.id != item_id for item in plan.items or []):
+        raise ValueError("Item does not belong to the treatment plan")
+
+
 async def _get_case(db: AsyncSession, clinic_id: UUID, case_id: UUID) -> OrthoCase | None:
     result = await db.execute(
         select(OrthoCase).where(OrthoCase.id == case_id, OrthoCase.clinic_id == clinic_id)
@@ -128,6 +164,7 @@ async def _annotate_cases(db: AsyncSession, cases: list[OrthoCase]) -> list[dict
                 "control_count": len(rows),
                 "last_control_at": last.performed_at if last else None,
                 "next_due": _control_next_due(last) if last else None,
+                "plan_close_suggested": False,
             }
         )
     return out
@@ -204,6 +241,19 @@ class OrthoCaseService:
         return list(zip(cases, await _annotate_cases(db, cases), strict=True))
 
     @staticmethod
+    async def list_overdue(db: AsyncSession, clinic_id: UUID) -> list[tuple[OrthoCase, dict]]:
+        """Active/paused cases whose latest next-due date is past."""
+        rows = await OrthoCaseService.list_active(db, clinic_id)
+        today = date.today()
+        return [
+            (case, annotation)
+            for case, annotation in rows
+            if case.status in ("active", "paused")
+            and annotation["next_due"] is not None
+            and annotation["next_due"] < today
+        ]
+
+    @staticmethod
     async def update(
         db: AsyncSession, clinic_id: UUID, case_id: UUID, data: OrthoCaseUpdate
     ) -> tuple[OrthoCase, dict] | None:
@@ -255,7 +305,107 @@ class OrthoCaseService:
                 ),
             },
         )
+        annotation = await _annotate_case(db, case)
+        # transferred_out with a linked plan: prompt (don't force) the
+        # plan close — the plan is the financial record (Q3).
+        annotation["plan_close_suggested"] = bool(
+            status == "transferred_out" and case.treatment_plan_id is not None
+        )
+        return case, annotation
+
+    @staticmethod
+    async def link_plan(
+        db: AsyncSession, clinic_id: UUID, case_id: UUID, plan_id: UUID, item_id: UUID
+    ) -> tuple[OrthoCase, dict] | None:
+        case = await _get_case(db, clinic_id, case_id)
+        if case is None:
+            return None
+        await _require_plan_item(db, clinic_id, case.patient_id, plan_id, item_id)
+        case.treatment_plan_id = plan_id
+        case.plan_item_id = item_id
+        await db.flush()
         return case, await _annotate_case(db, case)
+
+    @staticmethod
+    async def unlink_plan(
+        db: AsyncSession, clinic_id: UUID, case_id: UUID
+    ) -> tuple[OrthoCase, dict] | None:
+        case = await _get_case(db, clinic_id, case_id)
+        if case is None:
+            return None
+        case.treatment_plan_id = None
+        case.plan_item_id = None
+        await db.flush()
+        return case, await _annotate_case(db, case)
+
+    @staticmethod
+    async def generate_schedule(
+        db: AsyncSession,
+        clinic_id: UUID,
+        case_id: UUID,
+        down_payment: float,
+        months: int,
+        monthly_amount: float,
+    ) -> dict:
+        """Build the installment schedule through the plan's session
+        API — never raw rows — so the plan-owns-lines (#176) and
+        repricing (#243) invariants hold. Money is booked later, one
+        session at a time, from the payments screen (ADR 0010)."""
+        case = await _get_case(db, clinic_id, case_id)
+        if case is None:
+            raise LookupError("Case not found in this clinic")
+        if case.treatment_plan_id is None or case.plan_item_id is None:
+            raise ValueError("Link a treatment plan item before generating installments")
+        await TreatmentPlanService.add_session_manual(
+            db,
+            clinic_id,
+            case.treatment_plan_id,
+            case.plan_item_id,
+            {"label": "Down payment", "amount": down_payment},
+        )
+        for month in range(1, months + 1):
+            await TreatmentPlanService.add_session_manual(
+                db,
+                clinic_id,
+                case.treatment_plan_id,
+                case.plan_item_id,
+                {"label": f"Installment {month}", "amount": monthly_amount},
+            )
+        await db.flush()
+        return await OrthoCaseService.installments(db, clinic_id, case_id)
+
+    @staticmethod
+    async def installments(db: AsyncSession, clinic_id: UUID, case_id: UUID) -> dict:
+        case = await _get_case(db, clinic_id, case_id)
+        if case is None:
+            raise LookupError("Case not found in this clinic")
+        if case.treatment_plan_id is None or case.plan_item_id is None:
+            raise ValueError("No treatment plan linked to this case")
+        plan = await TreatmentPlanService.get(db, clinic_id, case.treatment_plan_id)
+        if plan is None:
+            raise LookupError("Linked treatment plan not found")
+        item = next((i for i in plan.items or [] if i.id == case.plan_item_id), None)
+        if item is None:
+            raise LookupError("Linked plan item not found")
+        sessions = sorted(item.sessions or [], key=lambda s: s.sequence)
+        # Read-only projection: paid/earned diffs are never surfaced
+        # (ADR 0010) — counts only, amounts per session row.
+        return {
+            "treatment_plan_id": case.treatment_plan_id,
+            "plan_item_id": case.plan_item_id,
+            "sessions": [
+                {
+                    "id": s.id,
+                    "sequence": s.sequence,
+                    "label": s.label,
+                    "amount": float(s.amount),
+                    "status": s.status,
+                }
+                for s in sessions
+            ],
+            "paid_count": sum(1 for s in sessions if s.status == "completed"),
+            "pending_count": sum(1 for s in sessions if s.status == "pending"),
+        }
 
 
 async def _refresh_current_wires(db: AsyncSession, case: OrthoCase) -> None:
@@ -295,6 +445,8 @@ class OrthoControlService:
             raise ValueError(f"Cannot register controls on a {case.status} case")
         if performed_by is not None:
             await _require_member(db, clinic_id, performed_by)
+        if data.appointment_id is not None:
+            await _require_appointment(db, clinic_id, case.patient_id, data.appointment_id)
         control = OrthoControl(
             clinic_id=clinic_id,
             case_id=case.id,
@@ -308,6 +460,8 @@ class OrthoControlService:
             hygiene=data.hygiene,
             notes=data.notes,
             next_control_weeks=data.next_control_weeks,
+            appointment_id=data.appointment_id,
+            session_id=data.session_id,
         )
         db.add(control)
         if control.upper_wire is not None:
@@ -315,6 +469,24 @@ class OrthoControlService:
         if control.lower_wire is not None:
             case.current_lower_wire = control.lower_wire
         await db.flush()
+        # Next-control recall (duplicate-guarded upsert). Paused cases
+        # freeze generation (Q3); terminal cases can't register at all.
+        if control.next_control_weeks is not None and case.status != "paused":
+            due = _control_next_due(control)
+            assert due is not None
+            await RecallService.create(
+                db,
+                clinic_id,
+                {
+                    "patient_id": case.patient_id,
+                    "reason": "ortho_review",
+                    "due_month": date(due.year, due.month, 1),
+                    "due_date": due,
+                    "reason_note": f"Control de ortodoncia ({case.id})",
+                    "assigned_professional_id": case.professional_id,
+                },
+                recommended_by=performed_by,
+            )
         await event_bus.publish(
             EventType.ORTHODONTICS_CONTROL_REGISTERED,
             {
@@ -381,3 +553,33 @@ class OrthoSettingsService:
             db.add(settings)
             await db.flush()
         return settings
+
+    @staticmethod
+    async def seed_count(db: AsyncSession) -> int:
+        result = await db.execute(select(func.count(OrthoSettings.id)))
+        return result.scalar_one()
+
+    @staticmethod
+    async def update(
+        db: AsyncSession, clinic_id: UUID, wires: list[str], procedures: list[str]
+    ) -> OrthoSettings:
+        settings = await OrthoSettingsService.get_or_seed(db, clinic_id)
+        settings.wires = [w.strip() for w in wires if w.strip()][:100]
+        settings.procedures = [p.strip() for p in procedures if p.strip()][:100]
+        await db.flush()
+        return settings
+
+
+async def validate_wire(db: AsyncSession, clinic_id: UUID, wire: str | None) -> None:
+    """Wire names should come from the clinic catalog; unknown names are
+    allowed (free-text escape hatch) — the UI chips are the guide, not a gate."""
+    if wire is None:
+        return
+    settings = await OrthoSettingsService.get_or_seed(db, clinic_id)
+    if wire not in settings.wires and len(wire) > 40:
+        raise ValueError("Wire label too long")
+
+
+async def validate_hygiene(hygiene: str | None) -> None:
+    if hygiene is not None and hygiene not in HYGIENE_LEVELS:
+        raise ValueError(f"Unknown hygiene level '{hygiene}'")

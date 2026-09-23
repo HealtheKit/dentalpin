@@ -64,7 +64,9 @@
       "noNext": "No next control",
       "save": "Save control",
       "history": "Controls",
-      "empty": "No controls yet"
+      "empty": "No controls yet",
+      "appointment": "Appointment",
+      "session": "Collected installment"
     },
     "card": {
       "title": "Orthodontics",
@@ -94,6 +96,26 @@
     "errors": {
       "saveFailed": "Could not save. Please try again.",
       "loadFailed": "Could not load orthodontic data."
+    },
+    "plan": {
+      "title": "Treatment plan",
+      "link": "Link plan",
+      "unlink": "Unlink plan",
+      "noLink": "No plan linked (transfer patients can track without one)",
+      "paid": "{n} paid",
+      "pending": "{n} pending",
+      "generate": "Generate installments",
+      "collect": "Collect installment",
+      "downPayment": "Down payment",
+      "months": "Months",
+      "monthlyAmount": "Monthly amount",
+      "closeSuggested": "Case transferred out with a linked plan: consider closing the plan."
+    },
+    "settings": {
+      "title": "Chip catalogs",
+      "wires": "Archwires (one per line)",
+      "procedures": "Procedures (one per line)",
+      "save": "Save catalogs"
     }
   }
 }

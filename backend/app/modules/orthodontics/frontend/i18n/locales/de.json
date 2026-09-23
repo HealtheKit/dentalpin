@@ -64,7 +64,9 @@
       "noNext": "Keine nächste Kontrolle",
       "save": "Kontrolle speichern",
       "history": "Kontrollen",
-      "empty": "Noch keine Kontrollen"
+      "empty": "Noch keine Kontrollen",
+      "appointment": "Termin",
+      "session": "Eingezahlte Rate"
     },
     "card": {
       "title": "Kieferorthopädie",
@@ -94,6 +96,26 @@
     "errors": {
       "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
       "loadFailed": "KFO-Daten konnten nicht geladen werden."
+    },
+    "plan": {
+      "title": "Behandlungsplan",
+      "link": "Plan verknüpfen",
+      "unlink": "Plan trennen",
+      "noLink": "Kein Plan verknüpft (überwiesene Patienten können auch ohne Plan betreut werden)",
+      "paid": "{n} gezahlt",
+      "pending": "{n} offen",
+      "generate": "Raten erzeugen",
+      "collect": "Rate einziehen",
+      "downPayment": "Anzahlung",
+      "months": "Monate",
+      "monthlyAmount": "Monatsbetrag",
+      "closeSuggested": "Fall mit verknüpftem Plan überwiesen: Erwägen Sie, den Plan zu schließen."
+    },
+    "settings": {
+      "title": "Chip-Kataloge",
+      "wires": "Bögen (einer pro Zeile)",
+      "procedures": "Maßnahmen (eine pro Zeile)",
+      "save": "Kataloge speichern"
     }
   }
 }

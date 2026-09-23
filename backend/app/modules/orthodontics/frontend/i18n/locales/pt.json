@@ -64,7 +64,9 @@
       "noNext": "Sem próximo controle",
       "save": "Guardar controle",
       "history": "Controles",
-      "empty": "Ainda sem controles"
+      "empty": "Ainda sem controles",
+      "appointment": "Consulta",
+      "session": "Prestação recebida"
     },
     "card": {
       "title": "Ortodontia",
@@ -94,6 +96,26 @@
     "errors": {
       "saveFailed": "Não foi possível guardar. Tente novamente.",
       "loadFailed": "Não foi possível carregar os dados de ortodontia."
+    },
+    "plan": {
+      "title": "Plano de tratamento",
+      "link": "Associar plano",
+      "unlink": "Desassociar plano",
+      "noLink": "Sem plano associado (pacientes transferidos podem ser acompanhados sem um)",
+      "paid": "{n} pagas",
+      "pending": "{n} pendentes",
+      "generate": "Gerar prestações",
+      "collect": "Receber prestação",
+      "downPayment": "Entrada",
+      "months": "Meses",
+      "monthlyAmount": "Valor mensal",
+      "closeSuggested": "Caso transferido com plano associado: considere encerrar o plano."
+    },
+    "settings": {
+      "title": "Catálogos de chips",
+      "wires": "Arcos (um por linha)",
+      "procedures": "Procedimentos (um por linha)",
+      "save": "Guardar catálogos"
     }
   }
 }

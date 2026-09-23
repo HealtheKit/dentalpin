@@ -64,7 +64,9 @@
       "noNext": "Sin próximo control",
       "save": "Guardar control",
       "history": "Controles",
-      "empty": "Aún no hay controles"
+      "empty": "Aún no hay controles",
+      "appointment": "Cita",
+      "session": "Cuota cobrada"
     },
     "card": {
       "title": "Ortodoncia",
@@ -94,6 +96,26 @@
     "errors": {
       "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
       "loadFailed": "No se pudieron cargar los datos de ortodoncia."
+    },
+    "plan": {
+      "title": "Plan de tratamiento",
+      "link": "Vincular plan",
+      "unlink": "Desvincular plan",
+      "noLink": "Sin plan vinculado (los pacientes derivados pueden seguirse sin uno)",
+      "paid": "{n} pagadas",
+      "pending": "{n} pendientes",
+      "generate": "Generar cuotas",
+      "collect": "Cobrar cuota",
+      "downPayment": "Pago inicial",
+      "months": "Meses",
+      "monthlyAmount": "Importe mensual",
+      "closeSuggested": "Caso derivado con plan vinculado: considere cerrar el plan."
+    },
+    "settings": {
+      "title": "Catálogos de chips",
+      "wires": "Arcos (uno por línea)",
+      "procedures": "Procedimientos (uno por línea)",
+      "save": "Guardar catálogos"
     }
   }
 }

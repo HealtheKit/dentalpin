@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- fix(#522): the payments report mixed two date frames. `new Date("YYYY-MM-DD")`
+<- fix(#522): the payments report mixed two date frames. `new Date("YYYY-MM-DD")`
   is UTC midnight per spec while `setDate` and `toLocaleDateString` read local
   fields, so the previous-period range and the trend chart's bucket labels
   could land a day out. Date-only strings now parse through one local
@@ -14,7 +14,9 @@
   sat in one flat row under one label, so nothing said that picking `upi`
   writes a record while picking a gateway starts a collection. The second
   group does not render when no gateway module is installed.
-
+- feat(#270): `/payments` honors `?patient_id=` on mount (preselects
+  the patient filter) so sibling modules can deep-link collection
+  (orthodontics "Collect installment").
 - fix(#470 review): `PaymentCreateModal`'s default/"today" date now
   reads `clinicToday()` (clinic-local calendar date) instead of the
   browser's UTC date — matches the same clinic-local booking the

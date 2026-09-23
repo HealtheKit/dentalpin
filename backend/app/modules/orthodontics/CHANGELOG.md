@@ -26,9 +26,19 @@
 - fix: current `useApi`/`USelect` contracts (`{ query }`, typed
   update handler) + import depth + `noUncheckedIndexedAccess`
   first-case guard in the layer.
+- Follow-ups (issue #270): copilot tools `get_ortho_case_status` /
+  `list_overdue_ortho_controls` / `register_ortho_control`, chip-catalog
+  settings editor (`PUT /settings` + inbox section, `settings.manage`).
+- Slice-b (issue #270): optional treatment-plan link (`treatment_plan_id`
+  + `plan_item_id`, nullable for transfer patients), installment schedule
+  generation through the plan session API, read-only installments widget
+  data (counts only, ADR 0010), deep-link-only "Collect installment" to
+  `/payments?patient_id=` (payments honors it on mount), recall upsert
+  (`ortho_review`, paused freezes generation), appointment link +
+  session audit pointer on controls, `transferred_out` plan-close
+  suggestion flag.
 - Slice-a (issue #270): cases with appliance/status lifecycle, per-visit
   controls with chip procedures + hygiene + next-control interval,
   "in mouth now" wire state, photo evolution via `ortho_case` /
   `ortho_control` media owners, chip-catalog settings seeds, inbox page,
-  patient sub-tab + summary card. No money code yet — installments,
-  recall upsert, plan/appointment links, and copilot tools are slice-b.
+  patient sub-tab + summary card.
