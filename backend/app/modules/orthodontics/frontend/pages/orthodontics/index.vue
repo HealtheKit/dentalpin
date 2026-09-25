@@ -10,6 +10,7 @@ import OrthoCaseSheet from '../../components/OrthoCaseSheet.vue'
 const { t, locale } = useI18n()
 const { can } = usePermissions()
 const route = useRoute()
+const toast = useToast()
 const { listCases } = useOrthodontics()
 
 const canRead = computed(() => can(PERMISSIONS.orthodontics.casesRead))
@@ -47,6 +48,8 @@ async function refresh() {
   isLoading.value = true
   try {
     rows.value = await listCases()
+  } catch {
+    toast.add({ title: t('orthodontics.errors.loadFailed'), color: 'error' })
   } finally {
     isLoading.value = false
   }
@@ -94,9 +97,10 @@ onMounted(refresh)
           @click="selectedId = c.id"
         >
           <div class="text-sm font-medium">
-            {{ t(`orthodontics.appliance.${c.appliance_type}`) }}
+            {{ c.patient_name || '—' }}
           </div>
           <div class="text-xs text-gray-500">
+            {{ t(`orthodontics.appliance.${c.appliance_type}`) }} ·
             {{ t(`orthodontics.status.${c.status}`) }}
             <span v-if="c.next_due">· {{ t('orthodontics.inbox.nextDue') }}: {{ formatDate(c.next_due) }}</span>
           </div>

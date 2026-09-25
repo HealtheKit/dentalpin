@@ -5,14 +5,14 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.events import EventType, event_bus
 from app.modules.patients.models import Patient
 
 from .defaults import DEFAULT_PROCEDURES, DEFAULT_WIRES
-from .models import CASE_STATUSES, HYGIENE_LEVELS, OrthoCase, OrthoControl, OrthoSettings
+from .models import CASE_STATUSES, OrthoCase, OrthoControl, OrthoSettings
 from .schemas import (
     OrthoCaseCreate,
     OrthoCaseUpdate,
@@ -96,22 +96,45 @@ def _control_next_due(control: OrthoControl) -> date | None:
     return (control.performed_at + timedelta(weeks=control.next_control_weeks)).date()
 
 
-async def _annotate_case(db: AsyncSession, case: OrthoCase) -> dict:
-    # Explicit query — never touch the ``controls`` relationship here:
-    # after flush the attribute is expired and lazy-load raises
-    # MissingGreenlet in async context.
-    result = await db.execute(
-        select(OrthoControl)
-        .where(OrthoControl.case_id == case.id, OrthoControl.clinic_id == case.clinic_id)
-        .order_by(OrthoControl.performed_at)
+async def _annotate_cases(db: AsyncSession, cases: list[OrthoCase]) -> list[dict]:
+    """Control stats + patient name for a batch of cases (two queries total)."""
+    if not cases:
+        return []
+    ids = [c.id for c in cases]
+    clinic_id = cases[0].clinic_id
+    controls = (
+        await db.execute(
+            select(OrthoControl)
+            .where(OrthoControl.case_id.in_(ids), OrthoControl.clinic_id == clinic_id)
+            .order_by(OrthoControl.performed_at)
+        )
+    ).scalars()
+    by_case: dict[UUID, list[OrthoControl]] = {}
+    for control in controls:
+        by_case.setdefault(control.case_id, []).append(control)
+    patients = await db.execute(
+        select(Patient.id, Patient.first_name, Patient.last_name).where(
+            Patient.id.in_({c.patient_id for c in cases}), Patient.clinic_id == clinic_id
+        )
     )
-    controls = list(result.scalars().all())
-    last = controls[-1] if controls else None
-    return {
-        "control_count": len(controls),
-        "last_control_at": last.performed_at if last else None,
-        "next_due": _control_next_due(last) if last else None,
-    }
+    names = {pid: f"{first} {last}" for pid, first, last in patients.all()}
+    out = []
+    for case in cases:
+        rows = by_case.get(case.id, [])
+        last = rows[-1] if rows else None
+        out.append(
+            {
+                "patient_name": names.get(case.patient_id),
+                "control_count": len(rows),
+                "last_control_at": last.performed_at if last else None,
+                "next_due": _control_next_due(last) if last else None,
+            }
+        )
+    return out
+
+
+async def _annotate_case(db: AsyncSession, case: OrthoCase) -> dict:
+    return (await _annotate_cases(db, [case]))[0]
 
 
 class OrthoCaseService:
@@ -163,7 +186,8 @@ class OrthoCaseService:
             .where(OrthoCase.clinic_id == clinic_id, OrthoCase.patient_id == patient_id)
             .order_by(OrthoCase.start_date.desc())
         )
-        return [(c, await _annotate_case(db, c)) for c in result.scalars().all()]
+        cases = list(result.scalars().all())
+        return list(zip(cases, await _annotate_cases(db, cases), strict=True))
 
     @staticmethod
     async def list_active(
@@ -176,7 +200,8 @@ class OrthoCaseService:
             query = query.where(OrthoCase.status == status)
         query = query.order_by(OrthoCase.start_date.desc())
         result = await db.execute(query)
-        return [(c, await _annotate_case(db, c)) for c in result.scalars().all()]
+        cases = list(result.scalars().all())
+        return list(zip(cases, await _annotate_cases(db, cases), strict=True))
 
     @staticmethod
     async def update(
@@ -208,9 +233,10 @@ class OrthoCaseService:
         previous_finished_at = case.finished_at
         case.status = status
         case.status_note = note
-        if status in TERMINAL_STATUSES and case.finished_at is None:
-            # finished_at is set once and never cleared: the record of when
-            # treatment ended survives any later reopen.
+        if status in TERMINAL_STATUSES and previous not in TERMINAL_STATUSES:
+            # finished_at is never cleared: a reopen keeps it (the reopen is
+            # stamped below) and a later re-finish moves it to the real end;
+            # the value it replaces travels in the event.
             case.finished_at = datetime.now(UTC)
         if previous == "finished" and status == "active":
             # Explicit reopen path: stamps the reopen, keeps finished_at.
@@ -230,6 +256,27 @@ class OrthoCaseService:
             },
         )
         return case, await _annotate_case(db, case)
+
+
+async def _refresh_current_wires(db: AsyncSession, case: OrthoCase) -> None:
+    """Re-derive "in mouth now" from the latest control that set each arch
+    (an edited control may change or clear a wire)."""
+    controls = (
+        await db.execute(
+            select(OrthoControl)
+            .where(OrthoControl.case_id == case.id, OrthoControl.clinic_id == case.clinic_id)
+            .order_by(OrthoControl.performed_at.desc())
+        )
+    ).scalars()
+    upper = lower = None
+    for control in controls:
+        upper = upper or control.upper_wire
+        lower = lower or control.lower_wire
+        if upper and lower:
+            break
+    case.current_upper_wire = upper
+    case.current_lower_wire = lower
+    await db.flush()
 
 
 class OrthoControlService:
@@ -300,6 +347,9 @@ class OrthoControlService:
         for key, value in data.model_dump(exclude_unset=True).items():
             setattr(control, key, value)
         await db.flush()
+        case = await _get_case(db, clinic_id, control.case_id)
+        if case is not None:
+            await _refresh_current_wires(db, case)
         return control
 
     @staticmethod
@@ -331,23 +381,3 @@ class OrthoSettingsService:
             db.add(settings)
             await db.flush()
         return settings
-
-    @staticmethod
-    async def seed_count(db: AsyncSession) -> int:
-        result = await db.execute(select(func.count(OrthoSettings.id)))
-        return result.scalar_one()
-
-
-async def validate_wire(db: AsyncSession, clinic_id: UUID, wire: str | None) -> None:
-    """Wire names should come from the clinic catalog; unknown names are
-    allowed (free-text escape hatch) — the UI chips are the guide, not a gate."""
-    if wire is None:
-        return
-    settings = await OrthoSettingsService.get_or_seed(db, clinic_id)
-    if wire not in settings.wires and len(wire) > 40:
-        raise ValueError("Wire label too long")
-
-
-async def validate_hygiene(hygiene: str | None) -> None:
-    if hygiene is not None and hygiene not in HYGIENE_LEVELS:
-        raise ValueError(f"Unknown hygiene level '{hygiene}'")

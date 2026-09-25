@@ -4,6 +4,7 @@ export interface OrthoCase {
   id: string
   clinic_id: string
   patient_id: string
+  patient_name: string | null
   professional_id: string | null
   appliance_type: string
   status: 'active' | 'paused' | 'finished' | 'transferred_out'

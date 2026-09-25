@@ -30,8 +30,6 @@ from .service import (
     OrthoCaseService,
     OrthoControlService,
     OrthoSettingsService,
-    validate_hygiene,
-    validate_wire,
 )
 
 router = APIRouter(tags=["orthodontics"])
@@ -39,6 +37,7 @@ router = APIRouter(tags=["orthodontics"])
 
 def _case_response(case, annotation: dict) -> OrthoCaseResponse:
     response = OrthoCaseResponse.model_validate(case)
+    response.patient_name = annotation["patient_name"]
     response.control_count = annotation["control_count"]
     response.last_control_at = annotation["last_control_at"]
     response.next_due = annotation["next_due"]
@@ -152,9 +151,6 @@ async def register_control(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> ApiResponse[OrthoControlResponse]:
     try:
-        await validate_wire(db, ctx.clinic_id, data.upper_wire)
-        await validate_wire(db, ctx.clinic_id, data.lower_wire)
-        await validate_hygiene(data.hygiene)
         control = await OrthoControlService.register(
             db, ctx.clinic_id, case_id, data, performed_by=ctx.user_id
         )
@@ -187,11 +183,6 @@ async def update_control(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> ApiResponse[OrthoControlResponse]:
     try:
-        if data.upper_wire is not None:
-            await validate_wire(db, ctx.clinic_id, data.upper_wire)
-        if data.lower_wire is not None:
-            await validate_wire(db, ctx.clinic_id, data.lower_wire)
-        await validate_hygiene(data.hygiene)
         control = await OrthoControlService.update(db, ctx.clinic_id, control_id, data)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

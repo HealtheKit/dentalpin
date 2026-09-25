@@ -20,7 +20,7 @@ related_paths:
 
 # Ortodoncia
 
-La bandeja muestra los casos en cuatro vistas: activos, con control
+La bandeja lista cada caso con el nombre del paciente, en cuatro vistas: activos, con control
 vencido, sin próximo control y finalizados. Cada ficha muestra el
 aparato "en boca ahora", el progreso "Mes X de ~N", la evolución de
 fotos y el botón "+ Registrar control". El control se rellena con
@@ -29,4 +29,7 @@ próximo control en 3/4/6/8 semanas. El diálogo de estado solo ofrece
 los movimientos legales según el estado actual (un caso finalizado
 solo puede reabrirse a activo; un caso transferido no tiene
 movimientos), y reabrir un caso finalizado conserva su fecha de
-finalización original.
+finalización. "Mes X" cuenta meses naturales desde la fecha de inicio
+del caso, así que un paciente que llega a mitad de tratamiento puede
+abrirse con una fecha de inicio pasada. Al crear un caso se indica su
+fecha de inicio y, opcionalmente, el ortodoncista.

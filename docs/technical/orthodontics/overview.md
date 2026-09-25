@@ -15,9 +15,10 @@ are slice-b / follow-ups (see Later below and the module CLAUDE.md).
 
 `active` ↔ `paused`; either may finish or transfer out. `finished`
 reopens only to `active` (explicit reopen path); `transferred_out` is
-terminal. `finished_at` is set on the first terminal entry and never
-cleared; a reopen stamps `reopened_at` instead, so the end-of-treatment
-record survives. Same-status posts are accepted as note updates.
+terminal. `finished_at` is stamped on each entry into a terminal state
+and never cleared; a reopen stamps `reopened_at` instead, so the
+end-of-treatment record survives (the replaced value travels in the
+event's `previous_finished_at`). Same-status posts are accepted as note updates.
 
 ## Later (slice-b + follow-ups, user-approved 2026-09-08)
 

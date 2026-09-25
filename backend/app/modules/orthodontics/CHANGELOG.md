@@ -2,9 +2,16 @@
 
 ## Unreleased
 
+- fix (maintainer review): inbox shows the patient's name (batched, no
+  N+1); "Month X" counts calendar months from `start_date`, not controls;
+  new-case modal asks for start date and orthodontist; case selector uses
+  `USelect :items`; procedure chips translated; load/save/upload errors
+  toasted; "Register control" hidden on closed cases; status change gated
+  on `cases.write`, photo upload on `attachments.write`; editing a control
+  re-derives the in-mouth wires; dead validators/asserts removed.
 - feat: explicit status machine (`VALID_TRANSITIONS`, issue #505 review):
   `transferred_out` terminal, `finished` reopens only to `active`;
-  `finished_at` set once and never cleared, `reopened_at` stamps the
+  `finished_at` never cleared (re-stamped on re-finish), `reopened_at` stamps the
   explicit reopen path; status-changed event carries
   `previous_finished_at`.
 - fix: the module ships a single migration: `reopened_at` is created inline

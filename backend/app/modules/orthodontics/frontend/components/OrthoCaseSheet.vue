@@ -7,16 +7,20 @@
  */
 import type { OrthoCase, OrthoControl, OrthoSettings } from '../composables/useOrthodontics'
 import { PERMISSIONS } from '~~/app/config/permissions'
+import { orthoMonth } from '../utils/orthoMonth'
 
 const props = defineProps<{ caseId: string }>()
 
-const { t, locale } = useI18n()
+const { t, te, locale } = useI18n()
+const toast = useToast()
 const { can } = usePermissions()
 const api = useApi()
 const { getCase, changeStatus, listControls, registerControl, getSettings } = useOrthodontics()
 
 const canControl = computed(() => can(PERMISSIONS.orthodontics.controlsWrite))
-const canPhoto = computed(() => can(PERMISSIONS.documents.write))
+const canWriteCase = computed(() => can(PERMISSIONS.orthodontics.casesWrite))
+// Upload creates a media document, then links it: both grants are needed.
+const canPhoto = computed(() => can(PERMISSIONS.documents.write) && can(PERMISSIONS.attachments.write))
 const canAttach = computed(() => can(PERMISSIONS.attachments.read))
 
 const item = ref<OrthoCase | null>(null)
@@ -58,9 +62,23 @@ function formatDate(iso: string | null): string {
   return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(new Date(iso))
 }
 
-function monthIndex(): number | null {
-  if (!item.value || controls.value.length === 0) return null
-  return controls.value.length
+const isTerminal = computed(() =>
+  item.value?.status === 'finished' || item.value?.status === 'transferred_out'
+)
+
+const monthIndex = computed(() => {
+  if (!item.value) return null
+  const until = isTerminal.value && item.value.finished_at ? new Date(item.value.finished_at) : new Date()
+  return orthoMonth(item.value.start_date, until)
+})
+
+// Seeded chip keys are translated; custom clinic chips show as typed.
+function procedureLabel(key: string): string {
+  return te(`orthodontics.procedures.${key}`) ? t(`orthodontics.procedures.${key}`) : key
+}
+
+function notifyError(key: 'saveFailed' | 'loadFailed') {
+  toast.add({ title: t(`orthodontics.errors.${key}`), color: 'error' })
 }
 
 async function refresh() {
@@ -76,6 +94,8 @@ async function refresh() {
       )
       attachments.value = res.data
     }
+  } catch {
+    notifyError('loadFailed')
   } finally {
     isLoading.value = false
   }
@@ -88,16 +108,21 @@ function toggleProcedure(key: string) {
 }
 
 async function saveControl() {
-  await registerControl(props.caseId, {
-    upper_wire: ctlUpper.value,
-    lower_wire: ctlLower.value,
-    procedures: ctlProcedures.value,
-    procedures_other: ctlOther.value || null,
-    aligner_number: ctlAligner.value,
-    hygiene: ctlHygiene.value,
-    notes: ctlNotes.value || null,
-    next_control_weeks: ctlWeeks.value
-  })
+  try {
+    await registerControl(props.caseId, {
+      upper_wire: ctlUpper.value,
+      lower_wire: ctlLower.value,
+      procedures: ctlProcedures.value,
+      procedures_other: ctlOther.value || null,
+      aligner_number: ctlAligner.value,
+      hygiene: ctlHygiene.value,
+      notes: ctlNotes.value || null,
+      next_control_weeks: ctlWeeks.value
+    })
+  } catch {
+    notifyError('saveFailed')
+    return
+  }
   showControl.value = false
   ctlUpper.value = null
   ctlLower.value = null
@@ -111,7 +136,12 @@ async function saveControl() {
 
 async function saveStatus() {
   if (!item.value || !newStatus.value) return
-  item.value = await changeStatus(item.value.id, newStatus.value, statusNote.value || null)
+  try {
+    item.value = await changeStatus(item.value.id, newStatus.value, statusNote.value || null)
+  } catch {
+    notifyError('saveFailed')
+    return
+  }
   showStatus.value = false
   newStatus.value = ''
   statusNote.value = ''
@@ -124,15 +154,21 @@ async function onPhotoPicked(event: Event) {
   const form = new FormData()
   form.append('file', file)
   form.append('media_kind', 'photo')
-  const up = await api.post<{ data: { id: string } }>(
-    `/api/v1/media/patients/${item.value.patient_id}/photos`,
-    form
-  )
-  await api.post('/api/v1/media/attachments', {
-    document_id: up.data.id,
-    owner_type: 'ortho_case',
-    owner_id: item.value.id
-  })
+  try {
+    const up = await api.post<{ data: { id: string } }>(
+      `/api/v1/media/patients/${item.value.patient_id}/photos`,
+      form
+    )
+    await api.post('/api/v1/media/attachments', {
+      document_id: up.data.id,
+      owner_type: 'ortho_case',
+      owner_id: item.value.id
+    })
+  } catch {
+    notifyError('saveFailed')
+  } finally {
+    input.value = ''
+  }
   await refresh()
 }
 
@@ -162,10 +198,10 @@ watch(() => props.caseId, refresh, { immediate: true })
       <div class="flex flex-wrap items-center gap-2 text-sm">
         <span>{{ t(`orthodontics.appliance.${item.appliance_type}`) }}</span>
         <span
-          v-if="item.estimated_months && monthIndex() !== null"
+          v-if="item.estimated_months && monthIndex !== null"
           class="text-gray-500"
         >
-          {{ t('orthodontics.inbox.monthOf', { x: monthIndex(), n: item.estimated_months }) }}
+          {{ t('orthodontics.inbox.monthOf', { x: monthIndex, n: item.estimated_months }) }}
         </span>
         <span
           v-if="item.next_due"
@@ -175,7 +211,7 @@ watch(() => props.caseId, refresh, { immediate: true })
         </span>
         <div class="ms-auto flex gap-2">
           <UButton
-            v-if="canControl"
+            v-if="canControl && !isTerminal"
             size="sm"
             icon="i-lucide-plus"
             @click="showControl = true"
@@ -183,6 +219,7 @@ watch(() => props.caseId, refresh, { immediate: true })
             {{ t('orthodontics.control.new') }}
           </UButton>
           <UButton
+            v-if="canWriteCase"
             size="sm"
             variant="soft"
             @click="showStatus = true"
@@ -258,7 +295,7 @@ watch(() => props.caseId, refresh, { immediate: true })
           <UBadge
             v-for="p in c.procedures"
             :key="p"
-            :label="p"
+            :label="procedureLabel(p)"
             variant="soft"
             size="sm"
           />
@@ -326,7 +363,7 @@ watch(() => props.caseId, refresh, { immediate: true })
                 :variant="ctlProcedures.includes(p) ? 'solid' : 'soft'"
                 @click="toggleProcedure(p)"
               >
-                {{ p }}
+                {{ procedureLabel(p) }}
               </UButton>
             </div>
             <UInput

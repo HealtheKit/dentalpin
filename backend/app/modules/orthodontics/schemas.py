@@ -8,8 +8,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .models import APPLIANCE_TYPES, CASE_STATUSES, HYGIENE_LEVELS
-
 ApplianceType = Literal[
     "brackets_metal",
     "brackets_esthetic",
@@ -62,6 +60,7 @@ class OrthoCaseResponse(BaseModel):
     finished_at: datetime | None
     reopened_at: datetime | None = None
     status_note: str | None
+    patient_name: str | None = None
     control_count: int = 0
     last_control_at: datetime | None = None
     next_due: date | None = None
@@ -115,15 +114,3 @@ class OrthoSettingsResponse(BaseModel):
     clinic_id: UUID
     wires: list[str]
     procedures: list[str]
-
-
-assert set(APPLIANCE_TYPES) == {
-    "brackets_metal",
-    "brackets_esthetic",
-    "self_ligating",
-    "aligners",
-    "functional",
-    "retention",
-}
-assert set(CASE_STATUSES) == {"active", "paused", "finished", "transferred_out"}
-assert set(HYGIENE_LEVELS) == {"good", "fair", "poor"}

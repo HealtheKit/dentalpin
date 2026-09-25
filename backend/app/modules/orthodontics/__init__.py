@@ -37,8 +37,7 @@ class OrthodonticsModule(BaseModule):
             "layer_path": "frontend",
             "navigation": [
                 {
-                    "label": "Ortodoncia",
-                    "labelKey": "orthodontics.nav.title",
+                    "label": "orthodontics.nav.title",
                     "to": "/orthodontics",
                     "icon": "i-lucide-smile",
                     "order": 96,

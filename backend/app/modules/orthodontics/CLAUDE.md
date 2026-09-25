@@ -68,7 +68,7 @@ None in slice-a (copilot tools are a slice-b follow-up).
   `active` (a transferred-out case has no exit).
 - **Status machine is explicit** (`VALID_TRANSITIONS` in service.py):
   `transferred_out` terminal, `finished` reopens only to `active`.
-  `finished_at` is set once, never cleared; reopen stamps `reopened_at`.
+  `finished_at` is stamped on each entry into a terminal state and never cleared; reopen stamps `reopened_at`.
 - **Wire names are chips, not gates** — unknown labels allowed
   (free-text escape hatch); length capped at 40.
 - **`performed_by` defaults to the caller** (`ctx.user_id`), membership

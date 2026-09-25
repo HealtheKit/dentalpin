@@ -13,7 +13,7 @@ from datetime import date, datetime
 
 from sqlalchemy import Date, DateTime, ForeignKey, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
@@ -61,10 +61,6 @@ class OrthoCase(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    controls: Mapped[list[OrthoControl]] = relationship(
-        "OrthoControl", back_populates="case", cascade="all, delete-orphan", lazy="selectin"
-    )
-
     __table_args__ = (Index("ix_ortho_cases_clinic_patient", "clinic_id", "patient_id"),)
 
 
@@ -99,8 +95,6 @@ class OrthoControl(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
-
-    case: Mapped[OrthoCase] = relationship("OrthoCase", back_populates="controls")
 
     __table_args__ = (Index("ix_ortho_controls_case_performed", "case_id", "performed_at"),)
 

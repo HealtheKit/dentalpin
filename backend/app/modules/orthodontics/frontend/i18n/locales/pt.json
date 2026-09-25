@@ -1,72 +1,99 @@
 {
-  "tab": { "label": "Ortodontia" },
-  "nav": { "title": "Ortodontia" },
-  "appliance": {
-    "brackets_metal": "Braquetes metálicos",
-    "brackets_esthetic": "Braquetes estéticos",
-    "self_ligating": "Autoligados",
-    "aligners": "Alinhadores",
-    "functional": "Funcional",
-    "retention": "Contenção"
-  },
-  "status": {
-    "active": "Ativo",
-    "paused": "Pausado",
-    "finished": "Concluído",
-    "transferred_out": "Transferido"
-  },
-  "inbox": {
-    "title": "Ortodontia",
-    "active": "Ativos",
-    "overdue": "Controle em atraso",
-    "unscheduled": "Sem próximo controle",
-    "finished": "Concluídos",
-    "new": "Novo caso",
-    "empty": "Nenhum caso nesta vista",
-    "nextDue": "Próximo controle",
-    "monthOf": "Mês {x} de ~{n}"
-  },
-  "case": {
-    "new": "Novo caso ortodôntico",
-    "appliance": "Aparelho",
-    "professional": "Ortodontista",
-    "startDate": "Data de início",
-    "estimatedMonths": "Meses estimados",
-    "notes": "Diagnóstico / objetivos",
-    "create": "Abrir caso",
-    "inMouthNow": "Em boca atualmente",
-    "upper": "Superior",
-    "lower": "Inferior",
-    "noWire": "Sem arco registado",
-    "changeStatus": "Alterar estado",
-    "statusNote": "Motivo (opcional)",
-    "save": "Guardar"
-  },
-  "control": {
-    "new": "Registar controle",
-    "wires": "Arcos (sem alteração por defeito)",
-    "procedures": "Procedimentos",
-    "proceduresOther": "Outros procedimentos",
-    "hygiene": "Higiene",
-    "hygiene_good": "Boa",
-    "hygiene_fair": "Razoável",
-    "hygiene_poor": "Má",
-    "alignerNumber": "Número do alinhador",
-    "notes": "Observações / instruções",
-    "nextControl": "Próximo controle",
-    "weeks": "{n} semanas",
-    "noNext": "Sem próximo controle",
-    "save": "Guardar controle",
-    "history": "Controles",
-    "empty": "Ainda sem controles"
-  },
-  "card": {
-    "title": "Ortodontia",
-    "noCase": "Sem caso ativo",
-    "view": "Abrir"
-  },
-  "photos": {
-    "title": "Fotos ({n})",
-    "upload": "Adicionar foto"
+  "orthodontics": {
+    "tab": {
+      "label": "Ortodontia"
+    },
+    "nav": {
+      "title": "Ortodontia"
+    },
+    "appliance": {
+      "brackets_metal": "Braquetes metálicos",
+      "brackets_esthetic": "Braquetes estéticos",
+      "self_ligating": "Autoligados",
+      "aligners": "Alinhadores",
+      "functional": "Funcional",
+      "retention": "Contenção"
+    },
+    "status": {
+      "active": "Ativo",
+      "paused": "Pausado",
+      "finished": "Concluído",
+      "transferred_out": "Transferido"
+    },
+    "inbox": {
+      "title": "Ortodontia",
+      "active": "Ativos",
+      "overdue": "Controle em atraso",
+      "unscheduled": "Sem próximo controle",
+      "finished": "Concluídos",
+      "new": "Novo caso",
+      "empty": "Nenhum caso nesta vista",
+      "nextDue": "Próximo controle",
+      "monthOf": "Mês {x} de ~{n}"
+    },
+    "case": {
+      "new": "Novo caso ortodôntico",
+      "appliance": "Aparelho",
+      "professional": "Ortodontista",
+      "startDate": "Data de início",
+      "estimatedMonths": "Meses estimados",
+      "notes": "Diagnóstico / objetivos",
+      "create": "Abrir caso",
+      "inMouthNow": "Em boca atualmente",
+      "upper": "Superior",
+      "lower": "Inferior",
+      "noWire": "Sem arco registado",
+      "changeStatus": "Alterar estado",
+      "statusNote": "Motivo (opcional)",
+      "save": "Guardar",
+      "none": "Nenhum caso de ortodontia"
+    },
+    "control": {
+      "new": "Registar controle",
+      "wires": "Arcos (sem alteração por defeito)",
+      "procedures": "Procedimentos",
+      "proceduresOther": "Outros procedimentos",
+      "hygiene": "Higiene",
+      "hygiene_good": "Boa",
+      "hygiene_fair": "Razoável",
+      "hygiene_poor": "Má",
+      "alignerNumber": "Número do alinhador",
+      "notes": "Observações / instruções",
+      "nextControl": "Próximo controle",
+      "weeks": "{n} semanas",
+      "noNext": "Sem próximo controle",
+      "save": "Guardar controle",
+      "history": "Controles",
+      "empty": "Ainda sem controles"
+    },
+    "card": {
+      "title": "Ortodontia",
+      "noCase": "Sem caso ativo",
+      "view": "Abrir"
+    },
+    "photos": {
+      "title": "Fotos ({n})",
+      "upload": "Adicionar foto"
+    },
+    "procedures": {
+      "power_chain": "Cadeia elástica",
+      "elastics_class_2": "Elásticos classe II",
+      "elastics_class_3": "Elásticos classe III",
+      "niti_open_coil": "Mola aberta NiTi",
+      "metal_ligature": "Ligadura metálica",
+      "ligature_change": "Troca de ligaduras",
+      "button_attachment": "Botão / attachment",
+      "ipr": "Desgaste interproximal (IPR)",
+      "bite_turbos": "Batentes de mordida",
+      "bracket_rebonding": "Recolagem de bracket",
+      "expander_activation": "Ativação do expansor",
+      "band_placement": "Colocação de bandas",
+      "bracket_removal": "Remoção de brackets",
+      "retainer_placement": "Colocação de contenção"
+    },
+    "errors": {
+      "saveFailed": "Não foi possível guardar. Tente novamente.",
+      "loadFailed": "Não foi possível carregar os dados de ortodontia."
+    }
   }
 }

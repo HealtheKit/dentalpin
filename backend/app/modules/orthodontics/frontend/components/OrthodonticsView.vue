@@ -11,16 +11,30 @@ const props = defineProps<{ patientId: string }>()
 
 const { t } = useI18n()
 const { can } = usePermissions()
+const toast = useToast()
 const { listCases, createCase } = useOrthodontics()
+const { professionals, fetchProfessionals, getProfessionalFullName } = useProfessionals()
 
 const canWrite = computed(() => can(PERMISSIONS.orthodontics.casesWrite))
 
 const cases = ref<OrthoCase[]>([])
-const selectedId = ref<string | null>(null)
+const selectedId = ref<string | undefined>()
 const showNew = ref(false)
+const isSaving = ref(false)
 const appliance = ref('brackets_metal')
+const startDate = ref(new Date().toISOString().slice(0, 10))
+const professionalId = ref<string | undefined>()
 const months = ref<number | null>(null)
 const notes = ref('')
+
+const caseItems = computed(() => cases.value.map(c => ({
+  label: `${t(`orthodontics.appliance.${c.appliance_type}`)} · ${c.start_date}`,
+  value: c.id
+})))
+const professionalItems = computed(() => professionals.value.map(p => ({
+  label: getProfessionalFullName(p),
+  value: p.id
+})))
 
 async function refresh() {
   cases.value = await listCases({ patient_id: props.patientId })
@@ -28,24 +42,40 @@ async function refresh() {
   if (!selectedId.value && first) selectedId.value = first.id
 }
 
+async function openNew() {
+  showNew.value = true
+  if (professionals.value.length === 0) await fetchProfessionals()
+}
+
 async function save() {
-  const created = await createCase({
-    patient_id: props.patientId,
-    appliance_type: appliance.value,
-    estimated_months: months.value,
-    diagnosis_notes: notes.value || null
-  })
-  showNew.value = false
-  appliance.value = 'brackets_metal'
-  months.value = null
-  notes.value = ''
-  await refresh()
-  selectedId.value = created.id
+  isSaving.value = true
+  try {
+    const created = await createCase({
+      patient_id: props.patientId,
+      appliance_type: appliance.value,
+      start_date: startDate.value,
+      professional_id: professionalId.value ?? null,
+      estimated_months: months.value || null,
+      diagnosis_notes: notes.value || null
+    })
+    showNew.value = false
+    appliance.value = 'brackets_metal'
+    startDate.value = new Date().toISOString().slice(0, 10)
+    professionalId.value = undefined
+    months.value = null
+    notes.value = ''
+    await refresh()
+    selectedId.value = created.id
+  } catch {
+    toast.add({ title: t('orthodontics.errors.saveFailed'), color: 'error' })
+  } finally {
+    isSaving.value = false
+  }
 }
 
 watch(() => props.patientId, () => {
-  selectedId.value = null
-  refresh()
+  selectedId.value = undefined
+  refresh().catch(() => toast.add({ title: t('orthodontics.errors.loadFailed'), color: 'error' }))
 }, { immediate: true })
 </script>
 
@@ -53,16 +83,18 @@ watch(() => props.patientId, () => {
   <div>
     <div class="mb-3 flex flex-wrap items-center gap-2">
       <USelect
-        v-if="cases.length > 0"
-        :model-value="selectedId"
-        :options="cases.map(c => ({ label: `${t(`orthodontics.appliance.${c.appliance_type}`)} · ${c.start_date}`, value: c.id }))"
-        @update:model-value="selectedId = ($event as string | undefined) ?? null"
+        v-if="cases.length > 1"
+        v-model="selectedId"
+        :items="caseItems"
+        value-key="value"
+        label-key="label"
+        class="min-w-56"
       />
       <UButton
         v-if="canWrite"
         size="sm"
         icon="i-lucide-plus"
-        @click="showNew = true"
+        @click="openNew"
       >
         {{ t('orthodontics.case.new') }}
       </UButton>
@@ -77,7 +109,7 @@ watch(() => props.patientId, () => {
       v-else
       class="text-sm text-gray-500"
     >
-      {{ t('orthodontics.control.empty') }}
+      {{ t('orthodontics.case.none') }}
     </p>
 
     <UModal
@@ -102,20 +134,44 @@ watch(() => props.patientId, () => {
               </UButton>
             </div>
           </div>
-          <UInput
-            v-model.number="months"
-            type="number"
-            min="1"
-            :placeholder="t('orthodontics.case.estimatedMonths')"
-          />
+          <UFormField :label="t('orthodontics.case.startDate')">
+            <UInput
+              v-model="startDate"
+              type="date"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField :label="t('orthodontics.case.professional')">
+            <USelect
+              v-model="professionalId"
+              :items="professionalItems"
+              value-key="value"
+              label-key="label"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField :label="t('orthodontics.case.estimatedMonths')">
+            <UInput
+              v-model.number="months"
+              type="number"
+              min="1"
+              max="120"
+              class="w-full"
+            />
+          </UFormField>
           <UTextarea
             v-model="notes"
             :placeholder="t('orthodontics.case.notes')"
+            class="w-full"
           />
         </div>
       </template>
       <template #footer>
-        <UButton @click="save">
+        <UButton
+          :loading="isSaving"
+          :disabled="!startDate"
+          @click="save"
+        >
           {{ t('orthodontics.case.create') }}
         </UButton>
       </template>

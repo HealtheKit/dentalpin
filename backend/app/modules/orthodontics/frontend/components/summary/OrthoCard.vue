@@ -4,6 +4,7 @@
  * Rendered only when a case exists (L10: failures must render).
  */
 import type { OrthoCase } from '../../composables/useOrthodontics'
+import { orthoMonth } from '../../utils/orthoMonth'
 
 const props = defineProps<{ patientId: string }>()
 
@@ -31,7 +32,7 @@ onMounted(async () => {
       {{ t(`orthodontics.appliance.${active.appliance_type}`) }} ·
       {{ t(`orthodontics.status.${active.status}`) }}
       <span v-if="active.estimated_months">
-        · {{ t('orthodontics.inbox.monthOf', { x: active.control_count, n: active.estimated_months }) }}
+        · {{ t('orthodontics.inbox.monthOf', { x: orthoMonth(active.start_date), n: active.estimated_months }) }}
       </span>
     </div>
     <template #footer>

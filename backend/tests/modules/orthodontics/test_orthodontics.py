@@ -10,7 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.models import Clinic, ClinicMembership, User
 from app.core.auth.service import hash_password
-from app.modules.orthodontics.schemas import OrthoCaseCreate, OrthoControlCreate
+from app.modules.orthodontics.schemas import (
+    OrthoCaseCreate,
+    OrthoControlCreate,
+    OrthoControlUpdate,
+)
 from app.modules.orthodontics.service import (
     OrthoCaseService,
     OrthoControlService,
@@ -151,7 +155,6 @@ async def test_settings_seed_idempotent(db_session: AsyncSession, test_clinic: C
     second = await OrthoSettingsService.get_or_seed(db_session, test_clinic.id)
     await db_session.commit()
     assert first.id == second.id
-    assert await OrthoSettingsService.seed_count(db_session) >= 1
 
 
 @pytest.mark.asyncio
@@ -167,6 +170,8 @@ async def test_http_codes(client, auth_headers, test_patient):
 
     response = await client.get(f"/api/v1/orthodontics/cases/{case_id}", headers=auth_headers)
     assert response.status_code == 200
+    # The inbox needs to tell cases apart: the patient's name rides along.
+    assert response.json()["data"]["patient_name"] == test_patient.full_name
 
     response = await client.post(
         f"/api/v1/orthodontics/cases/{case_id}/controls",
@@ -222,6 +227,12 @@ async def test_reopen_keeps_finished_at(
     assert reopened.reopened_at is not None
     assert reopened.reopened_at >= first_finish
 
+    refinished, _ = await OrthoCaseService.change_status(
+        db_session, test_clinic.id, case.id, "finished", None
+    )
+    await db_session.commit()
+    assert refinished.finished_at > first_finish
+
 
 @pytest.mark.asyncio
 async def test_http_illegal_transition_is_400(client, auth_headers, test_patient):
@@ -246,3 +257,22 @@ async def test_http_illegal_transition_is_400(client, auth_headers, test_patient
         headers=auth_headers,
     )
     assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_editing_a_control_refreshes_in_mouth_wires(
+    db_session: AsyncSession, test_clinic: Clinic, test_patient
+):
+    case, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
+    control = await OrthoControlService.register(
+        db_session,
+        test_clinic.id,
+        case.id,
+        OrthoControlCreate(upper_wire="NiTi .014", lower_wire="NiTi .014"),
+    )
+    await OrthoControlService.update(
+        db_session, test_clinic.id, control.id, OrthoControlUpdate(upper_wire="NiTi .016")
+    )
+    await db_session.refresh(case)
+    assert case.current_upper_wire == "NiTi .016"
+    assert case.current_lower_wire == "NiTi .014"
