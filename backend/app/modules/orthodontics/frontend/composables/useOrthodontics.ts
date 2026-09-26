@@ -19,6 +19,8 @@ export interface OrthoCase {
   control_count: number
   last_control_at: string | null
   next_due: string | null
+  treatment_plan_id: string | null
+  plan_close_suggested: boolean
 }
 
 export interface OrthoControl {
@@ -122,7 +124,7 @@ export function useOrthodontics() {
   }
 
   async function unlinkPlan(caseId: string): Promise<OrthoCase> {
-    const response = await api.delete<ApiResponse<OrthoCase>>(
+    const response = await api.del<ApiResponse<OrthoCase>>(
       `/api/v1/orthodontics/cases/${caseId}/plan-link`
     )
     return response.data

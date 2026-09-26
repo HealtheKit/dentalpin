@@ -140,7 +140,7 @@ async function openControl() {
     try {
       const res = await api.get<{ data: { id: string, start_time: string }[] }>(
         '/api/v1/agenda/appointments',
-        { params: { patient_id: item.value.patient_id } }
+        { query: { patient_id: item.value.patient_id } }
       )
       upcomingAppointments.value = res.data
     } catch {
