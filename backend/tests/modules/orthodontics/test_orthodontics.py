@@ -453,6 +453,8 @@ async def test_http_codes(client, auth_headers, test_patient):
     )
     assert response.status_code == 200
     assert response.json()["data"]["wires"] == ["NiTi .014"]
+
+
 async def test_illegal_transition_refused(
     db_session: AsyncSession, test_clinic: Clinic, test_patient
 ):
