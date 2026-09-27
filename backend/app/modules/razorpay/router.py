@@ -33,7 +33,7 @@ from app.modules.payment_gateways.service import (
 
 from .adapter import RazorpayAdapter
 from .schemas import RazorpaySettingsResponse, RazorpaySettingsUpdate
-from .service import RazorpaySettingsService
+from .service import RazorpaySettingsService, mode_for_key
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -41,7 +41,10 @@ router = APIRouter()
 
 def _settings_response(settings) -> RazorpaySettingsResponse:
     return RazorpaySettingsResponse(
-        mode=settings.mode if settings else "test",
+        # Derived, not read back (#482): a row stored before the key/mode
+        # check existed can still hold "live" next to a test key, and the
+        # settings screen must not repeat that claim to the clinic.
+        mode=mode_for_key(settings.key_id, fallback=settings.mode) if settings else "test",
         key_id=settings.key_id if settings else None,
         has_key_secret=bool(settings and settings.key_secret_encrypted),
         has_webhook_secret=bool(settings and settings.webhook_secret_encrypted),

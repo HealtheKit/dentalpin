@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- fix(#482): the test/live mode is derived from the key prefix instead of
+  being a separate field that could disagree with it. The selector is now a
+  read-only badge, the API ignores a posted `mode`, and the settings response
+  derives it too, so a row stored before the check existed stops claiming
+  "live" next to a test key.
+
 - fix(#474 review): `useGatewayInfoBatch` keeps the batching but drops
   its session-lifetime result cache — it served stale gateway info
   (e.g. a refund stuck on "processing") after in-app navigation. The

@@ -9,13 +9,10 @@
       "description": "Állítsa be a Razorpay fizetési átjárót ehhez a klinikához.",
       "credentials": "API hitelesítő adatok",
       "mode": "Mód",
-      "modeHint": "Használja a teszt módot, amíg meg nem győződik róla, hogy minden végponttól végpontig működik.",
       "modeTest": "Teszt",
       "modeLive": "Éles",
       "keyId": "Kulcs azonosító",
       "keyIdHint": "A Razorpay irányítópultról — biztonságosan megjeleníthető a böngészőben.",
-      "modeKeyMismatchLive": "Az élő (Live) módhoz \"rzp_live_\" kezdetű kulcs szükséges. A jelenlegi kulcsod \"rzp_test_\" kezdetű.",
-      "modeKeyMismatchTest": "A teszt módhoz \"rzp_test_\" kezdetű kulcs szükséges. A jelenlegi kulcsod \"rzp_live_\" kezdetű.",
       "keySecret": "Titkos kulcs",
       "keySecretHint": "A Razorpay irányítópultról. Mentés után többé nem jelenik meg.",
       "keySecretConfiguredHint": "Már van beállítva titkos kulcs. Hagyja üresen a megtartásához.",
@@ -38,7 +35,9 @@
       "saved": "Beállítások mentve",
       "saveError": "A beállításokat nem sikerült menteni",
       "loadError": "A beállításokat nem sikerült betölteni",
-      "webhookCopied": "Webhook URL másolva"
+      "webhookCopied": "Webhook URL másolva",
+      "modeDerivedHint": "A kulcsból származik: az rzp_live_ kulcs valódi pénzt mozgat, az rzp_test_ nem.",
+      "modeUnknown": "Még nincs kulcs"
     },
     "collect": {
       "notConfiguredHint": "A Razorpay még nincs beállítva ehhez a klinikához. Kérje meg az adminisztrátort, hogy állítsa be a Beállításokban.",
