@@ -176,7 +176,26 @@ class Settings(BaseSettings):
             warnings.warn(message, stacklevel=2)
         return self
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        # The root .env serves three masters: docker compose interpolates it,
+        # Nuxt reads NUXT_* from it, and this model reads it. pydantic-settings
+        # v2 defaults to extra="forbid", so every key that exists for the other
+        # two consumers made ``import app.config`` fail for anyone running the
+        # backend locally — and .env.example itself ships four such keys
+        # (POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD / API_BASE_URL), so
+        # the documented `cp .env.example .env` + local-backend path was broken
+        # on a clean checkout, not just on a customised .env.
+        #
+        # The container path is unaffected: it has no .env, only env vars
+        # compose injects, and every one of those is a field here. Required
+        # fields stay required and the production SECRET_KEY check is
+        # untouched; only unknown keys are tolerated. The trade-off is that a
+        # typo in an app setting is now ignored instead of raising, which is
+        # the lesser failure next to not booting at all.
+        extra="ignore",
+    )
 
 
 settings = Settings()
