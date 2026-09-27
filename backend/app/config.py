@@ -1,11 +1,56 @@
 """Application configuration via environment variables."""
 
 import warnings
+from pathlib import Path
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 MIN_SECRET_KEY_LENGTH = 32
+
+# Prefixes and names the root .env legitimately carries for its other two
+# readers (docker compose interpolation, Nuxt). Anything outside this set
+# that is not a Settings field is almost certainly a misspelled app
+# setting, which ``extra="ignore"`` would otherwise swallow in silence.
+FOREIGN_ENV_PREFIXES = ("POSTGRES_", "NUXT_", "DENTALPIN_", "SEED_", "COMPOSE_", "VITE_")
+FOREIGN_ENV_KEYS = frozenset({"API_BASE_URL", "PUBLIC_URL", "PATH", "PWD"})
+
+
+def unknown_env_keys(env_file: str | Path, declared: set[str]) -> list[str]:
+    """Keys set in ``env_file`` that are neither app settings nor foreign.
+
+    Pure and path-relative so it can be tested without constructing a
+    ``Settings``; returns [] when the file is absent, which is the normal
+    case in a container (no .env, only injected variables).
+    """
+    path = Path(env_file)
+    if not path.is_file():
+        return []
+    found: list[str] = []
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key = line.split("=", 1)[0].strip()
+        if key.startswith("export "):
+            key = key[len("export ") :].strip()
+        if not key or key in declared or key in FOREIGN_ENV_KEYS:
+            continue
+        if key.startswith(FOREIGN_ENV_PREFIXES):
+            continue
+        found.append(key)
+    return sorted(set(found))
+
+
+def warn_unknown_env_keys(env_file: str | Path, declared: set[str]) -> None:
+    unknown = unknown_env_keys(env_file, declared)
+    if unknown:
+        warnings.warn(
+            f"{env_file} sets keys this application does not declare: "
+            f"{', '.join(unknown)}. They are ignored. If one of them is a misspelled "
+            "setting, its value is not being applied.",
+            stacklevel=2,
+        )
 
 
 class Settings(BaseSettings):
@@ -174,6 +219,22 @@ class Settings(BaseSettings):
             if self.ENVIRONMENT == "production":
                 raise ValueError(message)
             warnings.warn(message, stacklevel=2)
+        return self
+
+    @model_validator(mode="after")
+    def _warn_about_unknown_env_keys(self) -> "Settings":
+        """Name keys in ``.env`` that look like misspelled app settings.
+
+        ``extra="ignore"`` is required because the root ``.env`` is shared
+        with docker compose and Nuxt, but it also means a typo in an app
+        setting is dropped without a word: write ``SENTRY_DNS`` and
+        ``SENTRY_DSN`` stays empty, so error tracking is silently off and
+        nothing says why. Boot still succeeds; this only reports, once,
+        that a key was not recognised.
+        """
+        env_file = self.model_config.get("env_file")
+        if env_file:
+            warn_unknown_env_keys(env_file, set(type(self).model_fields))
         return self
 
     model_config = SettingsConfigDict(
