@@ -28,7 +28,7 @@ function setFile(f: File | null) {
   file.value = f
   // Object URLs only preview browser-renderable images: a DICOM picked here
   // would otherwise render as a broken <img> (the input accepts .dcm).
-  previewUrl.value = f && f.type.startsWith('image/') ? URL.createObjectURL(f) : null
+  previewUrl.value = f && isPreviewableFile.value ? URL.createObjectURL(f) : null
   if (f && !title.value) {
     title.value = f.name.replace(/\.[^.]+$/, '')
   }

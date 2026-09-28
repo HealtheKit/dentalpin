@@ -104,7 +104,9 @@ function formatStudyDate(s: ImagingStudy) {
   if (!s.study_date) return t('imagingViewer.list.noStudyDate')
   const d = new Date(s.study_date)
   if (Number.isNaN(d.getTime())) return t('imagingViewer.list.noStudyDate')
-  return d.toLocaleDateString(locale.value)
+  // Backend stores StudyDate as UTC midnight: format in UTC so the displayed
+  // calendar day never shifts with the viewer's device timezone.
+  return d.toLocaleDateString(locale.value, { timeZone: 'UTC' })
 }
 
 async function loadQueue() {
