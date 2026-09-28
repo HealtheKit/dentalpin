@@ -124,9 +124,10 @@ class AttendanceService:
         clinic_id: UUID,
         user_id: UUID,
         kind: str,
+        *,
+        created_by: UUID,
         at: datetime | None = None,
         note: str | None = None,
-        created_by: UUID | None = None,
     ) -> AttendanceEvent:
         await AttendanceService._assert_member(db, clinic_id, user_id)
         tz = await AttendanceService._clinic_zone(db, clinic_id)
@@ -188,7 +189,7 @@ class AttendanceService:
                 "clinic_id": str(clinic_id),
                 "user_id": str(user_id),
                 "kind": kind,
-                "created_by": str(created_by) if created_by else None,
+                "created_by": str(created_by),
             },
             db=db,
         )

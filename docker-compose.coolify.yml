@@ -33,6 +33,8 @@ services:
       SISTEMA_TS_CA_BUNDLE: ${SISTEMA_TS_CA_BUNDLE:-}
       # Optional Sentry/GlitchTip DSN (see .env.example). Empty = off.
       SENTRY_DSN: ${SENTRY_DSN:-}
+      # Traces stay off unless explicitly enabled (backend default 0.0).
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.0}
       STORAGE_BACKEND: local
       STORAGE_LOCAL_PATH: /app/storage
       # Demo deployments set SEED_ON_STARTUP=1 in Coolify env so a wiped
@@ -42,6 +44,9 @@ services:
       # leave it unset so seed never runs.
       SEED_ON_STARTUP: ${SEED_ON_STARTUP:-0}
       SEED_LANG: ${SEED_LANG:-es}
+      # Public demo: blocks user edits/removal and module lifecycle
+      # (block_in_demo). One Coolify flag drives backend and frontend.
+      DEMO_MODE: ${NUXT_PUBLIC_DEMO_MODE:-false}
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -64,6 +69,7 @@ services:
     environment:
       SERVICE_FQDN_FRONTEND_3000: ${FRONTEND_FQDN}
       NUXT_PUBLIC_API_BASE_URL: ${BACKEND_URL}
+      NUXT_PUBLIC_DEMO_MODE: ${NUXT_PUBLIC_DEMO_MODE:-false}
     depends_on:
       backend:
         condition: service_started

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Follow-up: fold `tre_0002_created_by` + `tre_0003_entry_guards`
+  back into `tre_0001` (single-release module, agreed on #463);
+  dev DBs that applied them must re-stamp the branch.
 - Follow-up round 2: Correct modal labels the memo as required
   (`correctMemo`, per locale); new accounts accept an opening
   balance; accounts deactivate/reactivate from the statement header
@@ -17,10 +20,11 @@
   future-dated movements are 422; transfer selects list active
   accounts only; amounts accept `25,50`; statement rows show date +
   signed out-legs; negative balances render red (warning, never block).
-- `created_by` on every entry (new nullable column, `tre_0002`) +
-  `treasury.transferred` / `treasury.corrected` events; accounts with
-  ledger entries refuse DELETE with 409 (deactivate instead);
-  table-level kind/amount guards (`tre_0003`); decimal edges are 422.
+- `created_by` on every entry (nullable column, folded into
+  `tre_0001`) + `treasury.transferred` / `treasury.corrected` events;
+  accounts with ledger entries refuse DELETE with 409 (deactivate
+  instead); table-level kind/amount guards (folded into `tre_0001`);
+  decimal edges are 422.
 - Round 2: single-query balances (no N+1), single error toast
   (`errorToast: false`), transfers/corrections refuse deactivated
   accounts (422), naive datetimes are clinic-local wall clock.

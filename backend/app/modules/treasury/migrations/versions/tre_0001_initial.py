@@ -4,6 +4,13 @@ Tables ``treasury_accounts`` + ``treasury_entries``. FKs to core
 ``clinics.id`` only, so down_revision is core ``0001`` with no
 depends_on (staff_tasks pattern).
 
+``treasury_entries.created_by`` (nullable actor) and the kind/amount
+check constraints ship in this revision — the module went out in a
+single release, so the former ``tre_0002_created_by`` and
+``tre_0003_entry_guards`` were folded back in (post-merge squash per
+the agreed #463 follow-up). Dev databases that already applied
+``tre_0002``/``tre_0003`` must re-stamp the branch before upgrading.
+
 Lives on its own Alembic branch (``treasury``) per ADR 0002.
 
 Revision ID: tre_0001
@@ -50,15 +57,25 @@ def upgrade() -> None:
         sa.Column("amount", sa.Numeric(12, 2), nullable=False),
         sa.Column("at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("memo", sa.Text(), nullable=True),
+        sa.Column("created_by", sa.UUID(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(["clinic_id"], ["clinics.id"]),
         sa.ForeignKeyConstraint(["account_id"], ["treasury_accounts.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["created_by"], ["users.id"], name="fk_treasury_entries_created_by"
+        ),
         sa.PrimaryKeyConstraint("id"),
+        sa.CheckConstraint(
+            "kind IN ('transfer_out', 'transfer_in', 'correction_in', 'correction_out', 'opening')",
+            name="ck_treasury_entries_kind",
+        ),
+        sa.CheckConstraint("amount > 0", name="ck_treasury_entries_amount_positive"),
     )
     op.create_index("ix_treasury_entries_clinic_id", "treasury_entries", ["clinic_id"])
     op.create_index("ix_treasury_entries_account_id", "treasury_entries", ["account_id"])
     op.create_index("ix_treasury_entries_group_id", "treasury_entries", ["group_id"])
+    op.create_index("ix_treasury_entries_created_by", "treasury_entries", ["created_by"])
 
 
 def downgrade() -> None:

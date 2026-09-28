@@ -33,13 +33,15 @@ async def _member(db_session, clinic_id, role="receptionist"):
 @pytest.mark.asyncio
 async def test_clock_in_out_and_double_punch_is_409(db_session: AsyncSession, test_clinic: Clinic):
     user = await _member(db_session, test_clinic.id)
-    row = await AttendanceService.clock(db_session, test_clinic.id, user.id, "in")
+    row = await AttendanceService.clock(
+        db_session, test_clinic.id, user.id, "in", created_by=user.id
+    )
     await db_session.commit()
     assert row.kind == "in"
     with pytest.raises(HTTPException) as exc:
-        await AttendanceService.clock(db_session, test_clinic.id, user.id, "in")
+        await AttendanceService.clock(db_session, test_clinic.id, user.id, "in", created_by=user.id)
     assert exc.value.status_code == 409
-    await AttendanceService.clock(db_session, test_clinic.id, user.id, "out")
+    await AttendanceService.clock(db_session, test_clinic.id, user.id, "out", created_by=user.id)
     await db_session.commit()
     state, _ = await AttendanceService.get_status(db_session, test_clinic.id, user.id)
     assert state == "out"
@@ -55,7 +57,7 @@ async def test_status_defaults_out(db_session: AsyncSession, test_clinic: Clinic
 @pytest.mark.asyncio
 async def test_non_member_clock_is_404(db_session: AsyncSession, test_clinic: Clinic):
     with pytest.raises(HTTPException) as exc:
-        await AttendanceService.clock(db_session, test_clinic.id, uuid4(), "in")
+        await AttendanceService.clock(db_session, test_clinic.id, uuid4(), "in", created_by=uuid4())
     assert exc.value.status_code == 404
 
 
@@ -64,12 +66,14 @@ async def test_report_pairs_and_flags_open(db_session: AsyncSession, test_clinic
     user = await _member(db_session, test_clinic.id)
     day = datetime(2026, 5, 4, tzinfo=UTC).date()
     t0 = datetime(2026, 5, 4, 8, 0, tzinfo=UTC)
-    await AttendanceService.clock(db_session, test_clinic.id, user.id, "in", at=t0)
     await AttendanceService.clock(
-        db_session, test_clinic.id, user.id, "out", at=t0 + timedelta(hours=8)
+        db_session, test_clinic.id, user.id, "in", at=t0, created_by=user.id
     )
     await AttendanceService.clock(
-        db_session, test_clinic.id, user.id, "in", at=t0 + timedelta(hours=9)
+        db_session, test_clinic.id, user.id, "out", at=t0 + timedelta(hours=8), created_by=user.id
+    )
+    await AttendanceService.clock(
+        db_session, test_clinic.id, user.id, "in", at=t0 + timedelta(hours=9), created_by=user.id
     )
     await db_session.commit()
     rows = await AttendanceService.daily_report(
@@ -261,14 +265,21 @@ async def test_backdated_insert_between_same_kind_is_409(
 ):
     user = await _member(db_session, test_clinic.id)
     t0 = datetime(2026, 5, 4, 10, 0, tzinfo=UTC)
-    await AttendanceService.clock(db_session, test_clinic.id, user.id, "in", at=t0)
     await AttendanceService.clock(
-        db_session, test_clinic.id, user.id, "out", at=t0 + timedelta(hours=1)
+        db_session, test_clinic.id, user.id, "in", at=t0, created_by=user.id
+    )
+    await AttendanceService.clock(
+        db_session, test_clinic.id, user.id, "out", at=t0 + timedelta(hours=1), created_by=user.id
     )
     await db_session.commit()
     with pytest.raises(HTTPException) as exc:
         await AttendanceService.clock(
-            db_session, test_clinic.id, user.id, "in", at=t0 + timedelta(minutes=30)
+            db_session,
+            test_clinic.id,
+            user.id,
+            "in",
+            at=t0 + timedelta(minutes=30),
+            created_by=user.id,
         )
     assert exc.value.status_code == 409
 
@@ -278,7 +289,12 @@ async def test_naive_datetime_is_clinic_local(db_session: AsyncSession, test_cli
     """Naive input is interpreted as clinic-local wall clock (Madrid, UTC+2 in May)."""
     user = await _member(db_session, test_clinic.id)
     row = await AttendanceService.clock(
-        db_session, test_clinic.id, user.id, "in", at=datetime(2026, 5, 4, 10, 0)
+        db_session,
+        test_clinic.id,
+        user.id,
+        "in",
+        at=datetime(2026, 5, 4, 10, 0),
+        created_by=user.id,
     )
     await db_session.commit()
     assert row.at == datetime(2026, 5, 4, 8, 0, tzinfo=UTC)
@@ -291,10 +307,20 @@ async def test_overnight_shift_counts_on_closing_day(db_session: AsyncSession):
     clinic = await _utc_clinic(db_session)
     user = await _member(db_session, clinic.id)
     await AttendanceService.clock(
-        db_session, clinic.id, user.id, "in", at=datetime(2026, 5, 4, 22, 0, tzinfo=UTC)
+        db_session,
+        clinic.id,
+        user.id,
+        "in",
+        at=datetime(2026, 5, 4, 22, 0, tzinfo=UTC),
+        created_by=user.id,
     )
     await AttendanceService.clock(
-        db_session, clinic.id, user.id, "out", at=datetime(2026, 5, 5, 6, 0, tzinfo=UTC)
+        db_session,
+        clinic.id,
+        user.id,
+        "out",
+        at=datetime(2026, 5, 5, 6, 0, tzinfo=UTC),
+        created_by=user.id,
     )
     await db_session.commit()
     rows = await AttendanceService.daily_report(
@@ -312,10 +338,20 @@ async def test_overnight_shift_sums_exactly_across_both_days(db_session: AsyncSe
     clinic = await _utc_clinic(db_session)
     user = await _member(db_session, clinic.id)
     await AttendanceService.clock(
-        db_session, clinic.id, user.id, "in", at=datetime(2026, 5, 4, 22, 0, tzinfo=UTC)
+        db_session,
+        clinic.id,
+        user.id,
+        "in",
+        at=datetime(2026, 5, 4, 22, 0, tzinfo=UTC),
+        created_by=user.id,
     )
     await AttendanceService.clock(
-        db_session, clinic.id, user.id, "out", at=datetime(2026, 5, 5, 6, 0, tzinfo=UTC)
+        db_session,
+        clinic.id,
+        user.id,
+        "out",
+        at=datetime(2026, 5, 5, 6, 0, tzinfo=UTC),
+        created_by=user.id,
     )
     await db_session.commit()
     # Queried five days later, so nothing is live.
@@ -340,7 +376,12 @@ async def test_report_uses_clinic_timezone_not_utc(db_session: AsyncSession, tes
     """00:30 Madrid is 22:30 UTC the day before — UTC bucketing would drop it."""
     user = await _member(db_session, test_clinic.id)
     await AttendanceService.clock(
-        db_session, test_clinic.id, user.id, "in", at=datetime(2026, 5, 4, 0, 30)
+        db_session,
+        test_clinic.id,
+        user.id,
+        "in",
+        at=datetime(2026, 5, 4, 0, 30),
+        created_by=user.id,
     )
     await AttendanceService.clock(
         db_session,
@@ -348,6 +389,7 @@ async def test_report_uses_clinic_timezone_not_utc(db_session: AsyncSession, tes
         user.id,
         "out",
         at=datetime(2026, 5, 4, 0, 30) + timedelta(hours=1),
+        created_by=user.id,
     )
     await db_session.commit()
     rows = await AttendanceService.daily_report(
@@ -369,6 +411,7 @@ async def test_future_punch_is_422(db_session: AsyncSession, test_clinic: Clinic
             user.id,
             "out",
             at=datetime.now(UTC) + timedelta(days=1),
+            created_by=user.id,
         )
     assert exc.value.status_code == 422
 
@@ -379,7 +422,12 @@ async def test_open_shift_from_yesterday_appears_today(db_session: AsyncSession)
     clinic = await _utc_clinic(db_session)
     user = await _member(db_session, clinic.id)
     await AttendanceService.clock(
-        db_session, clinic.id, user.id, "in", at=datetime(2026, 5, 4, 22, 0, tzinfo=UTC)
+        db_session,
+        clinic.id,
+        user.id,
+        "in",
+        at=datetime(2026, 5, 4, 22, 0, tzinfo=UTC),
+        created_by=user.id,
     )
     await db_session.commit()
     rows = await AttendanceService.daily_report(
