@@ -35,7 +35,7 @@ from .schemas import (
     TestEmailRequest,
     TestEmailResponse,
 )
-from .service import NotificationService
+from .service import NotificationService, budget_treatments_context
 
 router = APIRouter()
 
@@ -475,7 +475,7 @@ async def send_notification(
                 detail="budget_id is required for budget notifications",
             )
 
-        from app.modules.budget.models import Budget, BudgetItem
+        from app.modules.budget.models import Budget
 
         result = await db.execute(
             select(Budget).where(
@@ -502,27 +502,7 @@ async def send_notification(
 
         # Get budget items for budget_sent
         if data.notification_type == "budget_sent":
-            result = await db.execute(select(BudgetItem).where(BudgetItem.budget_id == budget.id))
-            items = result.scalars().all()
-
-            treatments = []
-            for item in items:
-                from app.modules.catalog.models import TreatmentCatalogItem
-
-                result = await db.execute(
-                    select(TreatmentCatalogItem).where(
-                        TreatmentCatalogItem.id == item.catalog_item_id
-                    )
-                )
-                catalog_item = result.scalar_one_or_none()
-                treatments.append(
-                    {
-                        "name": catalog_item.name if catalog_item else "Tratamiento",
-                        "tooth": item.tooth_number,
-                        "price": float(item.line_total),
-                    }
-                )
-            context["treatments"] = treatments
+            context["treatments"] = await budget_treatments_context(db, budget.id)
 
         # Use patient from budget if not provided
         if not patient:

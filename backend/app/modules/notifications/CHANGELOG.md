@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- fix(#527): a manual `budget_sent` send no longer raises
+  `AttributeError`. `router.py` read `catalog_item.name`; the model has
+  no such attribute, only a per-locale `names` dict — and because
+  `budget_items.catalog_item_id` is a non-nullable FK with no
+  `ON DELETE`, the `else "Tratamiento"` branch that would have survived
+  is unreachable, so *every* budget with lines hit it. #287 fixed the
+  identical block in `handlers.py` and left this copy behind.
+- perf(#527): both copies fetched one catalog row per budget line. The
+  shared `budget_treatments_context()` they now call resolves every name
+  in a single `IN` query — a treatment plan commonly carries 5-30 lines.
+
 - feat: `العربية` in the clinic communication-language selector (templates
   from #426 by @dev-7aider).
 - fix(#63 maintainer review): `notif_0008` seeds system push templates
