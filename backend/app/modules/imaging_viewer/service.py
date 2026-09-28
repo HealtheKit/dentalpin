@@ -826,45 +826,52 @@ class RvgService:
             if created:
                 counts["created"] += 1
             counts[row.status if row.status in counts else "pending"] += 1
-            _move_watch_file(
-                path,
-                name,
-                WATCH_PENDING_DIR if row.status == "pending" else WATCH_PROCESSED_DIR,
-            )
+            if row.status == "pending":
+                # Parked under its content hash, not its name: sensors reuse
+                # file names (IMG0001.dcm), and approve must read THIS
+                # capture's bytes, never another patient's.
+                _replace_quietly(full, os.path.join(path, WATCH_PENDING_DIR, row.content_hash))
+            else:
+                _move_watch_file(full, os.path.join(path, WATCH_PROCESSED_DIR), name)
         return counts
 
     @staticmethod
-    def read_source_bytes(clinic_id: UUID, filename: str) -> bytes | None:
-        """Read a queued import's source bytes, wherever the scan filed it.
+    def read_source_bytes(clinic_id: UUID, filename: str, content_hash: str) -> bytes | None:
+        """Read a queued import's source bytes, or None.
 
-        A pending row's bytes live in ``pending/``; rows decided by an
-        earlier tick sit in ``processed/`` and the pre-``pending/`` layout
-        left them in the clinic root, so all three are probed in that
-        order. ``filename`` is re-stripped to a basename: it came from
-        ``os.listdir``, and the row is ours, but a stored name must never
-        be able to walk out of the watch dir.
+        A pending row's bytes live in ``pending/<content_hash>``; rows
+        filed by an earlier layout sit under their name in ``pending/``,
+        ``processed/`` or the clinic root. Only bytes whose SHA-256 matches
+        the row are returned: a reused file name must never hand approve
+        another capture. ``filename`` is re-stripped to a basename so a
+        stored name cannot walk out of the watch dir.
         """
         clinic_dir = _watch_clinic_dir(clinic_id)
         if clinic_dir is None:
             return None
         safe = os.path.basename(filename)
-        for sub in (WATCH_PENDING_DIR, WATCH_PROCESSED_DIR, ""):
-            candidate = (
-                os.path.join(clinic_dir, sub, safe) if sub else os.path.join(clinic_dir, safe)
-            )
+        candidates = [
+            os.path.join(clinic_dir, WATCH_PENDING_DIR, os.path.basename(content_hash)),
+            os.path.join(clinic_dir, WATCH_PENDING_DIR, safe),
+            os.path.join(clinic_dir, WATCH_PROCESSED_DIR, safe),
+            os.path.join(clinic_dir, safe),
+        ]
+        for candidate in candidates:
             if not os.path.isfile(candidate):
                 continue
             try:
                 with open(candidate, "rb") as fh:
-                    return fh.read()
+                    raw = fh.read()
             except OSError:
                 logger.exception("RvgService.read_source_bytes: cannot read %s", candidate)
-                return None
+                continue
+            if hashlib.sha256(raw).hexdigest() == content_hash:
+                return raw
         return None
 
     @staticmethod
-    def retire_source_file(clinic_id: UUID, filename: str) -> None:
-        """Move a decided import's file from ``pending/`` to ``processed/``.
+    def retire_source_file(clinic_id: UUID, filename: str, content_hash: str) -> None:
+        """Move a decided import's file from ``pending/`` to ``processed/<filename>``.
 
         Best-effort and silent on failure: the import row is already
         decided and owns the durable outcome, and a leftover pending file
@@ -873,26 +880,11 @@ class RvgService:
         clinic_dir = _watch_clinic_dir(clinic_id)
         if clinic_dir is None:
             return
-        safe = os.path.basename(filename)
-        source = os.path.join(clinic_dir, WATCH_PENDING_DIR, safe)
-        if not os.path.isfile(source):
-            return
-        try:
-            os.makedirs(os.path.join(clinic_dir, WATCH_PROCESSED_DIR), exist_ok=True)
-            dest = os.path.join(clinic_dir, WATCH_PROCESSED_DIR, safe)
-            if os.path.exists(dest):
-                stem, dot, ext = safe.partition(".")
-                n = 1
-                while os.path.exists(dest):
-                    n += 1
-                    dest = os.path.join(
-                        clinic_dir,
-                        WATCH_PROCESSED_DIR,
-                        f"{stem}.{n}{dot}{ext}" if dot else f"{stem}.{n}",
-                    )
-            os.replace(source, dest)
-        except OSError:
-            logger.exception("RvgService.retire_source_file: cannot retire %s", safe)
+        source = os.path.join(clinic_dir, WATCH_PENDING_DIR, os.path.basename(content_hash))
+        if os.path.isfile(source):
+            _move_watch_file(
+                source, os.path.join(clinic_dir, WATCH_PROCESSED_DIR), os.path.basename(filename)
+            )
 
     @staticmethod
     async def list_imports(
@@ -1141,23 +1133,31 @@ def _float_or_none(raw: object) -> float | None:
         return None
 
 
-def _move_watch_file(path: str, name: str, subdir: str) -> None:
-    """Move a watch file into ``path/subdir`` (collision-safe).
+def _replace_quietly(source: str, dest: str) -> None:
+    try:
+        os.replace(source, dest)
+    except OSError:
+        logger.exception("RvgService: cannot move %s to %s", source, dest)
+
+
+def _move_watch_file(source: str, dest_dir: str, name: str) -> None:
+    """Move a watch file to ``dest_dir/name`` (collision-safe).
 
     Best-effort: a move failure only logs — the row already records the
     outcome, and the next tick re-handles the file idempotently.
     """
+    dest = os.path.join(dest_dir, name)
+    stem, dot, ext = name.partition(".")
+    n = 1
+    while os.path.exists(dest):
+        n += 1
+        dest = os.path.join(dest_dir, f"{stem}.{n}{dot}{ext}" if dot else f"{stem}.{n}")
     try:
-        dest = os.path.join(path, subdir, name)
-        if os.path.exists(dest):
-            stem, dot, ext = name.partition(".")
-            n = 1
-            while os.path.exists(dest):
-                n += 1
-                dest = os.path.join(path, subdir, f"{stem}.{n}{dot}{ext}" if dot else f"{stem}.{n}")
-        os.replace(os.path.join(path, name), dest)
+        os.makedirs(dest_dir, exist_ok=True)
     except OSError:
-        logger.exception("RvgService.scan_watch_dir: cannot move %s to %s/", name, subdir)
+        logger.exception("RvgService: cannot create %s", dest_dir)
+        return
+    _replace_quietly(source, dest)
 
 
 class AnnotationService:

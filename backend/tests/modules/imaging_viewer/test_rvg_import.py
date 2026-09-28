@@ -312,7 +312,10 @@ async def test_scan_then_approve_over_http(
     )
     assert scanned.status_code == 200, scanned.text
     assert scanned.json()["data"]["pending"] == 1
-    assert (clinic_dir / "pending" / "scan.dcm").is_file()
+    import hashlib
+
+    parked = clinic_dir / "pending" / hashlib.sha256(b"fake-dicom-bytes").hexdigest()
+    assert parked.is_file()
 
     queue = await client.get(
         "/api/v1/imaging_viewer/rvg/imports",
@@ -333,7 +336,7 @@ async def test_scan_then_approve_over_http(
     assert approved.json()["data"]["status"] == "approved"
     assert any(p == b"fake-dicom-bytes" for p in fake_storage.files.values())
     # Decided -> retired out of pending/, and the queue no longer lists it.
-    assert not (clinic_dir / "pending" / "scan.dcm").exists()
+    assert not parked.exists()
     assert (clinic_dir / "processed" / "scan.dcm").is_file()
     again = await client.post(
         f"/api/v1/imaging_viewer/rvg/imports/{rows[0]['id']}/approve",
@@ -369,3 +372,51 @@ async def test_scan_watch_dir_files_by_outcome_and_drains_past_limit(
     counts2 = await RvgService.scan_watch_dir(db_session, test_clinic.id, str(watch))
     assert counts2["scanned"] == 5
     assert [p for p in watch.iterdir() if p.is_file()] == []
+
+
+@pytest.mark.asyncio
+async def test_same_filename_different_bytes_approves_its_own_bytes(
+    client,
+    auth_headers: dict,
+    db_session: AsyncSession,
+    test_clinic: Clinic,
+    test_patient: Patient,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+    fake_storage: _FakeStorage,
+    canned_tags: dict,
+) -> None:
+    """Sensors reuse file names (IMG0001.dcm). Two different captures with
+    the same name must each approve with their OWN bytes, never the other's."""
+    from pathlib import Path
+
+    watch_root = Path(str(tmp_path)) / "rvg-root"
+    clinic_dir = watch_root / str(test_clinic.id)
+    clinic_dir.mkdir(parents=True)
+    monkeypatch.setenv("DENTALPIN_RVG_WATCH_DIR", str(watch_root))
+
+    for payload in (b"capture-one", b"capture-two"):
+        (clinic_dir / "IMG0001.dcm").write_bytes(payload)
+        scanned = await client.post(
+            "/api/v1/imaging_viewer/rvg/scan", json={"retry_failed": False}, headers=auth_headers
+        )
+        assert scanned.status_code == 200, scanned.text
+    queue = await client.get(
+        "/api/v1/imaging_viewer/rvg/imports", params={"status": "pending"}, headers=auth_headers
+    )
+    rows = sorted(queue.json()["data"], key=lambda r: r["created_at"])
+    assert len(rows) == 2
+    ids = [r["id"] for r in rows]
+
+    for import_id, expected in zip(reversed(ids), (b"capture-two", b"capture-one"), strict=True):
+        before = set(fake_storage.files)
+        approved = await client.post(
+            f"/api/v1/imaging_viewer/rvg/imports/{import_id}/approve",
+            json={"patient_id": str(test_patient.id)},
+            headers=auth_headers,
+        )
+        assert approved.status_code == 200, approved.text
+        new = [fake_storage.files[k] for k in set(fake_storage.files) - before]
+        assert new == [expected]
+    assert list((clinic_dir / "pending").iterdir()) == []
+    assert len(list((clinic_dir / "processed").iterdir())) == 2

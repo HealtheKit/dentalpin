@@ -11,7 +11,9 @@
    (per-clinic subdir = isolation by layout; a clinic without a dir is
    skipped). A manual `POST /rvg/scan` covers setups without the scheduler.
    Handled files are filed by outcome: a row still waiting for a human goes
-   to `pending/`, a row the tick decided itself to `processed/`. The split
+   to `pending/<content_hash>` (not its name — sensors reuse names like
+   `IMG0001.dcm`, and approve must never read another capture), a row the
+   tick decided itself to `processed/`. The split
    matters because approve needs the bytes and the tick is the only thing
    that moves files — the original "everything to `processed/`" layout left
    every queued approval unable to find its file (404).
@@ -32,8 +34,9 @@
    (publishes the existing `imaging.study_indexed`), and upserts the
    `RvgLink` so future files from that DICOM identity auto-import. The source
    file is read from `pending/` (with `processed/` and the clinic root probed
-   for rows created by an earlier scan) and retired to `processed/` once the
-   row is decided. Reject keeps the row for audit with an optional reason.
+   for rows created by an earlier scan; only bytes matching the row's hash are
+   accepted) and retired to `processed/` once the row is approved or
+   rejected. Reject keeps the row for audit with an optional reason.
 
 ## Decisions
 

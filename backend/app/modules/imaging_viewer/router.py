@@ -232,7 +232,7 @@ async def rvg_approve_import(
     row = await RvgService.get_import(db, ctx.clinic_id, import_id)
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Import not found")
-    raw = RvgService.read_source_bytes(ctx.clinic_id, row.filename)
+    raw = RvgService.read_source_bytes(ctx.clinic_id, row.filename, row.content_hash)
     try:
         decided = await RvgService.approve(
             db, ctx.clinic_id, import_id, data.patient_id, ctx.user_id, raw=raw
@@ -241,7 +241,7 @@ async def rvg_approve_import(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    RvgService.retire_source_file(ctx.clinic_id, decided.filename)
+    RvgService.retire_source_file(ctx.clinic_id, decided.filename, decided.content_hash)
     return ApiResponse(data=RvgImportResponse.model_validate(decided))
 
 
@@ -262,6 +262,7 @@ async def rvg_reject_import(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    RvgService.retire_source_file(ctx.clinic_id, decided.filename, decided.content_hash)
     return ApiResponse(data=RvgImportResponse.model_validate(decided))
 
 

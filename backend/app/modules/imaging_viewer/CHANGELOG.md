@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- fix: RVG approve could attach another capture's image. Sensors reuse file
+  names (`IMG0001.dcm`), and pending files were parked and looked up by name,
+  so approving the second capture read the first one's bytes. Pending files
+  now live under `pending/<content_hash>`, approve only accepts bytes whose
+  SHA-256 matches the row, and reject retires its file to `processed/` too.
 - fix: the render now applies the DICOM value pipeline before windowing:
   Modality LUT, then `RescaleSlope`/`RescaleIntercept`, then a VOI LUT
   (PS3.3 C.11.1 order). `RescaleSlope`/`RescaleIntercept` were ignored

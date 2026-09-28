@@ -47,8 +47,9 @@ threshold 40, ties stay suggestion-less. A 90s scheduler tick
 (`get_scheduled_jobs` → `rvg_watch_tick`) scans
 `<DENTALPIN_RVG_WATCH_DIR>/<clinic_id>/`; unset root is a silent no-op.
 Handled files are filed by outcome: rows still awaiting a decision go to
-`pending/` (approve reads the bytes from there, then retires the file to
-`processed/`), rows the tick decided itself go to `processed/`.
+`pending/<content_hash>` (approve reads and hash-checks the bytes from
+there; approve/reject retire the file to `processed/`), rows the tick
+decided itself go to `processed/`.
 Design: `docs/technical/rvg-import-design.md`.
 
 Annotation overlays (T2): `ImagingAnnotation` rows hold normalized
