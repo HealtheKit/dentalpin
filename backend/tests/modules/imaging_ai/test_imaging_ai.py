@@ -717,11 +717,14 @@ def test_build_pano_cmd_pins_input_output(tmp_path) -> None:
 def test_build_nnunet_cmd_passes_only_the_folds_present(tmp_path) -> None:
     """nnUNetv2_predict defaults to -f 0 1 2 3 4 and aborts on the first
     fold that was never downloaded; the Zenodo Dataset112 zip ships fold_0
-    only. Requesting exactly what is on disk is the fix."""
+    only. Requesting exactly what is on disk is the fix.
+
+    Layout is the published zip's: the folds sit under the
+    trainer__plans__configuration dir, not directly under the dataset."""
     from app.modules.imaging_ai.runner import available_folds
 
     weights = tmp_path / "weights"
-    dataset = weights / "Dataset112_DentalSegmentator_v100"
+    dataset = weights / "Dataset112_DentalSegmentator" / "nnUNetTrainer__nnUNetPlans__3d_fullres"
     (dataset / "fold_0").mkdir(parents=True)
     assert available_folds(weights) == [0]
 

@@ -73,12 +73,17 @@ def build_nnunet_cmd(
     return cmd
 
 
+# Default trainer + plans for `-c 3d_fullres` (nnUNetv2_predict -tr/-p defaults).
+NNUNET_MODEL_SUBDIR = "nnUNetTrainer__nnUNetPlans__3d_fullres"
+
+
 def available_folds(weights_dir: Path) -> list[int]:
     """Folds actually present under the operator's weights dir.
 
-    nnU-Net resolves ``-d 112`` through its own results tree, so the model
-    lives at ``<weights_dir>/Dataset112_*/`` with one ``fold_<n>``
-    subdirectory per fold. Asking nnU-Net for a fold that was never
+    nnU-Net resolves ``-d 112 -c 3d_fullres`` through its own results tree,
+    with the default trainer and plans, so the folds live at
+    ``<weights_dir>/Dataset112_*/nnUNetTrainer__nnUNetPlans__3d_fullres/fold_<n>``
+    (the layout of the published zip). Asking nnU-Net for a fold that was never
     downloaded aborts the whole prediction, so the runner asks for exactly
     what is on disk. Empty means "let nnU-Net decide" (its default applies).
     """
@@ -86,7 +91,7 @@ def available_folds(weights_dir: Path) -> list[int]:
         return []
     folds: set[int] = set()
     for dataset_dir in weights_dir.glob("Dataset112_*"):
-        for fold_dir in dataset_dir.glob("fold_*"):
+        for fold_dir in dataset_dir.glob(f"{NNUNET_MODEL_SUBDIR}/fold_*"):
             token = fold_dir.name.removeprefix("fold_")
             if token.isdigit():
                 folds.add(int(token))
