@@ -61,6 +61,8 @@ Maintained by `backend/scripts/generate_catalogs.py`.
 | `gdpr.erasure.executed` | `EventType.GDPR_ERASURE_EXECUTED` | `gdpr` | — |
 | `gdpr.request.created` | `EventType.GDPR_REQUEST_CREATED` | `gdpr` | — |
 | `gdpr.request.status_changed` | `EventType.GDPR_REQUEST_STATUS_CHANGED` | `gdpr` | — |
+| `imaging.ai_job_confirmed` | `EventType.IMAGING_AI_JOB_CONFIRMED` | `imaging_ai` | — |
+| `imaging.ai_job_done` | `EventType.IMAGING_AI_JOB_DONE` | `imaging_ai` | — |
 | `imaging.study_indexed` | `EventType.IMAGING_STUDY_INDEXED` | `imaging_viewer` | `patient_timeline` |
 | `inventory.low_stock` | `EventType.INVENTORY_STOCK_LOW` | `inventory` | — |
 | `invoice.cancelled` | `EventType.INVOICE_CANCELLED` | — | — |
@@ -552,6 +554,20 @@ Maintained by `backend/scripts/generate_catalogs.py`.
 - **Constant:** `EventType.GDPR_REQUEST_STATUS_CHANGED`
 - **Publishers:**
   - `gdpr` — `backend/app/modules/gdpr/service.py`
+- **Subscribers:** —
+
+### `imaging.ai_job_confirmed`
+
+- **Constant:** `EventType.IMAGING_AI_JOB_CONFIRMED`
+- **Publishers:**
+  - `imaging_ai` — `backend/app/modules/imaging_ai/service.py`
+- **Subscribers:** —
+
+### `imaging.ai_job_done`
+
+- **Constant:** `EventType.IMAGING_AI_JOB_DONE`
+- **Publishers:**
+  - `imaging_ai` — `backend/app/modules/imaging_ai/service.py`
 - **Subscribers:** —
 
 ### `imaging.study_indexed`

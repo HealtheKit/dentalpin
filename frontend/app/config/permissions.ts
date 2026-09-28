@@ -284,5 +284,11 @@ export const PERMISSIONS = {
       read: 'imaging_viewer.rvg.read',
       write: 'imaging_viewer.rvg.write'
     }
+  },
+  imagingAi: {
+    jobs: {
+      read: 'imaging_ai.jobs.read',
+      write: 'imaging_ai.jobs.write'
+    }
   }
 } as const
