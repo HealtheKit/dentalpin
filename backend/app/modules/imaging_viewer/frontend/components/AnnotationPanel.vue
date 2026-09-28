@@ -278,6 +278,7 @@ watch(() => props.studyId, () => {
           color="error"
           variant="soft"
           icon="i-lucide-trash-2"
+          :aria-label="t('imagingViewer.annotations.deleteLabel')"
           @click="remove(a.id)"
         />
       </li>

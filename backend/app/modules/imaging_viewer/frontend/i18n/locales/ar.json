@@ -9,6 +9,7 @@
       "noPatient": "لم يتم اختيار مريض",
       "noPatientHint": "اختر مريضًا أعلاه، أو افتح هذه الصفحة مع ?patient_id=...، مثلاً من ملف المريض.",
       "pickPatient": "اختر مريضًا",
+      "unknownPatient": "مريض غير معروف",
       "searchPatients": "ابحث عن المرضى",
       "unknownModality": "النمط غير معروف",
       "noStudyDate": "لا يوجد تاريخ للدراسة"
@@ -40,6 +41,7 @@
       "note": "ملاحظة",
       "notePlaceholder": "نص الشرح…",
       "saveNote": "حفظ الملاحظة",
+      "deleteLabel": "حذف التعليق التوضيحي",
       "mm": "{mm} مم",
       "noSpacing": "لا يوجد تباعد البكسل — مم غير متوفر",
       "kind_ruler": "مسطرة",

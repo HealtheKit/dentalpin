@@ -21,10 +21,14 @@ function pickFile() {
   fileInputRef.value?.click()
 }
 
+const isPreviewableFile = computed(() => file.value?.type.startsWith('image/') ?? false)
+
 function setFile(f: File | null) {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
   file.value = f
-  previewUrl.value = f ? URL.createObjectURL(f) : null
+  // Object URLs only preview browser-renderable images: a DICOM picked here
+  // would otherwise render as a broken <img> (the input accepts .dcm).
+  previewUrl.value = f && f.type.startsWith('image/') ? URL.createObjectURL(f) : null
   if (f && !title.value) {
     title.value = f.name.replace(/\.[^.]+$/, '')
   }
@@ -221,10 +225,26 @@ async function submit() {
       class="relative overflow-hidden rounded-xl border border-default bg-elevated"
     >
       <img
-        :src="previewUrl ?? undefined"
+        v-if="previewUrl && isPreviewableFile"
+        :src="previewUrl"
         :alt="file.name"
         class="block max-h-[280px] w-full object-contain bg-checker"
       >
+      <!-- Generic placeholder for non-image files (e.g. DICOM) -->
+      <div
+        v-else
+        class="flex items-center justify-center gap-3 bg-default px-6 py-8 text-primary-accent"
+      >
+        <UIcon
+          name="i-lucide-file-image"
+          class="h-12 w-12"
+        />
+        <div class="text-start">
+          <p class="text-sm font-semibold">
+            {{ file.name }}
+          </p>
+        </div>
+      </div>
       <div class="flex items-center justify-between gap-3 px-3 py-2 bg-default">
         <div class="min-w-0 flex-1">
           <p class="truncate text-sm font-medium">

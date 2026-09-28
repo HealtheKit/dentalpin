@@ -20,7 +20,10 @@ screenshots: []
 La página de imagen lista los estudios DICOM visibles de un paciente.
 Elige un paciente en la cabecera (o abre `/imaging?patient_id=...`
 desde la ficha del paciente); al seleccionar un estudio se muestra su
-imagen con anotaciones encima.
+imagen con anotaciones encima. Mientras se resuelve el paciente, el
+selector muestra carga; un id irresoluble dice "Paciente desconocido",
+nunca un UUID. Las fechas salen en el idioma de la clínica y cada
+botón de borrar anotación tiene nombre accesible.
 
 ## Visor
 

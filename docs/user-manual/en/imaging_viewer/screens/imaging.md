@@ -20,7 +20,10 @@ screenshots: []
 The imaging page lists a patient's viewable DICOM studies. Pick a
 patient in the header (or open `/imaging?patient_id=...` from the
 patient record); selecting a study shows its rendered image with
-annotation overlays on top.
+annotation overlays on top. While the patient resolves, the selector
+shows a loading state; an unresolvable id reads "Unknown patient",
+never a raw UUID. Study dates render in the clinic locale, and every
+annotation delete button carries an accessible name.
 
 ## Viewer
 

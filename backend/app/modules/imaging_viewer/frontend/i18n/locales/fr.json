@@ -9,6 +9,7 @@
       "noPatient": "Aucun patient sélectionné",
       "noPatientHint": "Sélectionnez un patient ci-dessus, ou ouvrez cette page avec ?patient_id=..., par ex. depuis le dossier patient.",
       "pickPatient": "Sélectionner un patient",
+      "unknownPatient": "Patient inconnu",
       "searchPatients": "Rechercher des patients",
       "unknownModality": "Modalité inconnue",
       "noStudyDate": "Pas de date d'examen"
@@ -40,6 +41,7 @@
       "note": "Note",
       "notePlaceholder": "Texte de l'annotation…",
       "saveNote": "Enregistrer la note",
+      "deleteLabel": "Supprimer l'annotation",
       "mm": "{mm} mm",
       "noSpacing": "pas d'espacement pixel — mm indisponibles",
       "kind_ruler": "Règle",
