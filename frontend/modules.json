@@ -12,6 +12,7 @@
     "/module_layers/documents/frontend",
     "/module_layers/expenses/frontend",
     "/module_layers/imaging_ai/frontend",
+    "/module_layers/imaging_viewer/frontend",
     "/module_layers/india_gst/frontend",
     "/module_layers/inventory/frontend",
     "/module_layers/lab_orders/frontend",
@@ -142,6 +143,13 @@
       "path": "/module_layers/imaging_ai/frontend",
       "routes": [
         "/imaging-ai"
+      ]
+    },
+    {
+      "name": "imaging_viewer",
+      "path": "/module_layers/imaging_viewer/frontend",
+      "routes": [
+        "/imaging"
       ]
     },
     {

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Follow-up: `AttendanceService.clock()` requires `created_by` (keyword-only)
+  and the `clocked` payload no longer carries a null branch (review nit on #501).
+- Follow-up: fold `satt_0002_created_by` back into `satt_0001`
+  (`created_by` NOT NULL from the start — single-release module);
+  dev DBs that applied `satt_0002` must re-stamp the branch.
 - Follow-up: nav self-places under `practice`; screen docs mention
   the feed punch times; the attendance page imports the shared core
   `clinicToday()` instead of its own copy (review cross-ref).
@@ -17,7 +22,7 @@
 - Clinic-local day windows (`Clinic.timezone`, naive input = wall clock),
   positional duplicate guard (neighbours, not tail), overnight-shift
   carry-over with day-boundary cap, `created_by` on every punch
-  (new nullable column, `satt_0002`), `staff_attendance.clocked` event.
+  (NOT NULL column, folded into `satt_0001`), `staff_attendance.clocked` event.
 
 - Initial module: clock in/out events (`POST /events`, 409 on
   consecutive same-kind punches), current state (`GET /status/{id}`),

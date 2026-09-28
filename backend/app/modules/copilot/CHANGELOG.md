@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- feat: Arabic subject for the morning digest email ("الملخص اليومي", same
+  wording as the `ar/` template title; from #426 by @dev-7aider).
+
 - Dropped the unused `nav.copilot` locale key (sidebar entry removed in #467).
 
 - feat(#232): no standalone sidebar entry — the assistant launcher is the app-overlay floating button; manifest `navigation` is empty.

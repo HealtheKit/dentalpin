@@ -275,6 +275,16 @@ export const PERMISSIONS = {
     read: 'treasury.read',
     write: 'treasury.write'
   },
+  imagingViewer: {
+    studies: {
+      read: 'imaging_viewer.studies.read',
+      write: 'imaging_viewer.studies.write'
+    },
+    rvg: {
+      read: 'imaging_viewer.rvg.read',
+      write: 'imaging_viewer.rvg.write'
+    }
+  },
   imagingAi: {
     jobs: {
       read: 'imaging_ai.jobs.read',
