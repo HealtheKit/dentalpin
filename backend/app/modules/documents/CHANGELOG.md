@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- fix(#524): the managed-document PDF renders in every host locale.
+  `_LABELS` held only `es`/`en`, the endpoint's pattern was `^(es|en)$`
+  and the frontend sent no `locale` at all — so every clinic, in every
+  language, got Spanish referral letters and medical certificates with
+  no way to change it. Eight label sets added (overlapping terms lifted
+  verbatim from the prescriptions and billing sets so a clinic's
+  paperwork reads consistently), `PDF_LOCALE_PATTERN` on the endpoint,
+  `dir="rtl"` for Arabic as billing already does, and the page now
+  passes the UI locale.
+
 - Follow-up: drop dead `TEMPLATE_MAP` (service.py) / `_DOC_NAMES`
   (pdf.py); roundtrip test docstring states the real `depends_on`.
 - feat(#232): sidebar entry grouped under the Clinical header (`nav.section` "clinical").
