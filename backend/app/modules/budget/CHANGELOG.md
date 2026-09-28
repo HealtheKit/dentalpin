@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- feat(#509): quote PDF accepts `pt-BR` (Babel `pt_BR`); captions reuse the
+  `pt` labels via `labels_locale`.
+
 - fix(#485): the quote PDF renders its own labels in all ten host
   locales instead of falling back to English (or Spanish for `es`);
   Arabic mirrors the document (`dir="rtl"`) and table headers use

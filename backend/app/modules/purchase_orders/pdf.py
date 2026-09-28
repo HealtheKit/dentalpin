@@ -10,6 +10,7 @@ from io import BytesIO
 from typing import TYPE_CHECKING
 
 from app.core.pdf_locales import LOCALE_BY_LANG as _LOCALE_BY_LANG
+from app.core.pdf_locales import labels_locale as _labels_locale
 from app.core.utils.currency import format_currency as _fmt_currency
 
 if TYPE_CHECKING:
@@ -269,7 +270,7 @@ class PurchaseOrderPDFService:
 
     @staticmethod
     def _generate_html(response: dict, clinic: Clinic, locale: str) -> str:
-        labels = _LABELS.get(locale, _LABELS["es"])
+        labels = _LABELS.get(_labels_locale(locale), _LABELS["es"])
         # Arabic mirrors the document; every other host locale is LTR (#485).
         rtl_attr = ' dir="rtl"' if locale == "ar" else ""
         status_label = labels["status_label"].get(response["status"], response["status"])

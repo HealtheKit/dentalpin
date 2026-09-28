@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- feat(#509): communication-language picker offers both Português (Portugal) `pt`
+  and Português (Brasil) `pt-BR`.
+
 - feat: `العربية` in the clinic communication-language selector (templates
   from #426 by @dev-7aider).
 - fix(#63 maintainer review): `notif_0008` seeds system push templates

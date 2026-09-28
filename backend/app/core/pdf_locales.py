@@ -14,7 +14,7 @@ same one. A test guards the two against each other.
 
 from __future__ import annotations
 
-PDF_LOCALES: tuple[str, ...] = ("es", "en", "ta", "fr", "pt", "de", "hu", "pl", "it", "ar")
+PDF_LOCALES: tuple[str, ...] = ("es", "en", "ta", "fr", "pt", "pt-BR", "de", "hu", "pl", "it", "ar")
 PDF_LOCALE_PATTERN = "^(" + "|".join(PDF_LOCALES) + ")$"
 
 # UI language -> Babel locale for money and dates. Tamil clinics are in
@@ -25,9 +25,23 @@ LOCALE_BY_LANG: dict[str, str] = {
     "ta": "en_IN",
     "fr": "fr_FR",
     "pt": "pt_PT",
+    "pt-BR": "pt_BR",
     "de": "de_DE",
     "hu": "hu_HU",
     "pl": "pl_PL",
     "it": "it_IT",
     "ar": "ar",
 }
+
+# Overlay locales reusing base locale labels.
+_LABELS_ALIAS: dict[str, str] = {
+    "pt-BR": "pt",
+}
+
+def labels_locale(locale: str) -> str:
+    """Locale key for PDF caption dictionaries.
+
+    Overlay locales (``pt-BR`` #509) share the base locale
+    labels so modules do not duplicate every caption.
+    """
+    return _LABELS_ALIAS.get(locale, locale)

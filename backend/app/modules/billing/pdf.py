@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 from babel.numbers import format_decimal as _babel_format_decimal
 
 from app.core.pdf_locales import LOCALE_BY_LANG as _LOCALE_BY_LANG
+from app.core.pdf_locales import labels_locale as _labels_locale
 from app.core.utils.currency import format_currency as _fmt_currency
 
 if TYPE_CHECKING:
@@ -757,6 +758,7 @@ class InvoicePDFService:
     @staticmethod
     def _get_labels(locale: str) -> dict:
         """Get localized labels for PDF."""
+        locale = _labels_locale(locale)
         labels_es = {
             "invoice": "Factura",
             "credit_note": "Factura Rectificativa",

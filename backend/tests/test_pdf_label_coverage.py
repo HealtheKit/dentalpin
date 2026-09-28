@@ -16,7 +16,7 @@ from uuid import uuid4
 import pytest
 
 from app.core.auth.models import Clinic
-from app.core.pdf_locales import PDF_LOCALES
+from app.core.pdf_locales import PDF_LOCALES, labels_locale
 from app.modules.budget.models import Budget, BudgetItem
 from app.modules.budget.pdf import BudgetPDFService
 from app.modules.catalog.models import TreatmentCatalogItem
@@ -28,6 +28,7 @@ BUDGET_HEADINGS = {
     "en": "Quote",
     "fr": "Devis",
     "pt": "Orçamento",
+    "pt-BR": "Orçamento",
     "de": "Kostenvoranschlag",
     "hu": "Árajánlat",
     "pl": "Kosztorys",
@@ -105,9 +106,10 @@ def test_budget_labels_exist_for_every_accepted_locale() -> None:
 def test_purchase_order_labels_exist_for_every_accepted_locale() -> None:
     english = PO_LABELS["en"]
     for locale in PDF_LOCALES:
-        assert locale in PO_LABELS, locale
-        assert set(PO_LABELS[locale]) == set(english), locale
-        assert set(PO_LABELS[locale]["status_label"]) == set(english["status_label"]), locale
+        key = labels_locale(locale)
+        assert key in PO_LABELS, locale
+        assert set(PO_LABELS[key]) == set(english), locale
+        assert set(PO_LABELS[key]["status_label"]) == set(english["status_label"]), locale
 
 
 def test_prescription_labels_exist_for_every_accepted_locale() -> None:
