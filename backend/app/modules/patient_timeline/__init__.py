@@ -119,4 +119,8 @@ class PatientTimelineModule(BaseModule):
             EventType.PRESCRIPTION_CANCELLED: events.on_prescription_cancelled,
             # Imaging (imaging_viewer module — payload-only, no import).
             EventType.IMAGING_STUDY_INDEXED: events.on_imaging_study_indexed,
+            # Orthodontics (orthodontics module — payload-only, no import).
+            EventType.ORTHODONTICS_CASE_CREATED: events.on_ortho_case_created,
+            EventType.ORTHODONTICS_CASE_STATUS_CHANGED: (events.on_ortho_case_status_changed),
+            EventType.ORTHODONTICS_CONTROL_REGISTERED: (events.on_ortho_control_registered),
         }

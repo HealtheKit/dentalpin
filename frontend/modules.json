@@ -24,6 +24,7 @@
     "/module_layers/nav_online/frontend",
     "/module_layers/notifications/frontend",
     "/module_layers/odontogram/frontend",
+    "/module_layers/orthodontics/frontend",
     "/module_layers/patient_relationships/frontend",
     "/module_layers/patient_segments/frontend",
     "/module_layers/patient_timeline/frontend",
@@ -219,6 +220,13 @@
       "name": "odontogram",
       "path": "/module_layers/odontogram/frontend",
       "routes": []
+    },
+    {
+      "name": "orthodontics",
+      "path": "/module_layers/orthodontics/frontend",
+      "routes": [
+        "/orthodontics"
+      ]
     },
     {
       "name": "patient_relationships",

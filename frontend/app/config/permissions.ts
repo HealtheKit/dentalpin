@@ -290,5 +290,11 @@ export const PERMISSIONS = {
       read: 'imaging_ai.jobs.read',
       write: 'imaging_ai.jobs.write'
     }
+  },
+  orthodontics: {
+    casesRead: 'orthodontics.cases.read',
+    casesWrite: 'orthodontics.cases.write',
+    controlsWrite: 'orthodontics.controls.write',
+    settingsManage: 'orthodontics.settings.manage'
   }
 } as const

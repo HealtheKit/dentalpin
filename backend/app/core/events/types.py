@@ -175,6 +175,12 @@ class EventType:
     # (job_id, clinic_id, patient_id, confirmed_by).
     IMAGING_AI_JOB_CONFIRMED = "imaging.ai_job_confirmed"
 
+    # Orthodontics (issue #270, slice-a). Payloads carry clinic_id,
+    # case_id, patient_id. Consumed by patient_timeline.
+    ORTHODONTICS_CASE_CREATED = "orthodontics.case_created"
+    ORTHODONTICS_CASE_STATUS_CHANGED = "orthodontics.case_status_changed"
+    ORTHODONTICS_CONTROL_REGISTERED = "orthodontics.control_registered"
+
     # Clinical prescriptions (issue #269). Payload: (prescription_id,
     # clinic_id, patient_id). Consumed by patient_timeline.
     PRESCRIPTION_ISSUED = "prescription.issued"
