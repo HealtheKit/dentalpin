@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 from uuid import uuid4
 
 import pytest
@@ -293,3 +294,30 @@ async def test_archive_hides_and_study_archive_cascades(
     await ImagingStudyService.archive_study(db_session, study)
     stored = await db_session.get(ImagingAnnotation, row2.id)
     assert stored is not None and stored.status == "archived"
+
+
+def test_ruler_mm_from_real_extracted_tags() -> None:
+    """Regression: extract_dicom_tags stores PixelSpacing as str(MultiValue),
+    "[0.1, 0.2]", which the parser used to reject, so real studies never
+    got a millimetre reading."""
+    pydicom = pytest.importorskip("pydicom")
+    from pydicom.dataset import FileMetaDataset
+    from pydicom.uid import ExplicitVRLittleEndian, generate_uid
+
+    from app.modules.imaging_viewer.service import _ruler_mm, extract_dicom_tags
+
+    meta = FileMetaDataset()
+    meta.TransferSyntaxUID = ExplicitVRLittleEndian
+    meta.MediaStorageSOPClassUID = "1.2.840.10008.5.1.4.1.1.7"
+    meta.MediaStorageSOPInstanceUID = generate_uid()
+    ds = pydicom.Dataset()
+    ds.file_meta = meta
+    ds.StudyInstanceUID = generate_uid()
+    ds.Rows, ds.Columns = 256, 512
+    ds.PixelSpacing = [0.2, 0.1]
+    buf = io.BytesIO()
+    ds.save_as(buf, enforce_file_format=True)
+
+    tags = extract_dicom_tags(buf.getvalue())
+    assert _ruler_mm([[0, 0], [1, 0]], tags) == 51.2
+    assert _ruler_mm([[0, 0], [0, 1]], tags) == 51.2

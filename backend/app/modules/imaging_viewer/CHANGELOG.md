@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- fix: the ruler never produced millimetres on a real study.
+  `extract_dicom_tags` stores `PixelSpacing` as `str(MultiValue)`
+  (`"[0.1, 0.1]"`) and the spacing parser only understood the raw DS form
+  (`"0.1\\0.1"`), so every ruler read "no pixel spacing". The parser now
+  accepts both; already-indexed studies are fixed without re-indexing.
 - fix: RVG approve could attach another capture's image. Sensors reuse file
   names (`IMG0001.dcm`), and pending files were parked and looked up by name,
   so approving the second capture read the first one's bytes. Pending files

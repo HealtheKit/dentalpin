@@ -1053,7 +1053,10 @@ def _pixel_spacing_mm(tags: dict) -> tuple[float, float] | None:
         if not raw:
             continue
         try:
-            parts = [float(p) for p in str(raw).replace("\\", " ").split()]
+            # Raw DS ("0.1\\0.1") or how extract_dicom_tags stores a
+            # pydicom MultiValue: str() of it, "[0.1, 0.1]".
+            text = str(raw).strip("[]").replace("\\", " ").replace(",", " ")
+            parts = [float(p) for p in text.split()]
         except ValueError:
             continue
         if len(parts) == 1:
