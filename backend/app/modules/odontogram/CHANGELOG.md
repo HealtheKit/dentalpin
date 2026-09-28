@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix(#522): `TimelineSlider` compared the last history date against the UTC
+  day, so the "Now" position could fail to merge with today's entry. Now uses
+  `toISODate`.
+
 - fix(#459): the "Add to plan" dropdown in `TreatmentBar` was built from
   `UDropdownMenuItem`/`Group`/`Separator`, which Nuxt UI does not ship, so
   its body could only ever resolve to nothing. Rebuilt on the supported

@@ -9,6 +9,7 @@ import type {
 } from '~~/app/types'
 import type { InvoiceAgingBucket, IssuedTrendPoint } from '../../composables/useReports'
 import { PERMISSIONS } from '~~/app/config/permissions'
+import { toISODate } from '~~/app/utils/wallClock'
 
 const { t, locale } = useI18n()
 const { can } = usePermissions()
@@ -42,8 +43,8 @@ const issuedTrend = ref<IssuedTrendPoint[]>([])
 // Date range
 const today = new Date()
 const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-const dateFrom = ref(firstDayOfMonth.toISOString().slice(0, 10))
-const dateTo = ref(today.toISOString().slice(0, 10))
+const dateFrom = ref(toISODate(firstDayOfMonth))
+const dateTo = ref(toISODate(today))
 
 // Quick date range options
 const dateRangeOptions = computed(() => [
@@ -96,8 +97,8 @@ watch(selectedRange, (range) => {
       return
   }
 
-  dateFrom.value = from.toISOString().slice(0, 10)
-  dateTo.value = to.toISOString().slice(0, 10)
+  dateFrom.value = toISODate(from)
+  dateTo.value = toISODate(to)
 })
 
 // Load all report data

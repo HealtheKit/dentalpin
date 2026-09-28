@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix(#522): the "today" and "in N days" markers on the budget list, and the
+  `valid_from` default on the new-budget form, read the UTC day instead of
+  the local one. Now use `toISODate`.
+
 - fix(#485): the quote PDF renders its own labels in all ten host
   locales instead of falling back to English (or Spanish for `es`);
   Arabic mirrors the document (`dir="rtl"`) and table headers use

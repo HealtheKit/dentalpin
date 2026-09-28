@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- fix(#522): the payments report mixed two date frames. `new Date("YYYY-MM-DD")`
+  is UTC midnight per spec while `setDate` and `toLocaleDateString` read local
+  fields, so the previous-period range and the trend chart's bucket labels
+  could land a day out. Date-only strings now parse through one local
+  `parseDateOnly`, days are counted with `setDate` rather than millisecond
+  arithmetic (DST-safe), and output goes through `toISODate`.
+
 - fix(#470 review): `PaymentCreateModal`'s default/"today" date now
   reads `clinicToday()` (clinic-local calendar date) instead of the
   browser's UTC date — matches the same clinic-local booking the

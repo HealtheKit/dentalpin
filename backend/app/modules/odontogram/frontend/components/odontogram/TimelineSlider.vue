@@ -9,6 +9,7 @@
  * - Keyboard navigation (←/→/Home/End)
  * - Touch/drag support
  */
+import { toISODate } from '~~/app/utils/wallClock'
 
 const props = defineProps<{
   dates: Array<{ date: string, change_count: number }>
@@ -36,7 +37,7 @@ const isDragging = ref(false)
 /** Whether last date in array is today (merges with"Now" position) */
 const lastDateIsToday = computed(() => {
   const lastDate = props.dates.at(-1)?.date
-  const today = new Date().toISOString().slice(0, 10)
+  const today = toISODate(new Date())
   return lastDate === today
 })
 

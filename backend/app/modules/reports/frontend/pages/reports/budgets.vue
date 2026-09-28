@@ -6,6 +6,7 @@ import type {
   BudgetByStatus
 } from '../../composables/useReports'
 import type { UiColor } from '~~/app/config/severity'
+import { toISODate } from '~~/app/utils/wallClock'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -30,8 +31,8 @@ const byStatus = ref<BudgetByStatus[]>([])
 // Date range
 const today = new Date()
 const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-const dateFrom = ref(firstDayOfMonth.toISOString().slice(0, 10))
-const dateTo = ref(today.toISOString().slice(0, 10))
+const dateFrom = ref(toISODate(firstDayOfMonth))
+const dateTo = ref(toISODate(today))
 
 // Quick date range options
 const dateRangeOptions = computed(() => [
@@ -84,8 +85,8 @@ watch(selectedRange, (range) => {
       return
   }
 
-  dateFrom.value = from.toISOString().slice(0, 10)
-  dateTo.value = to.toISOString().slice(0, 10)
+  dateFrom.value = toISODate(from)
+  dateTo.value = toISODate(to)
 })
 
 // Load all report data
