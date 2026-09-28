@@ -35,7 +35,8 @@
     },
     "review": {
       "pending_review": "Brouillon - en attente de relecture",
-      "confirmed": "Relu"
+      "confirmed": "Relu",
+      "not_applicable": "Sans objet"
     },
     "job": {
       "artifacts": "Brouillons",

@@ -21,6 +21,7 @@ JOB_CANCELLED = "cancelled"
 
 REVIEW_PENDING = "pending_review"
 REVIEW_CONFIRMED = "confirmed"
+REVIEW_NA = "not_applicable"
 
 
 class AiJob(Base, TimestampMixin):

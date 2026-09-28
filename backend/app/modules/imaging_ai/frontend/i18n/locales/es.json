@@ -35,7 +35,8 @@
     },
     "review": {
       "pending_review": "Borrador - pendiente de revisión",
-      "confirmed": "Revisado"
+      "confirmed": "Revisado",
+      "not_applicable": "No aplica"
     },
     "job": {
       "artifacts": "Borradores",

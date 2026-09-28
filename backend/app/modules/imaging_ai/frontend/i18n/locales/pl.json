@@ -35,7 +35,8 @@
     },
     "review": {
       "pending_review": "Draft - awaiting review",
-      "confirmed": "Reviewed"
+      "confirmed": "Reviewed",
+      "not_applicable": "Not applicable"
     },
     "job": {
       "artifacts": "Draft artifacts",

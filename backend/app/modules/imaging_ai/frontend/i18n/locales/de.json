@@ -35,7 +35,8 @@
     },
     "review": {
       "pending_review": "Entwurf - wartet auf Prüfung",
-      "confirmed": "Geprüft"
+      "confirmed": "Geprüft",
+      "not_applicable": "Nicht zutreffend"
     },
     "job": {
       "artifacts": "Entwürfe",

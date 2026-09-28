@@ -35,7 +35,8 @@
     },
     "review": {
       "pending_review": "Rascunho - a aguardar revisão",
-      "confirmed": "Revisto"
+      "confirmed": "Revisto",
+      "not_applicable": "Não aplicável"
     },
     "job": {
       "artifacts": "Rascunhos",

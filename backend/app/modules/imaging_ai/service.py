@@ -25,6 +25,7 @@ from .models import (
     JOB_QUEUED,
     JOB_RUNNING,
     REVIEW_CONFIRMED,
+    REVIEW_NA,
     REVIEW_PENDING,
     AiJob,
 )
@@ -221,6 +222,7 @@ class AiJobService:
         if job.status not in (JOB_PROPOSED, JOB_QUEUED):
             raise ValueError(f"cannot cancel job in status {job.status}")
         job.status = JOB_CANCELLED
+        job.review_status = REVIEW_NA
         await db.commit()
         await db.refresh(job)
         return job
@@ -244,6 +246,7 @@ class AiJobService:
                 return
             if job.queued_by is None:
                 job.status = JOB_FAILED
+                job.review_status = REVIEW_NA
                 job.error = "job reached execution without attribution (confirm first)"
                 await db.commit()
                 return
@@ -259,6 +262,7 @@ class AiJobService:
                 job.log_excerpt = result.log_excerpt[:4000] or None
                 if not result.ok:
                     job.status = JOB_FAILED
+                    job.review_status = REVIEW_NA
                     job.error = (result.error or "runner failed")[:1000]
                 else:
                     artifact_ids: list[str] = []
@@ -331,6 +335,7 @@ class AiJobService:
                         fail_job = await AiJobService.get_job(fail_db, clinic_id, job_id)
                         if fail_job is not None and fail_job.status == JOB_RUNNING:
                             fail_job.status = JOB_FAILED
+                            fail_job.review_status = REVIEW_NA
                             fail_job.error = str(exc)[:1000]
                             await fail_db.commit()
                 except Exception:  # noqa: BLE001 — last-resort guard

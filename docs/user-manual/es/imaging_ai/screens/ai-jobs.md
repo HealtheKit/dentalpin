@@ -31,9 +31,12 @@ final del registro del motor.
 
 ## Cómo abrir la página
 
-Abre `/imaging-ai` y busca el paciente, o usa el enlace directo
-`/imaging-ai?patient_id=<uuid>` desde la ficha del paciente. Sin permiso
-de lectura de pacientes, solo funciona el enlace directo.
+Abre `/imaging-ai` y busca el paciente en el control único, o usa el enlace
+directo `/imaging-ai?patient_id=<uuid>` desde la ficha del paciente — el
+control arranca desde la URL. Sin permiso
+de lectura de pacientes, solo funciona el enlace directo. La lista se
+actualiza sola al ritmo del programador; los trabajos fallidos o cancelados
+dicen "No aplica" en revisión en vez de "pendiente".
 
 ## Borradores y revisión
 

@@ -30,9 +30,12 @@ cancelled — plus errors and the runner log tail.
 
 ## Opening the page
 
-Open `/imaging-ai` and search the patient, or deep-link
-`/imaging-ai?patient_id=<uuid>` from the patient record. Without patient
-read rights, only the deep link works.
+Open `/imaging-ai` and search the patient in the single patient control,
+or deep-link `/imaging-ai?patient_id=<uuid>` from the patient record —
+the control initializes from the URL. Without patient
+read rights, only the deep link works. The job list refreshes on its own
+on the scheduler-tick cadence; failed and cancelled jobs read
+"Not applicable" for review instead of "pending review".
 
 ## Drafts and review
 

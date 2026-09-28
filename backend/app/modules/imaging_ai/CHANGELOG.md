@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- fix: patient block is a single searchable select initialized from
+  `?patient_id=`; job list polls on the scheduler-tick cadence; failed and
+  cancelled jobs carry review state `not_applicable` instead of `pending_review`.
 - fix: pano can now complete a real run against `dental-pano-ai`. Upstream
   writes only `<output>/<stem>.csv` unless `--debug` is passed, and puts the
   overlays in `<output>/<stem>/`; the runner passed no `--debug` and scanned

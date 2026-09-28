@@ -35,7 +35,8 @@
     },
     "review": {
       "pending_review": "Bozza - in attesa di revisione",
-      "confirmed": "Revisionato"
+      "confirmed": "Revisionato",
+      "not_applicable": "Non applicabile"
     },
     "job": {
       "artifacts": "Bozze",
