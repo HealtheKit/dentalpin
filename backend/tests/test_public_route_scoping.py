@@ -127,9 +127,7 @@ async def test_budget_bad_verify_value_401(client: AsyncClient, t1_setup: dict) 
 
 
 @pytest.mark.asyncio
-async def test_budget_verify_correct_value_sets_cookie(
-    client: AsyncClient, t1_setup: dict
-) -> None:
+async def test_budget_verify_correct_value_sets_cookie(client: AsyncClient, t1_setup: dict) -> None:
     budget = t1_setup["budget"]
     response = await client.post(
         f"{BUDGET}/{budget.public_token}/verify",
@@ -192,9 +190,7 @@ async def test_budget_cookie_for_other_budget_401(
     )
     assert verify.status_code == 204
     cookie = verify.headers["set-cookie"].split(";")[0]
-    response = await client.get(
-        f"{BUDGET}/{budget_b.public_token}", headers={"Cookie": cookie}
-    )
+    response = await client.get(f"{BUDGET}/{budget_b.public_token}", headers={"Cookie": cookie})
     assert response.status_code == 401
 
 
@@ -308,9 +304,7 @@ async def test_invalid_credentials_share_generic_shapes(
         db_session, clinic.id, {"name": "t1", "scopes": []}
     )
     bodies["integrations"] = (
-        await client.get(
-            IPATIENTS, headers={"Authorization": "Bearer wrong-token"}
-        )
+        await client.get(IPATIENTS, headers={"Authorization": "Bearer wrong-token"})
     ).json()["message"]
 
     assert bodies["budget"] == "Budget link not found"
@@ -330,9 +324,7 @@ async def test_integration_token_cannot_read_foreign_patient(
     from app.modules.patients.models import Patient as PatientModel  # noqa: E402
 
     clinic = t1_setup["clinic"]
-    other = Clinic(
-        id=uuid4(), name="Foreign", tax_id="B00000000", address={}, settings={}
-    )
+    other = Clinic(id=uuid4(), name="Foreign", tax_id="B00000000", address={}, settings={})
     db_session.add(other)
     await db_session.flush()
     foreign = PatientModel(id=uuid4(), clinic_id=other.id, first_name="F", last_name="X")
