@@ -164,6 +164,22 @@ class EventType:
     # timeline can render the comparison inline.
     PAIR_CREATED = "media.pair_created"
     PAIR_REMOVED = "media.pair_removed"
+    # A media document was indexed as a viewable DICOM study. Payload:
+    # (study_id, clinic_id, patient_id, document_id, study_uid).
+    # Consumed by patient_timeline for audit entries.
+    IMAGING_STUDY_INDEXED = "imaging.study_indexed"
+    # An AI segmentation job reached a terminal state. Payload:
+    # (job_id, clinic_id, patient_id, status).
+    IMAGING_AI_JOB_DONE = "imaging.ai_job_done"
+    # A clinician confirmed AI draft artifacts for review. Payload:
+    # (job_id, clinic_id, patient_id, confirmed_by).
+    IMAGING_AI_JOB_CONFIRMED = "imaging.ai_job_confirmed"
+
+    # Orthodontics (issue #270, slice-a). Payloads carry clinic_id,
+    # case_id, patient_id. Consumed by patient_timeline.
+    ORTHODONTICS_CASE_CREATED = "orthodontics.case_created"
+    ORTHODONTICS_CASE_STATUS_CHANGED = "orthodontics.case_status_changed"
+    ORTHODONTICS_CONTROL_REGISTERED = "orthodontics.control_registered"
 
     # Clinical prescriptions (issue #269). Payload: (prescription_id,
     # clinic_id, patient_id). Consumed by patient_timeline.

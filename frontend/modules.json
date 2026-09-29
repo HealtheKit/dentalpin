@@ -11,6 +11,8 @@
     "/module_layers/copilot/frontend",
     "/module_layers/documents/frontend",
     "/module_layers/expenses/frontend",
+    "/module_layers/imaging_ai/frontend",
+    "/module_layers/imaging_viewer/frontend",
     "/module_layers/india_gst/frontend",
     "/module_layers/inventory/frontend",
     "/module_layers/lab_orders/frontend",
@@ -22,6 +24,7 @@
     "/module_layers/nav_online/frontend",
     "/module_layers/notifications/frontend",
     "/module_layers/odontogram/frontend",
+    "/module_layers/orthodontics/frontend",
     "/module_layers/patient_relationships/frontend",
     "/module_layers/patient_segments/frontend",
     "/module_layers/patient_timeline/frontend",
@@ -137,6 +140,20 @@
       ]
     },
     {
+      "name": "imaging_ai",
+      "path": "/module_layers/imaging_ai/frontend",
+      "routes": [
+        "/imaging-ai"
+      ]
+    },
+    {
+      "name": "imaging_viewer",
+      "path": "/module_layers/imaging_viewer/frontend",
+      "routes": [
+        "/imaging"
+      ]
+    },
+    {
       "name": "india_gst",
       "path": "/module_layers/india_gst/frontend",
       "routes": [
@@ -203,6 +220,13 @@
       "name": "odontogram",
       "path": "/module_layers/odontogram/frontend",
       "routes": []
+    },
+    {
+      "name": "orthodontics",
+      "path": "/module_layers/orthodontics/frontend",
+      "routes": [
+        "/orthodontics"
+      ]
     },
     {
       "name": "patient_relationships",

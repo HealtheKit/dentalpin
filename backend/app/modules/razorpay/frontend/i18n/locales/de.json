@@ -9,13 +9,10 @@
       "description": "Konfigurieren Sie das Razorpay-Zahlungsgateway für diese Klinik.",
       "credentials": "API-Anmeldedaten",
       "mode": "Modus",
-      "modeHint": "Verwenden Sie den Testmodus, bis alles einwandfrei funktioniert.",
       "modeTest": "Test",
       "modeLive": "Live",
       "keyId": "Schlüssel-ID",
       "keyIdHint": "Aus dem Razorpay-Dashboard — kann sicher im Browser angezeigt werden.",
-      "modeKeyMismatchLive": "Der Live-Modus erfordert einen Schlüssel, der mit \"rzp_live_\" beginnt. Ihr aktueller Schlüssel beginnt mit \"rzp_test_\".",
-      "modeKeyMismatchTest": "Der Testmodus erfordert einen Schlüssel, der mit \"rzp_test_\" beginnt. Ihr aktueller Schlüssel beginnt mit \"rzp_live_\".",
       "keySecret": "Schlüsselgeheimnis",
       "keySecretHint": "Aus dem Razorpay-Dashboard. Wird nach dem Speichern nicht erneut angezeigt.",
       "keySecretConfiguredHint": "Es ist bereits ein Schlüsselgeheimnis konfiguriert. Leer lassen, um es beizubehalten.",
@@ -38,7 +35,9 @@
       "saved": "Einstellungen gespeichert",
       "saveError": "Einstellungen konnten nicht gespeichert werden",
       "loadError": "Einstellungen konnten nicht geladen werden",
-      "webhookCopied": "Webhook-URL kopiert"
+      "webhookCopied": "Webhook-URL kopiert",
+      "modeDerivedHint": "Wird aus dem Schlüssel abgeleitet: ein rzp_live_-Schlüssel bewegt echtes Geld, ein rzp_test_-Schlüssel nicht.",
+      "modeUnknown": "Noch kein Schlüssel"
     },
     "collect": {
       "notConfiguredHint": "Razorpay ist für diese Klinik noch nicht konfiguriert. Bitten Sie einen Administrator, es in den Einstellungen einzurichten.",

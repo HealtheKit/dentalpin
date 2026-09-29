@@ -61,4 +61,40 @@ describe('useModuleSlots', () => {
     const onlyUngated = resolveSlot('ordered.slot', {}, { can: () => false })
     expect(onlyUngated.map(e => e.id)).toEqual(['b'])
   })
+
+  it('drops an entry whose condition rejects the ctx (#506)', async () => {
+    const { registerSlot, resolveSlot } = await import('~/composables/useModuleSlots')
+
+    // A gateway rail that only applies to India clinics — razorpay's own
+    // gate. The payment modal decides whether to render its "Collect now"
+    // group from `resolve()`, not from the registered count, so a Spanish
+    // clinic with the module installed must come back empty and get no
+    // heading at all.
+    const Rail = defineComponent({ name: 'Rail', render: () => h('span', 'rail') })
+    registerSlot('payments.create.methods', {
+      id: 'gateway.rail',
+      component: Rail,
+      condition: (ctx: { clinic?: { country?: string } }) => ctx.clinic?.country === 'IN'
+    })
+
+    const inIndia = resolveSlot(
+      'payments.create.methods', { clinic: { country: 'IN' } }, { can: () => true }
+    )
+    expect(inIndia.map(e => e.id)).toEqual(['gateway.rail'])
+
+    const elsewhere = resolveSlot(
+      'payments.create.methods', { clinic: { country: 'ES' } }, { can: () => true }
+    )
+    expect(elsewhere).toHaveLength(0)
+  })
+
+  it('treats a missing condition as "always" (#506)', async () => {
+    const { registerSlot, resolveSlot } = await import('~/composables/useModuleSlots')
+
+    const Plain = defineComponent({ name: 'Plain', render: () => h('span', 'plain') })
+    registerSlot('payments.create.methods', { id: 'no.condition', component: Plain })
+
+    const entries = resolveSlot('payments.create.methods', {}, { can: () => true })
+    expect(entries.map(e => e.id)).toEqual(['no.condition'])
+  })
 })

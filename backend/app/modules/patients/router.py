@@ -61,6 +61,7 @@ async def list_patients(
     city: str | None = Query(default=None, max_length=100),
     do_not_contact: bool | None = Query(default=None),
     include_archived: bool = Query(default=False),
+    status: list[str] | None = Query(default=None),
     sort: str | None = Query(default=None, max_length=50),
 ) -> PaginatedApiResponse[PatientResponse]:
     """List patients with optional search + filters.
@@ -79,6 +80,7 @@ async def list_patients(
         city=city,
         do_not_contact=do_not_contact,
         include_archived=include_archived,
+        statuses=status,
         sort=sort,
     )
     return PaginatedApiResponse(
