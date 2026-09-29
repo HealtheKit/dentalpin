@@ -89,6 +89,13 @@ the full consent path — never bypasses `do_not_contact`.
   prints to stdout — use it in dev.
 - **Templates are i18n-aware** (Spanish UI strings). Never hardcode
   copy in handlers — use a template.
+- **Template context that needs a query lives in `service.py`, once.**
+  `budget_treatments_context(db, budget_id)` builds the `treatments`
+  table `budget_sent.html` renders. It used to exist twice — in
+  `handlers.py` for the event-driven enqueue and in `router.py` for the
+  manual send — and the copies diverged: one read `catalog_item.name`,
+  which the model does not have (#527). Call the helper; do not inline
+  a second loop.
 - **Locale resolution order**:
   1. Patient preference (``NotificationPreference.preferred_locale``).
   2. Clinic-wide default (``clinic.settings.communication_language``).
