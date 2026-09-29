@@ -151,7 +151,7 @@ async function openControl() {
 }
 
 async function saveControl() {
-<  try {
+  try {
     await registerControl(props.caseId, {
       upper_wire: ctlUpper.value,
       lower_wire: ctlLower.value,
