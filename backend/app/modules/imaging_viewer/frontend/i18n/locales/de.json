@@ -9,6 +9,7 @@
       "noPatient": "Kein Patient ausgewählt",
       "noPatientHint": "Wählen Sie oben einen Patienten, oder öffnen Sie diese Seite mit ?patient_id=..., z. B. aus der Patientenakte.",
       "pickPatient": "Patient wählen",
+      "unknownPatient": "Unbekannter Patient",
       "searchPatients": "Patienten suchen",
       "unknownModality": "Unbekannte Modalität",
       "noStudyDate": "Kein Studienatum"
@@ -40,6 +41,7 @@
       "note": "Notiz",
       "notePlaceholder": "Annotationstext…",
       "saveNote": "Notiz speichern",
+      "deleteLabel": "Anmerkung löschen",
       "mm": "{mm} mm",
       "noSpacing": "kein Pixelabstand — mm nicht verfügbar",
       "kind_ruler": "Lineal",

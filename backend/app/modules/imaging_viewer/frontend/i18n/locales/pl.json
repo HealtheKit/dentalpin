@@ -9,6 +9,7 @@
       "noPatient": "Nie wybrano pacjenta",
       "noPatientHint": "Wybierz pacjenta powyżej lub otwórz tę stronę z ?patient_id=..., np. z karty pacjenta.",
       "pickPatient": "Wybierz pacjenta",
+      "unknownPatient": "Nieznany pacjent",
       "searchPatients": "Szukaj pacjentów",
       "unknownModality": "Nieznana modalność",
       "noStudyDate": "Brak daty badania"
@@ -40,6 +41,7 @@
       "note": "Notatka",
       "notePlaceholder": "Tekst adnotacji…",
       "saveNote": "Zapisz notatkę",
+      "deleteLabel": "Usuń adnotację",
       "mm": "{mm} mm",
       "noSpacing": "brak informacji o odstępie pikseli — mm niedostępne",
       "kind_ruler": "Linijka",

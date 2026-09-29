@@ -9,6 +9,7 @@
       "noPatient": "No patient selected",
       "noPatientHint": "Select a patient above, or open this page with ?patient_id=..., e.g. from the patient record.",
       "pickPatient": "Select patient",
+      "unknownPatient": "Unknown patient",
       "searchPatients": "Search patients",
       "unknownModality": "Unknown modality",
       "noStudyDate": "No study date"
@@ -40,6 +41,7 @@
       "note": "Note",
       "notePlaceholder": "Annotation text…",
       "saveNote": "Save note",
+      "deleteLabel": "Delete annotation",
       "mm": "{mm} mm",
       "noSpacing": "no pixel spacing — mm unavailable",
       "kind_ruler": "Ruler",

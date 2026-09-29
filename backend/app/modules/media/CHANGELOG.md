@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix: gallery and photo-upload preview render a generic placeholder for
+  non-image files (e.g. DICOM) instead of a broken `<img>`.
 - fix: `application/octet-stream` uploads pass validation when the
   filename ends in `.dcm` (browsers sniff DICOM that way) — the
   viewer's `DICM` magic check, not the mime, decides radiology.

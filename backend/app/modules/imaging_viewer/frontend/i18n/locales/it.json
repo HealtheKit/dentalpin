@@ -9,6 +9,7 @@
       "noPatient": "Nessun paziente selezionato",
       "noPatientHint": "Seleziona un paziente qui sopra, oppure apri questa pagina con ?patient_id=..., ad es. dalla scheda del paziente.",
       "pickPatient": "Seleziona paziente",
+      "unknownPatient": "Paziente sconosciuto",
       "searchPatients": "Cerca pazienti",
       "unknownModality": "Modalità sconosciuta",
       "noStudyDate": "Nessuna data dello studio"
@@ -40,6 +41,7 @@
       "note": "Nota",
       "notePlaceholder": "Testo dell'annotazione…",
       "saveNote": "Salva nota",
+      "deleteLabel": "Elimina annotazione",
       "mm": "{mm} mm",
       "noSpacing": "nessuna spaziatura pixel — mm non disponibili",
       "kind_ruler": "Righello",

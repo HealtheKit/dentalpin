@@ -5,7 +5,7 @@ import { PERMISSIONS } from '~~/app/config/permissions'
 
 definePageMeta({ middleware: 'auth' })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { can } = usePermissions()
 const route = useRoute()
 const router = useRouter()
@@ -21,6 +21,7 @@ const patientId = computed(() => String(route.query.patient_id ?? ''))
 
 interface PatientOption { label: string, value: string }
 const patientOptions = ref<PatientOption[]>([])
+const resolvingPatient = ref(false)
 const canListPatients = computed(() => can(PERMISSIONS.patients.read))
 
 async function searchPatients(term: string) {
@@ -40,6 +41,7 @@ async function searchPatients(term: string) {
 }
 
 async function resolvePickedName(id: string) {
+  resolvingPatient.value = true
   try {
     const res = await api.get<ApiResponse<{ id: string, first_name: string, last_name: string }>>(
       `/api/v1/patients/${id}`,
@@ -50,7 +52,11 @@ async function resolvePickedName(id: string) {
       value: res.data.id
     }]
   } catch {
-    patientOptions.value = [{ label: id, value: id }]
+    // Never render the raw id as a label: an unresolvable ?patient_id=
+    // shows a human-readable fallback instead.
+    patientOptions.value = [{ label: t('imagingViewer.list.unknownPatient'), value: id }]
+  } finally {
+    resolvingPatient.value = false
   }
 }
 
@@ -92,6 +98,15 @@ watch(patientId, () => {
 
 function modalityLabel(s: ImagingStudy) {
   return s.modality ?? t('imagingViewer.list.unknownModality')
+}
+
+function formatStudyDate(s: ImagingStudy) {
+  if (!s.study_date) return t('imagingViewer.list.noStudyDate')
+  const d = new Date(s.study_date)
+  if (Number.isNaN(d.getTime())) return t('imagingViewer.list.noStudyDate')
+  // Backend stores StudyDate as UTC midnight: format in UTC so the displayed
+  // calendar day never shifts with the viewer's device timezone.
+  return d.toLocaleDateString(locale.value, { timeZone: 'UTC' })
 }
 
 async function loadQueue() {
@@ -162,8 +177,9 @@ onMounted(loadQueue)
       </h1>
       <USelectMenu
         v-if="canListPatients"
-        :model-value="patientId || undefined"
+        :model-value="resolvingPatient ? undefined : (patientId || undefined)"
         :items="patientOptions"
+        :loading="resolvingPatient"
         value-key="value"
         :placeholder="t('imagingViewer.list.pickPatient')"
         :search-input="{ placeholder: t('imagingViewer.list.searchPatients') }"
@@ -212,7 +228,7 @@ onMounted(loadQueue)
             :text="s.study_uid"
           >
             <p class="text-sm text-gray-500">
-              {{ s.study_date ?? t('imagingViewer.list.noStudyDate') }}
+              {{ formatStudyDate(s) }}
             </p>
           </UTooltip>
           <p

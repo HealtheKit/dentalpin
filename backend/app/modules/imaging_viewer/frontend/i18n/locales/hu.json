@@ -9,6 +9,7 @@
       "noPatient": "Nincs beteg kiválasztva",
       "noPatientHint": "Válasszon beteget fent, vagy nyissa meg ezt az oldalt a ?patient_id=... paraméterrel, pl. a betegkartotékból.",
       "pickPatient": "Beteg kiválasztása",
+      "unknownPatient": "Ismeretlen paciens",
       "searchPatients": "Betegek keresése",
       "unknownModality": "Ismeretlen modalitás",
       "noStudyDate": "Nincs vizsgálati dátum"
@@ -40,6 +41,7 @@
       "note": "Megjegyzés",
       "notePlaceholder": "Annotáció szövege…",
       "saveNote": "Megjegyzés mentése",
+      "deleteLabel": "Megjegyzés törlése",
       "mm": "{mm} mm",
       "noSpacing": "nincs pixel-távolság — mm nem érhető el",
       "kind_ruler": "Vonalzó",

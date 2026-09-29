@@ -11,7 +11,7 @@ related_permissions:
 related_paths:
   - backend/app/modules/imaging_viewer/router.py
   - backend/app/modules/imaging_viewer/frontend/pages/imaging/index.vue
-last_verified_commit: d8a9d663f37a1b806b6c985edca6195be4901404
+last_verified_commit: ea31a0414010d1f18f1d46ebf7a10e97592b961f
 screenshots: []
 ---
 
@@ -20,7 +20,10 @@ screenshots: []
 The imaging page lists a patient's viewable DICOM studies. Pick a
 patient in the header (or open `/imaging?patient_id=...` from the
 patient record); selecting a study shows its rendered image with
-annotation overlays on top.
+annotation overlays on top. While the patient resolves, the selector
+shows a loading state; an unresolvable id reads "Unknown patient",
+never a raw UUID. Study dates render in the clinic locale, and every
+annotation delete button carries an accessible name.
 
 ## Viewer
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix: patient selector shows a loading state while resolving `?patient_id=`
+  and falls back to an "Unknown patient" label instead of the raw UUID.
+- fix: study cards render the date in the clinic locale instead of raw ISO;
+  annotation delete buttons carry an aria-label.
 - fix: the ruler never produced millimetres on a real study.
   `extract_dicom_tags` stores `PixelSpacing` as `str(MultiValue)`
   (`"[0.1, 0.1]"`) and the spacing parser only understood the raw DS form

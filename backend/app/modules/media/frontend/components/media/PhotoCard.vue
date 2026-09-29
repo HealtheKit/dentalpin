@@ -16,7 +16,12 @@ const api = useApi()
 // via a fetched blob URL so <img> works without exposing credentials.
 const thumbBlobUrl = ref<string | null>(null)
 
+// Only browser-renderable images go through <img>: anything else (DICOM,
+// PDF, …) gets the generic icon placeholder, never a broken image.
+const isPreviewable = computed(() => props.document.mime_type?.startsWith('image/') ?? false)
+
 async function loadThumb() {
+  if (!isPreviewable.value) return
   const path = props.document.thumb_url ?? props.document.full_url
   if (!path) return
   try {
@@ -50,7 +55,7 @@ const subtypeLabel = computed(() => props.document.media_subtype ?? props.docume
     @click="$emit('open', document)"
   >
     <img
-      v-if="thumbBlobUrl"
+      v-if="thumbBlobUrl && isPreviewable"
       :src="thumbBlobUrl"
       :alt="document.title"
       loading="lazy"
