@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { toISODate } from '~~/app/utils/wallClock'
 import { PERMISSIONS } from '~~/app/config/permissions'
 import { errorMessage } from '~~/app/utils/error'
 import { useLeadsSettings, type LeadSettings } from '../../composables/useLeadsSettings'
@@ -76,7 +77,12 @@ async function load() {
 const countToday = computed(() => {
   const current = settings.value
   if (!current) return 0
-  const today = new Date().toISOString().slice(0, 10)
+  // Browser-local day, not UTC (#522). Still not the *clinic's* day: the
+  // backend stamps `day_count_date` with the DB server's `current_date`,
+  // so the exact fix is `clinicToday(clinicTimezone)` — item 3 of #500,
+  // which @abdd8433 owns. This only removes the UTC offset error so the
+  // lint guard can land.
+  const today = toISODate(new Date())
   return current.day_count_date === today ? current.day_count : 0
 })
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix(#522): the daily-cap gauge compared `day_count_date` against the UTC
+  day, so east of UTC it read 0 for a non-zero day until the offset had
+  elapsed. Now uses `toISODate`. This is the offset half only — the exact
+  fix is the clinic's day (`clinicToday`), which is item 3 of #500.
 ### Fixed
 
 - Convert drawer: the Edit button now requires `leads.write` and Create
