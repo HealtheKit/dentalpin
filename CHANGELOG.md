@@ -13,6 +13,10 @@ frontend as a Nuxt layer under its own Python package.
 
 ### Added
 
+- Backend startup warns about `.env` keys that are not app settings (e.g.
+  `SENTRY_DNS` instead of `SENTRY_DSN`), which `extra="ignore"` would
+  otherwise drop silently. Keys owned by docker compose and Nuxt stay quiet
+  (#517, @ZoliQua).
 - Arabic (`ar`) as a clinic communication language: the 14 email templates
   under `backend/templates/email/ar/` (authored by Haider Habeeb,
   @dev-7aider, in #426), `ar` accepted by the setup and clinic-language

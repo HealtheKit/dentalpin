@@ -9,13 +9,10 @@
       "description": "قم بإعداد بوابة الدفع Razorpay لهذه العيادة.",
       "credentials": "بيانات اعتماد API",
       "mode": "الوضع",
-      "modeHint": "استخدم وضع الاختبار حتى تتأكد من أن كل شيء يعمل من البداية إلى النهاية.",
       "modeTest": "اختبار",
       "modeLive": "مباشر",
       "keyId": "معرّف المفتاح",
       "keyIdHint": "من لوحة تحكم Razorpay — آمن للعرض في المتصفح.",
-      "modeKeyMismatchLive": "يتطلب الوضع المباشر مفتاحًا يبدأ بـ \"rzp_live_\". مفتاحك الحالي يبدأ بـ \"rzp_test_\".",
-      "modeKeyMismatchTest": "يتطلب وضع الاختبار مفتاحًا يبدأ بـ \"rzp_test_\". مفتاحك الحالي يبدأ بـ \"rzp_live_\".",
       "keySecret": "المفتاح السري",
       "keySecretHint": "من لوحة تحكم Razorpay. لن يُعرض مرة أخرى بعد الحفظ.",
       "keySecretConfiguredHint": "تم بالفعل إعداد مفتاح سري. اتركه فارغًا للإبقاء عليه.",
@@ -38,7 +35,9 @@
       "saved": "تم حفظ الإعدادات",
       "saveError": "تعذّر حفظ الإعدادات",
       "loadError": "تعذّر تحميل الإعدادات",
-      "webhookCopied": "تم نسخ رابط الويب هوك"
+      "webhookCopied": "تم نسخ رابط الويب هوك",
+      "modeDerivedHint": "مأخوذ من المفتاح: مفتاح rzp_live_ يحرّك أموالاً حقيقية، ومفتاح rzp_test_ لا.",
+      "modeUnknown": "لا يوجد مفتاح بعد"
     },
     "collect": {
       "notConfiguredHint": "لم يتم إعداد Razorpay لهذه العيادة بعد. اطلب من أحد المسؤولين إعداده في الإعدادات.",

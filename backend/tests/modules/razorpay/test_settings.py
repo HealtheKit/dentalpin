@@ -28,7 +28,20 @@ async def test_get_settings_defaults_when_unconfigured(
     assert data["is_active"] is False
 
 
-async def test_update_settings_rejects_live_mode_with_test_key(
+async def test_a_live_key_makes_the_mode_live_whatever_was_posted(
+    client: AsyncClient, auth_headers, test_clinic: Clinic
+):
+    """The key decides the environment; the posted mode is ignored (#482)."""
+    resp = await client.put(
+        "/api/v1/razorpay/settings",
+        json={"mode": "test", "key_id": "rzp_live_ABC123"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["mode"] == "live"
+
+
+async def test_a_test_key_makes_the_mode_test_whatever_was_posted(
     client: AsyncClient, auth_headers, test_clinic: Clinic
 ):
     resp = await client.put(
@@ -36,27 +49,14 @@ async def test_update_settings_rejects_live_mode_with_test_key(
         json={"mode": "live", "key_id": "rzp_test_ABC123"},
         headers=auth_headers,
     )
-    assert resp.status_code == 400
-    assert "rzp_live_" in resp.json()["message"]
+    assert resp.status_code == 200
+    assert resp.json()["data"]["mode"] == "test"
 
 
-async def test_update_settings_rejects_test_mode_with_live_key(
+async def test_a_mode_only_write_cannot_contradict_the_saved_key(
     client: AsyncClient, auth_headers, test_clinic: Clinic
 ):
-    resp = await client.put(
-        "/api/v1/razorpay/settings",
-        json={"mode": "test", "key_id": "rzp_live_ABC123"},
-        headers=auth_headers,
-    )
-    assert resp.status_code == 400
-    assert "rzp_test_" in resp.json()["message"]
-
-
-async def test_update_settings_rejects_mismatch_against_already_saved_key(
-    client: AsyncClient, auth_headers, test_clinic: Clinic
-):
-    """Mode-only change must still be checked against the persisted
-    key_id — not just whatever the current request happens to include."""
+    """Posting only a mode used to 400; now it simply cannot take effect."""
     await client.put(
         "/api/v1/razorpay/settings",
         json={"key_id": "rzp_test_ABC123"},
@@ -65,7 +65,21 @@ async def test_update_settings_rejects_mismatch_against_already_saved_key(
     resp = await client.put(
         "/api/v1/razorpay/settings", json={"mode": "live"}, headers=auth_headers
     )
-    assert resp.status_code == 400
+    assert resp.status_code == 200
+    assert resp.json()["data"]["mode"] == "test"
+
+
+async def test_an_unrecognised_key_prefix_stays_on_test(
+    client: AsyncClient, auth_headers, test_clinic: Clinic
+):
+    """A custom or legacy key id is not a reason to claim the account is live."""
+    resp = await client.put(
+        "/api/v1/razorpay/settings",
+        json={"mode": "live", "key_id": "legacy_key_without_prefix"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["mode"] == "test"
 
 
 async def test_update_settings_never_echoes_secrets(
