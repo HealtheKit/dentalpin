@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- fix(#522): the billing, budgets and scheduling report pages, the home
+  dashboard snapshot and the week-glance panel all built their ranges from
+  local midnights and sent them as UTC, so every clinic east of UTC saw a
+  window shifted one day back — "This month" starting on the last day of the
+  previous month, "Last year" missing 31 December. Now use `toISODate`.
+
 - feat(#232): sidebar entry grouped under the Practice header (`nav.section` "practice").
 - feat(#230): patient-stats + operational families. `GET
   /patients/demographics` (age bands, gender, area with explicit

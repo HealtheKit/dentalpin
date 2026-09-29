@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- fix(#522): the payments report mixed two date frames. `new Date("YYYY-MM-DD")`
+  is UTC midnight per spec while `setDate` and `toLocaleDateString` read local
+  fields, so the previous-period range and the trend chart's bucket labels
+  could land a day out. Date-only strings now parse through one local
+  `parseDateOnly`, days are counted with `setDate` rather than millisecond
+  arithmetic (DST-safe), and output goes through `toISODate`.
+
 - fix(#506): the payment modal separates *recording* a payment that already
   happened from *collecting* one now. The manual methods and the gateway rails
   sat in one flat row under one label, so nothing said that picking `upi`

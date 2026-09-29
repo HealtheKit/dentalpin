@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix(#522): the new-case `start_date` default read the UTC day instead of the
+  local one. Now uses `toISODate`.
 - fix (maintainer review): inbox shows the patient's name (batched, no
   N+1); "Month X" counts calendar months from `start_date`, not controls;
   new-case modal asks for start date and orthodontist; case selector uses

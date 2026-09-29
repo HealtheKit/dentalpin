@@ -5,6 +5,7 @@
  */
 import type { OrthoCase } from '../composables/useOrthodontics'
 import { PERMISSIONS } from '~~/app/config/permissions'
+import { toISODate } from '~~/app/utils/wallClock'
 import OrthoCaseSheet from './OrthoCaseSheet.vue'
 
 const props = defineProps<{ patientId: string }>()
@@ -22,7 +23,7 @@ const selectedId = ref<string | undefined>()
 const showNew = ref(false)
 const isSaving = ref(false)
 const appliance = ref('brackets_metal')
-const startDate = ref(new Date().toISOString().slice(0, 10))
+const startDate = ref(toISODate(new Date()))
 const professionalId = ref<string | undefined>()
 const months = ref<number | null>(null)
 const notes = ref('')
@@ -60,7 +61,7 @@ async function save() {
     })
     showNew.value = false
     appliance.value = 'brackets_metal'
-    startDate.value = new Date().toISOString().slice(0, 10)
+    startDate.value = toISODate(new Date())
     professionalId.value = undefined
     months.value = null
     notes.value = ''
