@@ -9,13 +9,10 @@
       "description": "Configure the Razorpay payment gateway for this clinic.",
       "credentials": "API credentials",
       "mode": "Mode",
-      "modeHint": "Use test mode until you've verified everything works end to end.",
       "modeTest": "Test",
       "modeLive": "Live",
       "keyId": "Key ID",
       "keyIdHint": "From the Razorpay dashboard — safe to expose to the browser.",
-      "modeKeyMismatchLive": "Live mode requires a key starting with \"rzp_live_\". Your current key starts with \"rzp_test_\".",
-      "modeKeyMismatchTest": "Test mode requires a key starting with \"rzp_test_\". Your current key starts with \"rzp_live_\".",
       "keySecret": "Key secret",
       "keySecretHint": "From the Razorpay dashboard. Never shown again after saving.",
       "keySecretConfiguredHint": "A key secret is already configured. Leave blank to keep it.",
@@ -38,7 +35,9 @@
       "saved": "Settings saved",
       "saveError": "Could not save settings",
       "loadError": "Could not load settings",
-      "webhookCopied": "Webhook URL copied"
+      "webhookCopied": "Webhook URL copied",
+      "modeDerivedHint": "Taken from the key: an rzp_live_ key transacts with real money, an rzp_test_ key does not.",
+      "modeUnknown": "No key yet"
     },
     "collect": {
       "notConfiguredHint": "Razorpay isn't configured for this clinic yet. Ask an admin to set it up in Settings.",

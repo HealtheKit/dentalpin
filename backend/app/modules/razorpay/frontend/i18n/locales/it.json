@@ -9,13 +9,10 @@
       "description": "Configura il gateway di pagamento Razorpay per questa clinica.",
       "credentials": "Credenziali API",
       "mode": "Modalità",
-      "modeHint": "Usa la modalità di test finché non hai verificato che tutto funzioni correttamente.",
       "modeTest": "Test",
       "modeLive": "Produzione",
       "keyId": "ID chiave",
       "keyIdHint": "Dalla dashboard Razorpay — sicuro da esporre nel browser.",
-      "modeKeyMismatchLive": "La modalità Live richiede una chiave che inizi con \"rzp_live_\". La tua chiave attuale inizia con \"rzp_test_\".",
-      "modeKeyMismatchTest": "La modalità Test richiede una chiave che inizi con \"rzp_test_\". La tua chiave attuale inizia con \"rzp_live_\".",
       "keySecret": "Chiave segreta",
       "keySecretHint": "Dalla dashboard Razorpay. Non verrà più mostrata dopo il salvataggio.",
       "keySecretConfiguredHint": "È già configurata una chiave segreta. Lascia vuoto per mantenerla.",
@@ -38,7 +35,9 @@
       "saved": "Impostazioni salvate",
       "saveError": "Impossibile salvare le impostazioni",
       "loadError": "Impossibile caricare le impostazioni",
-      "webhookCopied": "URL del webhook copiato"
+      "webhookCopied": "URL del webhook copiato",
+      "modeDerivedHint": "Ricavato dalla chiave: una chiave rzp_live_ muove denaro reale, una rzp_test_ no.",
+      "modeUnknown": "Nessuna chiave"
     },
     "collect": {
       "notConfiguredHint": "Razorpay non è ancora configurato per questa clinica. Chiedi a un amministratore di configurarlo nelle Impostazioni.",

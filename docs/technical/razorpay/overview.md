@@ -25,7 +25,8 @@ The thin vendor "wire" under the gateway-adapter architecture (ADR
   verified by a per-clinic HMAC secret; the clinic is resolved by the
   URL path segment (only ever used to pick which secret to verify
   against, never trusted for tenancy on its own).
-- **Settings**: per-clinic mode (test/live), credentials
+- **Settings**: per-clinic credentials (mode test/live is derived from
+  the key prefix, never chosen — #482)
   (Fernet-encrypted), webhook secret, active flag, webhook health
   (last received/processed, last event type, last error).
 

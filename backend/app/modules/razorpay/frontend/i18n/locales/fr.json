@@ -9,13 +9,10 @@
       "description": "Configurez la passerelle de paiement Razorpay pour cette clinique.",
       "credentials": "Identifiants API",
       "mode": "Mode",
-      "modeHint": "Utilisez le mode test jusqu'à ce que tout fonctionne de bout en bout.",
       "modeTest": "Test",
       "modeLive": "Production",
       "keyId": "ID de clé",
       "keyIdHint": "Depuis le tableau de bord Razorpay — peut être exposé au navigateur sans risque.",
-      "modeKeyMismatchLive": "Le mode Live nécessite une clé commençant par \"rzp_live_\". Votre clé actuelle commence par \"rzp_test_\".",
-      "modeKeyMismatchTest": "Le mode Test nécessite une clé commençant par \"rzp_test_\". Votre clé actuelle commence par \"rzp_live_\".",
       "keySecret": "Clé secrète",
       "keySecretHint": "Depuis le tableau de bord Razorpay. Ne sera plus affichée après l'enregistrement.",
       "keySecretConfiguredHint": "Une clé secrète est déjà configurée. Laissez vide pour la conserver.",
@@ -38,7 +35,9 @@
       "saved": "Paramètres enregistrés",
       "saveError": "Impossible d'enregistrer les paramètres",
       "loadError": "Impossible de charger les paramètres",
-      "webhookCopied": "URL du webhook copiée"
+      "webhookCopied": "URL du webhook copiée",
+      "modeDerivedHint": "Déduit de la clé : une clé rzp_live_ engage de l'argent réel, une clé rzp_test_ non.",
+      "modeUnknown": "Pas encore de clé"
     },
     "collect": {
       "notConfiguredHint": "Razorpay n'est pas encore configuré pour cette clinique. Demandez à un administrateur de le configurer dans les paramètres.",

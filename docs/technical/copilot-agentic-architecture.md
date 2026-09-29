@@ -143,6 +143,22 @@ Additions since v1, newest last:
 | `billing` | `list_invoices`, `get_invoice` (invoice axis only, `include_payments=False`) | READ | `billing.read` |
 | `payments` | `record_payment` | WRITE | `payments.record.write` |
 | `payments` | `patient_payment_history` (collection axis only) | READ | `payments.record.read` |
+| `notifications` | `send_notification` | WRITE | `notifications.send` |
+
+#### Tool-category bar for patient-facing dispatches (issue #387)
+
+A tool is `DESTRUCTIVE` when either of the following is true:
+
+1. It bypasses the recipient's per-type delivery preference with `force_send=True`.
+2. It enters or depends on a persisted domain state that has no return path.
+
+The two triggers are independent: one is enough.
+
+- `send_budget` meets both. `BudgetWorkflowService.send_budget` moves an eligible budget out of `draft`, and the resulting `budget.sent` handler, `NotificationHandlers.on_budget_sent`, forces the staff-selected channel while bypassing the automatic-send gate.
+- The `invoice.sent` notification path meets the first trigger and operates only after the invoice has left draft: invoices must already be issued, partial, or paid, and drafts or voided invoices are rejected. The relevant join is `NotificationHandlers.on_invoice_sent`.
+- `send_notification` meets neither trigger under its current wrapper: it does not pass `force_send`, and it does not enter or depend on an irreversible domain-state transition. It therefore remains `WRITE`.
+
+Today's notification dispatch interval is 45 seconds, and there is no route for recalling a queued `CommunicationMessage`. Do not document delivery as recallable.
 
 #### Playbooks (composite capabilities — decision record)
 

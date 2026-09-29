@@ -23,7 +23,6 @@ const isSaving = ref(false)
 const settings = ref<Awaited<ReturnType<typeof getSettings>> | null>(null)
 
 const form = ref({
-  mode: 'test' as 'test' | 'live',
   key_id: '',
   key_secret: '',
   webhook_secret: '',
@@ -41,27 +40,20 @@ function formatDate(s: string | null): string {
   return new Date(s).toLocaleString()
 }
 
-// Razorpay's key prefix already encodes the environment — a mismatch
-// here would silently collect in test mode while the UI claims live
-// (or vice versa). Checked client-side for immediate feedback; the
-// backend re-checks the merged (persisted + incoming) state as a
-// backstop.
-const modeKeyMismatch = computed(() => {
+// Razorpay key ids are self-declaring, so the environment is read off
+// the key rather than chosen (#482): a selector could only ever agree
+// with the key or lie about it, and it never changed what the gateway
+// did. Mirrors `mode_for_key` on the backend, which is the authority.
+const derivedMode = computed<'test' | 'live' | null>(() => {
   const keyId = form.value.key_id.trim()
-  if (form.value.mode === 'live' && keyId.startsWith('rzp_test_')) {
-    return t('razorpay.settings.modeKeyMismatchLive')
-  }
-  if (form.value.mode === 'test' && keyId.startsWith('rzp_live_')) {
-    return t('razorpay.settings.modeKeyMismatchTest')
-  }
-  return null
+  if (!keyId) return null
+  return keyId.startsWith('rzp_live_') ? 'live' : 'test'
 })
 
 onMounted(async () => {
   try {
     settings.value = await getSettings()
     form.value = {
-      mode: settings.value.mode,
       key_id: settings.value.key_id ?? '',
       key_secret: '',
       webhook_secret: '',
@@ -75,14 +67,10 @@ onMounted(async () => {
 })
 
 async function save() {
-  if (modeKeyMismatch.value) {
-    toast.add({ title: t('common.error'), description: modeKeyMismatch.value, color: 'error' })
-    return
-  }
   isSaving.value = true
   try {
+    // No `mode`: the backend derives it from the key (#482).
     const payload: Record<string, unknown> = {
-      mode: form.value.mode,
       key_id: form.value.key_id || null,
       is_active: form.value.is_active
     }
@@ -137,17 +125,19 @@ async function copyWebhookUrl() {
         <div class="space-y-4">
           <UFormField
             :label="t('razorpay.settings.mode')"
-            :hint="t('razorpay.settings.modeHint')"
+            :hint="t('razorpay.settings.modeDerivedHint')"
           >
-            <USelectMenu
-              v-model="form.mode"
-              :items="[
-                { label: t('razorpay.settings.modeTest'), value: 'test' },
-                { label: t('razorpay.settings.modeLive'), value: 'live' }
-              ]"
-              value-key="value"
-              :disabled="!canManage"
-            />
+            <UBadge
+              v-if="derivedMode"
+              :color="derivedMode === 'live' ? 'success' : 'neutral'"
+              variant="subtle"
+            >
+              {{ derivedMode === 'live' ? t('razorpay.settings.modeLive') : t('razorpay.settings.modeTest') }}
+            </UBadge>
+            <span
+              v-else
+              class="text-caption text-muted"
+            >{{ t('razorpay.settings.modeUnknown') }}</span>
           </UFormField>
           <UFormField
             :label="t('razorpay.settings.keyId')"
@@ -159,13 +149,6 @@ async function copyWebhookUrl() {
               :disabled="!canManage"
             />
           </UFormField>
-          <UAlert
-            v-if="modeKeyMismatch"
-            color="error"
-            variant="subtle"
-            icon="i-lucide-triangle-alert"
-            :description="modeKeyMismatch"
-          />
           <UFormField
             :label="t('razorpay.settings.keySecret')"
             :hint="settings?.has_key_secret ? t('razorpay.settings.keySecretConfiguredHint') : t('razorpay.settings.keySecretHint')"
@@ -272,7 +255,6 @@ async function copyWebhookUrl() {
         block
         color="primary"
         :loading="isSaving"
-        :disabled="!!modeKeyMismatch"
         @click="save"
       >
         {{ t('common.save') }}

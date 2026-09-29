@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- fix(#506): the payment modal separates *recording* a payment that already
+  happened from *collecting* one now. The manual methods and the gateway rails
+  sat in one flat row under one label, so nothing said that picking `upi`
+  writes a record while picking a gateway starts a collection. The second
+  group does not render when no gateway module is installed.
+
 - fix(#470 review): `PaymentCreateModal`'s default/"today" date now
   reads `clinicToday()` (clinic-local calendar date) instead of the
   browser's UTC date — matches the same clinic-local booking the

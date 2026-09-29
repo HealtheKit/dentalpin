@@ -10,7 +10,7 @@ related_permissions:
   - razorpay.settings.write
 related_paths:
   - backend/app/modules/razorpay/frontend/pages/settings/razorpay/index.vue
-last_verified_commit: b4bd7a45
+last_verified_commit: 2e9e9179
 ---
 
 # /settings/razorpay
@@ -29,17 +29,14 @@ botón **Guardar** requieren además `razorpay.settings.write`
 ## Secciones
 
 1. **Credenciales de la API**
-   - **Modo** — Prueba o Producción. Usa Prueba hasta haber verificado
-     un cobro completo de principio a fin con un pago de prueba real
-     de Razorpay.
+   - **Modo** — distintivo de solo lectura, Prueba o Producción,
+     tomado del prefijo del ID de clave: `rzp_live_…` es Producción
+     (dinero real), cualquier otro es Prueba. Se actualiza al escribir
+     la clave; sin clave muestra "Aún sin clave". Usa una clave de
+     prueba hasta haber verificado un cobro completo de principio a fin.
    - **ID de clave** — del panel de Razorpay. No es secreto; el
-     navegador lo necesita para abrir el pago de Razorpay. El prefijo
-     de la clave debe coincidir con el **Modo** elegido: `rzp_test_…`
-     para Test, `rzp_live_…` para Producción. Si no coinciden aparece
-     una alerta roja bajo el campo y **Guardar** queda deshabilitado
-     hasta corregir el modo o la clave (el servidor rechaza la misma
-     discrepancia, también cuando solo se cambia el modo contra una
-     clave ya guardada).
+     navegador lo necesita para abrir el pago de Razorpay. Para pasar
+     de prueba a producción se pega el otro par de claves.
    - **Clave secreta** — del panel de Razorpay. Solo escritura: una
      vez guardada, el campo siempre aparece vacío con un aviso de que
      ya hay una clave configurada. Déjalo en blanco en un guardado

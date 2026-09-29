@@ -10,7 +10,7 @@ related_permissions:
   - razorpay.settings.write
 related_paths:
   - backend/app/modules/razorpay/frontend/pages/settings/razorpay/index.vue
-last_verified_commit: b4bd7a45
+last_verified_commit: 2e9e9179
 ---
 
 # /settings/razorpay
@@ -29,15 +29,14 @@ default).
 ## Sections
 
 1. **API credentials**
-   - **Mode** — Test or Live. Use Test until a full collection has
-     been verified end to end with a real Razorpay test-mode payment.
+   - **Mode** — read-only badge, Test or Live, taken from the Key ID
+     prefix: `rzp_live_…` is Live (real money), anything else is Test.
+     It updates as you type the key; with no key it shows "No key
+     yet". Use a test key until a full collection has been verified
+     end to end.
    - **Key ID** — from the Razorpay dashboard. Not secret; the browser
-     needs it to open Razorpay's checkout. The key's prefix must match
-     the selected **Mode**: `rzp_test_…` for Test, `rzp_live_…` for
-     Live. On a mismatch a red alert appears under the field and
-     **Save** is disabled until either the mode or the key is
-     corrected (the server rejects the same mismatch, also when only
-     the mode is changed against an already-saved key).
+     needs it to open Razorpay's checkout. Switching between test and
+     live is done by pasting the other key pair.
    - **Key secret** — from the Razorpay dashboard. Write-only: once
      saved, the field always shows as empty with a hint that a secret
      is already configured. Leave it blank on a later save to keep the
