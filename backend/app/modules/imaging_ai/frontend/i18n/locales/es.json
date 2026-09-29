@@ -26,8 +26,7 @@
       "noDicom": "Aún no hay documentos DICOM para este paciente.",
       "backend": "Motor",
       "submit": "Lanzar análisis",
-      "seriesHint": "El primer archivo marcado es el documento principal; marca el resto de la serie para análisis volumétricos (nnU-Net).",
-      "search": "Buscar"
+      "seriesHint": "El primer archivo marcado es el documento principal; marca el resto de la serie para análisis volumétricos (nnU-Net)."
     },
     "backends": {
       "pano": "Hallazgos en pano (imagen única)",
@@ -35,7 +34,8 @@
     },
     "review": {
       "pending_review": "Borrador - pendiente de revisión",
-      "confirmed": "Revisado"
+      "confirmed": "Revisado",
+      "not_applicable": "No aplica"
     },
     "job": {
       "artifacts": "Borradores",

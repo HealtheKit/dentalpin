@@ -15,7 +15,7 @@ related_permissions:
 related_paths:
   - backend/app/modules/imaging_ai/router.py
   - backend/app/modules/imaging_ai/frontend/pages/imaging-ai/index.vue
-last_verified_commit: ad339611ade2847809b6478a60a7a1354990b432
+last_verified_commit: 7fc11e71c843185f25f3c02d219af038d1e17675
 screenshots: []
 ---
 
@@ -30,9 +30,12 @@ cancelled — plus errors and the runner log tail.
 
 ## Opening the page
 
-Open `/imaging-ai` and search the patient, or deep-link
-`/imaging-ai?patient_id=<uuid>` from the patient record. Without patient
-read rights, only the deep link works.
+Open `/imaging-ai` and search the patient in the single patient control,
+or deep-link `/imaging-ai?patient_id=<uuid>` from the patient record —
+the control initializes from the URL. Without patient
+read rights, only the deep link works. The job list refreshes on its own
+on the scheduler-tick cadence; failed and cancelled jobs read
+"Not applicable" for review instead of "pending review".
 
 ## Drafts and review
 

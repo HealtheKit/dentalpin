@@ -85,5 +85,13 @@ export function useImagingAi() {
     return res.data
   }
 
-  return { queueJob, confirmJob, cancelJob, fetchJobs, fetchJob, fetchDicomDocuments, searchPatients }
+  async function getPatient(patientId: string) {
+    const res = await api.get<ApiResponse<PatientOption>>(
+      `/api/v1/patients/${patientId}`,
+      { errorToast: false }
+    )
+    return res.data
+  }
+
+  return { queueJob, confirmJob, cancelJob, fetchJobs, fetchJob, fetchDicomDocuments, searchPatients, getPatient }
 }

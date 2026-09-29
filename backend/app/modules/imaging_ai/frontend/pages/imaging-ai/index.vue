@@ -9,7 +9,7 @@ const { t } = useI18n()
 const { can } = usePermissions()
 const route = useRoute()
 const router = useRouter()
-const { queueJob, confirmJob, cancelJob, fetchJobs, fetchDicomDocuments, searchPatients } = useImagingAi()
+const { queueJob, confirmJob, cancelJob, fetchJobs, fetchDicomDocuments, searchPatients, getPatient } = useImagingAi()
 
 const jobs = ref<AiJob[]>([])
 const total = ref(0)
@@ -37,6 +37,25 @@ async function runPatientSearch() {
   try {
     const found = await searchPatients(patientSearch.value)
     patientOptions.value = found.map(p => ({ ...p, label: `${p.first_name} ${p.last_name}` }))
+  } finally {
+    searching.value = false
+  }
+}
+
+async function resolveSelectedPatient() {
+  if (!patientId.value || !canReadPatients.value) {
+    selectedPatient.value = undefined
+    return
+  }
+  if (selectedPatient.value?.id === patientId.value) return
+  searching.value = true
+  try {
+    const p = await getPatient(patientId.value)
+    const choice = { ...p, label: `${p.first_name} ${p.last_name}` }
+    patientOptions.value = [choice]
+    selectedPatient.value = choice
+  } catch {
+    selectedPatient.value = undefined
   } finally {
     searching.value = false
   }
@@ -127,9 +146,26 @@ function statusColor(s: string) {
   return 'neutral'
 }
 
+// Refresh on the scheduler tick cadence so the list follows background
+// execution without a manual reload. Cleared when leaving the page.
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
 onMounted(async () => {
   if (patientId.value) {
+    await resolveSelectedPatient()
     await Promise.all([loadJobs(), loadDocs()])
+  }
+  // Started unconditionally: a patient picked after mount must also refresh.
+  // The callback itself no-ops until a patient is selected.
+  pollTimer = setInterval(() => {
+    if (patientId.value) void loadJobs()
+  }, 60000)
+})
+
+onBeforeUnmount(() => {
+  if (pollTimer !== null) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
 })
 </script>
@@ -144,28 +180,15 @@ onMounted(async () => {
       <template #header>
         <span class="font-medium">{{ t('imagingAi.queue.patient') }}</span>
       </template>
-      <div class="flex flex-wrap items-end gap-2">
-        <UFormField :label="t('imagingAi.queue.patient')">
-          <UInput
-            v-model="patientSearch"
-            :placeholder="t('imagingAi.queue.searchPatients')"
-          />
-        </UFormField>
-        <UButton
-          :loading="searching"
-          @click="runPatientSearch"
-        >
-          {{ t('imagingAi.queue.search') }}
-        </UButton>
-      </div>
       <USelectMenu
         v-model="selectedPatient"
         :items="patientOptions"
         :loading="searching"
         :placeholder="t('imagingAi.queue.searchPatients')"
         label-key="label"
-        searchable
+        ignore-filter
         @update:model-value="pickPatient"
+        @update:search-term="patientSearch = $event; runPatientSearch()"
       />
     </UCard>
     <UAlert
@@ -296,6 +319,12 @@ onMounted(async () => {
                 color="warning"
               >
                 {{ t(`imagingAi.review.${j.review_status}`) }}
+              </UBadge>
+              <UBadge
+                v-else-if="j.status === 'failed' || j.status === 'cancelled'"
+                color="neutral"
+              >
+                {{ t('imagingAi.review.not_applicable') }}
               </UBadge>
               <UButton
                 v-if="canQueue && canConfirm(j)"

@@ -26,8 +26,7 @@
       "noDicom": "No DICOM documents for this patient yet.",
       "backend": "Backend",
       "submit": "Queue run",
-      "seriesHint": "First checked file is the primary document; check the rest of the series for volumetric (nnU-Net) runs.",
-      "search": "Search"
+      "seriesHint": "First checked file is the primary document; check the rest of the series for volumetric (nnU-Net) runs."
     },
     "backends": {
       "pano": "Pano findings (single frame)",
@@ -35,7 +34,8 @@
     },
     "review": {
       "pending_review": "Draft - awaiting review",
-      "confirmed": "Reviewed"
+      "confirmed": "Reviewed",
+      "not_applicable": "Not applicable"
     },
     "job": {
       "artifacts": "Draft artifacts",

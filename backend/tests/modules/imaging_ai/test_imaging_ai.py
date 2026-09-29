@@ -20,6 +20,7 @@ from app.modules.imaging_ai.models import (
     JOB_PROPOSED,
     JOB_QUEUED,
     REVIEW_CONFIRMED,
+    REVIEW_NA,
     REVIEW_PENDING,
 )
 from app.modules.imaging_ai.runner import RunnerResult, build_nnunet_cmd, build_pano_cmd
@@ -201,12 +202,14 @@ async def test_cancel_proposed_but_not_running(
     )
     await AiJobService.cancel_job(db_session, proposed)
     assert proposed.status == JOB_CANCELLED
+    assert proposed.review_status == REVIEW_NA
 
     queued = await AiJobService.queue_job(
         db_session, test_clinic.id, test_patient.id, user_id, doc.id
     )
     await AiJobService.cancel_job(db_session, queued)
     assert queued.status == JOB_CANCELLED
+    assert queued.review_status == REVIEW_NA
     with pytest.raises(ValueError):
         await AiJobService.cancel_job(db_session, queued)
 
@@ -382,6 +385,7 @@ async def test_background_run_marks_failure(
     assert finished is not None
     assert finished.status == JOB_FAILED
     assert finished.error == "model exploded"
+    assert finished.review_status == REVIEW_NA
 
 
 @pytest.mark.asyncio
@@ -969,6 +973,7 @@ async def test_scheduler_reaps_stale_running(
     assert reaped is not None
     assert reaped.status == JOB_FAILED
     assert "2h" in (reaped.error or "")
+    assert reaped.review_status == REVIEW_NA
 
 
 # ------------------------------------------------------------------

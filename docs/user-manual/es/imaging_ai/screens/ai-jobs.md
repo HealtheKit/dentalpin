@@ -15,7 +15,7 @@ related_permissions:
 related_paths:
   - backend/app/modules/imaging_ai/router.py
   - backend/app/modules/imaging_ai/frontend/pages/imaging-ai/index.vue
-last_verified_commit: ad339611ade2847809b6478a60a7a1354990b432
+last_verified_commit: 7fc11e71c843185f25f3c02d219af038d1e17675
 screenshots: []
 ---
 
@@ -31,9 +31,12 @@ final del registro del motor.
 
 ## Cómo abrir la página
 
-Abre `/imaging-ai` y busca el paciente, o usa el enlace directo
-`/imaging-ai?patient_id=<uuid>` desde la ficha del paciente. Sin permiso
-de lectura de pacientes, solo funciona el enlace directo.
+Abre `/imaging-ai` y busca el paciente en el control único, o usa el enlace
+directo `/imaging-ai?patient_id=<uuid>` desde la ficha del paciente — el
+control arranca desde la URL. Sin permiso
+de lectura de pacientes, solo funciona el enlace directo. La lista se
+actualiza sola al ritmo del programador; los trabajos fallidos o cancelados
+dicen "No aplica" en revisión en vez de "pendiente".
 
 ## Borradores y revisión
 

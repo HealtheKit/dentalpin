@@ -26,8 +26,7 @@
       "noDicom": "Ainda sem documentos DICOM para este paciente.",
       "backend": "Motor",
       "submit": "Iniciar análise",
-      "seriesHint": "O primeiro ficheiro marcado é o documento principal; marque o resto da série para análises volumétricas (nnU-Net).",
-      "search": "Pesquisar"
+      "seriesHint": "O primeiro ficheiro marcado é o documento principal; marque o resto da série para análises volumétricas (nnU-Net)."
     },
     "backends": {
       "pano": "Achados pano (imagem única)",
@@ -35,7 +34,8 @@
     },
     "review": {
       "pending_review": "Rascunho - a aguardar revisão",
-      "confirmed": "Revisto"
+      "confirmed": "Revisto",
+      "not_applicable": "Não aplicável"
     },
     "job": {
       "artifacts": "Rascunhos",

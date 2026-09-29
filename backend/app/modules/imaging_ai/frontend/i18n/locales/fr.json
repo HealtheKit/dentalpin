@@ -26,8 +26,7 @@
       "noDicom": "Aucun document DICOM pour ce patient pour le moment.",
       "backend": "Moteur",
       "submit": "Lancer l'analyse",
-      "seriesHint": "Le premier fichier coché est le document principal ; cochez le reste de la série pour les analyses volumiques (nnU-Net).",
-      "search": "Rechercher"
+      "seriesHint": "Le premier fichier coché est le document principal ; cochez le reste de la série pour les analyses volumiques (nnU-Net)."
     },
     "backends": {
       "pano": "Résultats pano (image unique)",
@@ -35,7 +34,8 @@
     },
     "review": {
       "pending_review": "Brouillon - en attente de relecture",
-      "confirmed": "Relu"
+      "confirmed": "Relu",
+      "not_applicable": "Sans objet"
     },
     "job": {
       "artifacts": "Brouillons",

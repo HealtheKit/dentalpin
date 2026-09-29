@@ -26,8 +26,7 @@
       "noDicom": "Ancora nessun documento DICOM per questo paziente.",
       "backend": "Motore",
       "submit": "Avvia analisi",
-      "seriesHint": "Il primo file selezionato è il documento principale; seleziona il resto della serie per le analisi volumetriche (nnU-Net).",
-      "search": "Cerca"
+      "seriesHint": "Il primo file selezionato è il documento principale; seleziona il resto della serie per le analisi volumetriche (nnU-Net)."
     },
     "backends": {
       "pano": "Reperti pano (singola immagine)",
@@ -35,7 +34,8 @@
     },
     "review": {
       "pending_review": "Bozza - in attesa di revisione",
-      "confirmed": "Revisionato"
+      "confirmed": "Revisionato",
+      "not_applicable": "Non applicabile"
     },
     "job": {
       "artifacts": "Bozze",
