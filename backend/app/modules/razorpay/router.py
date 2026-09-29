@@ -44,7 +44,7 @@ def _settings_response(settings) -> RazorpaySettingsResponse:
         # Derived, not read back (#482): a row stored before the key/mode
         # check existed can still hold "live" next to a test key, and the
         # settings screen must not repeat that claim to the clinic.
-        mode=mode_for_key(settings.key_id, fallback=settings.mode) if settings else "test",
+        mode=mode_for_key(settings.key_id if settings else None),
         key_id=settings.key_id if settings else None,
         has_key_secret=bool(settings and settings.key_secret_encrypted),
         has_webhook_secret=bool(settings and settings.webhook_secret_encrypted),

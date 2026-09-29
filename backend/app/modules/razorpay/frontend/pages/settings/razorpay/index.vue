@@ -46,9 +46,8 @@ function formatDate(s: string | null): string {
 // did. Mirrors `mode_for_key` on the backend, which is the authority.
 const derivedMode = computed<'test' | 'live' | null>(() => {
   const keyId = form.value.key_id.trim()
-  if (keyId.startsWith('rzp_live_')) return 'live'
-  if (keyId.startsWith('rzp_test_')) return 'test'
-  return null
+  if (!keyId) return null
+  return keyId.startsWith('rzp_live_') ? 'live' : 'test'
 })
 
 onMounted(async () => {

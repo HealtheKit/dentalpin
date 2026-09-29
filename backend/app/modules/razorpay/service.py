@@ -16,7 +16,7 @@ from app.core.email.encryption import decrypt_password, encrypt_password
 from .models import RazorpaySettings
 
 
-def mode_for_key(key_id: str | None, fallback: str = "test") -> str:
+def mode_for_key(key_id: str | None) -> str:
     """The environment a Razorpay key belongs to, from the key itself (#482).
 
     Razorpay key ids are self-declaring: ``rzp_live_…`` transacts with
@@ -26,15 +26,10 @@ def mode_for_key(key_id: str | None, fallback: str = "test") -> str:
     clinic saw when a row stored before the validation landed kept
     saying "live" next to a test key.
 
-    An unrecognised prefix keeps ``fallback`` (a custom or legacy key id
-    is not a reason to claim the account is live).
+    Anything but ``rzp_live_…`` (including no key) is ``test``: a custom
+    or legacy key id is not a reason to claim the account is live.
     """
-    if key_id:
-        if key_id.startswith("rzp_live_"):
-            return "live"
-        if key_id.startswith("rzp_test_"):
-            return "test"
-    return fallback
+    return "live" if key_id and key_id.startswith("rzp_live_") else "test"
 
 
 class RazorpaySettingsService:
@@ -81,7 +76,7 @@ class RazorpaySettingsService:
         # One source of truth: the stored mode follows the stored key.
         # This also repairs a row saved before the check existed, on its
         # next write, without a migration.
-        settings.mode = mode_for_key(settings.key_id, fallback=settings.mode or "test")
+        settings.mode = mode_for_key(settings.key_id)
 
         # Credential change resets verification — mirrors KapsoService:
         # a new key pair hasn't been proven to work yet.
