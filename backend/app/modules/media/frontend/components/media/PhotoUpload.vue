@@ -233,17 +233,12 @@ async function submit() {
       <!-- Generic placeholder for non-image files (e.g. DICOM) -->
       <div
         v-else
-        class="flex items-center justify-center gap-3 bg-default px-6 py-8 text-primary-accent"
+        class="flex items-center justify-center bg-default px-6 py-8 text-primary-accent"
       >
         <UIcon
           name="i-lucide-file-image"
           class="h-12 w-12"
         />
-        <div class="text-start">
-          <p class="text-sm font-semibold">
-            {{ file.name }}
-          </p>
-        </div>
       </div>
       <div class="flex items-center justify-between gap-3 px-3 py-2 bg-default">
         <div class="min-w-0 flex-1">

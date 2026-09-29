@@ -177,7 +177,7 @@ onMounted(loadQueue)
       </h1>
       <USelectMenu
         v-if="canListPatients"
-        :model-value="patientId || undefined"
+        :model-value="resolvingPatient ? undefined : (patientId || undefined)"
         :items="patientOptions"
         :loading="resolvingPatient"
         value-key="value"
