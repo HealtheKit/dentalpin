@@ -297,7 +297,11 @@ async def test_invalid_credentials_share_generic_shapes(
             json={
                 "full_name": "Nadie",
                 "phone": "+34000000000",
-                "motive": "x",
+                "email": "nadie@example.com",
+                "motive": "Presupuesto",
+                "description": "Viene de la web.",
+                "availability_days": ["mon"],
+                "availability_slot": "morning",
             },
             headers={"X-Lead-Key": "lk_missing"},
         )
