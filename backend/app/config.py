@@ -26,6 +26,8 @@ def unknown_env_keys(env_file: str | Path, declared: set[str]) -> list[str]:
     path = Path(env_file)
     if not path.is_file():
         return []
+    # pydantic-settings matches .env keys case-insensitively (case_sensitive=False).
+    declared_ci = {name.lower() for name in declared}
     found: list[str] = []
     for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
         line = raw.strip()
@@ -34,7 +36,7 @@ def unknown_env_keys(env_file: str | Path, declared: set[str]) -> list[str]:
         key = line.split("=", 1)[0].strip()
         if key.startswith("export "):
             key = key[len("export ") :].strip()
-        if not key or key in declared or key in FOREIGN_ENV_KEYS:
+        if not key or key.lower() in declared_ci or key in FOREIGN_ENV_KEYS:
             continue
         if key.startswith(FOREIGN_ENV_PREFIXES):
             continue

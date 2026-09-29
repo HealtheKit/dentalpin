@@ -46,6 +46,12 @@ def test_declared_settings_stay_quiet(tmp_path: Path) -> None:
     assert unknown_env_keys(path, DECLARED) == []
 
 
+def test_declared_settings_match_case_insensitively(tmp_path: Path) -> None:
+    """pydantic-settings applies ``database_url=`` too, so it is not unknown."""
+    path = _env(tmp_path, "database_url=x\nSentry_Dsn=z\n")
+    assert unknown_env_keys(path, DECLARED) == []
+
+
 def test_comments_blanks_and_export_prefixes(tmp_path: Path) -> None:
     path = _env(
         tmp_path, "\n# SENTRY_DNS=commented out\n\nexport SENTRY_DNS=oops\nDATABASE_URL=x\n"
