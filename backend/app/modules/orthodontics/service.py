@@ -21,7 +21,7 @@ from app.modules.recalls.service import RecallService
 from app.modules.treatment_plan.service import TreatmentPlanService
 
 from .defaults import DEFAULT_PROCEDURES, DEFAULT_WIRES
-from .models import CASE_STATUSES, OrthoCase, OrthoControl, OrthoSettings
+from .models import CASE_STATUSES, HYGIENE_LEVELS, OrthoCase, OrthoControl, OrthoSettings
 from .schemas import (
     OrthoCaseCreate,
     OrthoCaseUpdate,

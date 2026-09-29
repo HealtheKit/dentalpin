@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.models import Clinic, ClinicMembership, User
 from app.core.auth.service import hash_password
-<from app.modules.orthodontics.models import OrthoControl
+from app.modules.orthodontics.models import OrthoControl
 from app.modules.orthodontics.schemas import (
     OrthoCaseCreate,
     OrthoControlCreate,

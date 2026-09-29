@@ -60,7 +60,7 @@ class OrthoCaseResponse(BaseModel):
     finished_at: datetime | None
     reopened_at: datetime | None = None
     status_note: str | None
-<    patient_name: str | None = None
+    patient_name: str | None = None
     treatment_plan_id: UUID | None = None
     plan_item_id: UUID | None = None
     control_count: int = 0
