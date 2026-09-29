@@ -287,9 +287,7 @@ async def test_invalid_credentials_share_generic_shapes(
     clinic = t1_setup["clinic"]
     bodies = {}
 
-    bodies["budget"] = (
-        await client.get(f"{BUDGET}/{uuid4()}/meta")
-    ).json()["message"]
+    bodies["budget"] = (await client.get(f"{BUDGET}/{uuid4()}/meta")).json()["message"]
     bodies["push"] = (await client.get(f"{PUSH}/{uuid4()}")).json()["message"]
     bodies["leads"] = (
         await client.post(
