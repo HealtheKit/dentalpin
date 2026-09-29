@@ -973,6 +973,7 @@ async def test_scheduler_reaps_stale_running(
     assert reaped is not None
     assert reaped.status == JOB_FAILED
     assert "2h" in (reaped.error or "")
+    assert reaped.review_status == REVIEW_NA
 
 
 # ------------------------------------------------------------------

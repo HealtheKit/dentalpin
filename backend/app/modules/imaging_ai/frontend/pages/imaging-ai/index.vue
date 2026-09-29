@@ -154,10 +154,12 @@ onMounted(async () => {
   if (patientId.value) {
     await resolveSelectedPatient()
     await Promise.all([loadJobs(), loadDocs()])
-    pollTimer = setInterval(() => {
-      if (patientId.value) void loadJobs()
-    }, 60000)
   }
+  // Started unconditionally: a patient picked after mount must also refresh.
+  // The callback itself no-ops until a patient is selected.
+  pollTimer = setInterval(() => {
+    if (patientId.value) void loadJobs()
+  }, 60000)
 })
 
 onBeforeUnmount(() => {

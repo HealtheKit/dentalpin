@@ -69,7 +69,7 @@ async def process_ai_job_queue() -> None:
 
 async def reap_stuck_running() -> None:
     """Periodic job: fail jobs stuck in ``running`` past the stale horizon."""
-    from .models import JOB_FAILED, JOB_RUNNING, AiJob
+    from .models import JOB_FAILED, JOB_RUNNING, REVIEW_NA, AiJob
 
     cutoff = datetime.now(UTC) - STALE_RUNNING_AFTER
     async with async_session_maker() as db:
@@ -81,6 +81,7 @@ async def reap_stuck_running() -> None:
         stuck = rows.all()
         for job in stuck:
             job.status = JOB_FAILED
+            job.review_status = REVIEW_NA
             job.error = (
                 "worker did not finish within 2h (restart or crash); re-queue the job to retry"
             )
