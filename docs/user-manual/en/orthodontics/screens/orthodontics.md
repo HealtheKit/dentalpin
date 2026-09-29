@@ -13,6 +13,8 @@ related_endpoints:
   - POST /api/v1/orthodontics/cases/{case_id}/plan-link
   - POST /api/v1/orthodontics/cases/{case_id}/schedule
   - GET /api/v1/orthodontics/cases/{case_id}/installments
+  - GET /api/v1/orthodontics/settings
+  - PUT /api/v1/orthodontics/settings
 related_permissions:
   - orthodontics.cases.read
   - orthodontics.cases.write
