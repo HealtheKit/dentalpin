@@ -696,7 +696,13 @@ async def budget_treatments_context(db: AsyncSession, budget_id: UUID) -> list[d
     from app.modules.catalog.models import TreatmentCatalogItem
 
     items = (
-        (await db.execute(select(BudgetItem).where(BudgetItem.budget_id == budget_id)))
+        (
+            await db.execute(
+                select(BudgetItem)
+                .where(BudgetItem.budget_id == budget_id)
+                .order_by(BudgetItem.display_order)
+            )
+        )
         .scalars()
         .all()
     )
