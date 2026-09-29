@@ -16,6 +16,22 @@ from app.core.email.encryption import decrypt_password, encrypt_password
 from .models import RazorpaySettings
 
 
+def mode_for_key(key_id: str | None) -> str:
+    """The environment a Razorpay key belongs to, from the key itself (#482).
+
+    Razorpay key ids are self-declaring: ``rzp_live_…`` transacts with
+    real money, ``rzp_test_…`` does not, and nothing our side can say
+    overrides that. Deriving the mode instead of storing an independent
+    answer removes the state where the two disagree — which is what a
+    clinic saw when a row stored before the validation landed kept
+    saying "live" next to a test key.
+
+    Anything but ``rzp_live_…`` (including no key) is ``test``: a custom
+    or legacy key id is not a reason to claim the account is live.
+    """
+    return "live" if key_id and key_id.startswith("rzp_live_") else "test"
+
+
 class RazorpaySettingsService:
     """All clinic-scoped. Secrets encrypted at rest (Fernet)."""
 
@@ -46,8 +62,8 @@ class RazorpaySettingsService:
             )
             db.add(settings)
 
-        if data.get("mode"):
-            settings.mode = data["mode"]
+        # ``mode`` is derived from the key below, never taken from the
+        # payload (#482): the two could disagree, and the key always won.
         if data.get("key_id") is not None:
             settings.key_id = data["key_id"] or None
         if data.get("key_secret"):
@@ -57,27 +73,14 @@ class RazorpaySettingsService:
         if "is_active" in data and data["is_active"] is not None:
             settings.is_active = data["is_active"]
 
-        # Checked against the *merged* (persisted + incoming) state, not
-        # just the incoming payload — a request that only changes `mode`
-        # must still be checked against whatever `key_id` is already
-        # saved. Razorpay's own key prefix already encodes the
-        # environment, so a mismatch here would silently collect in test
-        # mode while the UI claims live (or vice versa).
-        if settings.key_id:
-            if settings.mode == "live" and settings.key_id.startswith("rzp_test_"):
-                raise ValueError(
-                    "Live mode requires a key starting with 'rzp_live_'. "
-                    "Your current key starts with 'rzp_test_'."
-                )
-            if settings.mode == "test" and settings.key_id.startswith("rzp_live_"):
-                raise ValueError(
-                    "Test mode requires a key starting with 'rzp_test_'. "
-                    "Your current key starts with 'rzp_live_'."
-                )
+        # One source of truth: the stored mode follows the stored key.
+        # This also repairs a row saved before the check existed, on its
+        # next write, without a migration.
+        settings.mode = mode_for_key(settings.key_id)
 
         # Credential change resets verification — mirrors KapsoService:
         # a new key pair hasn't been proven to work yet.
-        if data.get("key_secret") or data.get("key_id") or data.get("mode"):
+        if data.get("key_secret") or data.get("key_id"):
             settings.is_verified = False
 
         await db.commit()

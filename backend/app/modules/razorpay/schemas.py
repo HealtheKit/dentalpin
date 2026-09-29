@@ -20,7 +20,10 @@ class RazorpaySettingsUpdate(BaseModel):
     # "Authentication failed" that looks identical to a wrong key.
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    mode: str | None = Field(default=None, pattern=_MODE_PATTERN)
+    # Accepted for compatibility and ignored: the mode follows the key
+    # prefix (#482). Kept rather than removed so an older client posting
+    # it still gets a 200 instead of a 422 it cannot act on.
+    mode: str | None = Field(default=None, pattern=_MODE_PATTERN, deprecated=True)
     key_id: str | None = Field(default=None, max_length=100)
     key_secret: str | None = Field(default=None, max_length=200)
     webhook_secret: str | None = Field(default=None, max_length=200)
