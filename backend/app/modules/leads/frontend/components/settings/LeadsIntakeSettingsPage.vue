@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { toISODate } from '~~/app/utils/wallClock'
 import { PERMISSIONS } from '~~/app/config/permissions'
 import { errorMessage } from '~~/app/utils/error'
 import { useLeadsSettings, type LeadSettings } from '../../composables/useLeadsSettings'
@@ -77,12 +76,17 @@ async function load() {
 const countToday = computed(() => {
   const current = settings.value
   if (!current) return 0
-  // Browser-local day, not UTC (#522). Still not the *clinic's* day: the
-  // backend stamps `day_count_date` with the DB server's `current_date`,
-  // so the exact fix is `clinicToday(clinicTimezone)` — item 3 of #500,
-  // which @abdd8433 owns. This only removes the UTC offset error so the
-  // lint guard can land.
-  const today = toISODate(new Date())
+  // UTC on purpose, and the one place in the tree where it is right: the
+  // backend stamps `day_count_date` with Postgres `current_date`
+  // (service.py:267), which evaluates in the *database session's*
+  // timezone — UTC on every shipped deployment, since no compose file
+  // sets TZ and postgres:15-alpine defaults to it. `toISOString()` is UTC
+  // by definition, so this compares like with like. `toISODate` (browser
+  // local) or `clinicToday` (clinic local) would each introduce a
+  // mismatch during that zone's offset window. The durable fix is for the
+  // server to answer "is this count today" — see #500 item 3.
+  // eslint-disable-next-line no-restricted-syntax -- mirrors Postgres current_date (#522)
+  const today = new Date().toISOString().slice(0, 10)
   return current.day_count_date === today ? current.day_count : 0
 })
 
