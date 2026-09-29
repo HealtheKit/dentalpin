@@ -87,7 +87,8 @@ export function useImagingAi() {
 
   async function getPatient(patientId: string) {
     const res = await api.get<ApiResponse<PatientOption>>(
-      `/api/v1/patients/${patientId}`
+      `/api/v1/patients/${patientId}`,
+      { errorToast: false }
     )
     return res.data
   }

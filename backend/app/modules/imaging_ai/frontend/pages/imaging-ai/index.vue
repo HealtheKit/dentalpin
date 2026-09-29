@@ -43,7 +43,7 @@ async function runPatientSearch() {
 }
 
 async function resolveSelectedPatient() {
-  if (!patientId.value) {
+  if (!patientId.value || !canReadPatients.value) {
     selectedPatient.value = undefined
     return
   }
@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
         :loading="searching"
         :placeholder="t('imagingAi.queue.searchPatients')"
         label-key="label"
-        searchable
+        ignore-filter
         @update:model-value="pickPatient"
         @update:search-term="patientSearch = $event; runPatientSearch()"
       />

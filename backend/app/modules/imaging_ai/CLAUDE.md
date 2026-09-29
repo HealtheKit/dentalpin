@@ -26,7 +26,8 @@ Unknown backends answer 422; nnU-Net without a series answers 422.
 volumetric backends, `backend` (default `pano`), `model_id`/
 `model_version` (audit), `status` (`proposed`/`queued`/`running`/
 `done`/`failed`/`cancelled`), `queued_by` (null only while proposed),
-`review_status` (`pending_review`/`confirmed`) + `confirmed_by/at`,
+`review_status` (`pending_review`/`confirmed`, `not_applicable` once
+failed/cancelled) + `confirmed_by/at`,
 `log_excerpt`, `error`, `artifact_document_ids` JSONB. Job rows are
 never hard-deleted.
 
