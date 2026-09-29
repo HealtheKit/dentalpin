@@ -117,7 +117,7 @@ async def test_budget_unknown_token_detail_404(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_budget_verify_wrong_value_401(client: AsyncClient, t1_setup: dict) -> None:
+async def test_budget_bad_verify_value_401(client: AsyncClient, t1_setup: dict) -> None:
     budget = t1_setup["budget"]
     response = await client.post(
         f"{BUDGET}/{budget.public_token}/verify",
