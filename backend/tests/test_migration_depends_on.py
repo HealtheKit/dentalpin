@@ -29,6 +29,9 @@ CORE_TABLES = {"clinics", "users"}
 # Revisions that already shipped without ``depends_on``. Do not add to
 # this list — fix the revision instead. Shrinking it is welcome when a
 # module is being touched for another reason anyway.
+# All but perio_0001 are ordered today anyway, by a down_revision threaded
+# through another module's chain (the #56 anti-pattern); perio_0001
+# (down_revision "0001", FKs patients) is the one with no ordering at all.
 LEGACY_WITHOUT_DEPENDS_ON = {
     "ag_0001_initial.py",
     "bil_0001_initial.py",
@@ -51,6 +54,8 @@ LEGACY_WITHOUT_DEPENDS_ON = {
 _CREATE_TABLE = re.compile(r'op\.create_table\(\s*["\']([a-z_]+)["\']')
 _FK_CONSTRAINT = re.compile(r'ForeignKeyConstraint\(\s*\[[^\]]+\],\s*\[["\']([a-z_]+)\.')
 _FK_COLUMN = re.compile(r'ForeignKey\(\s*["\']([a-z_]+)\.')
+# op.create_foreign_key(name, source_table, referent_table, ...)
+_FK_OP = re.compile(r'op\.create_foreign_key\(\s*[^,]+,\s*["\'][a-z_]+["\'],\s*["\']([a-z_]+)["\']')
 _DEPENDS_ON = re.compile(r"^depends_on[^=]*=\s*(.+)$", re.M)
 
 
@@ -69,7 +74,11 @@ def _table_owners() -> dict[str, str]:
 
 
 def _cross_module_fk_targets(source: str, module: str, owners: dict[str, str]) -> set[str]:
-    targets = set(_FK_CONSTRAINT.findall(source)) | set(_FK_COLUMN.findall(source))
+    targets = (
+        set(_FK_CONSTRAINT.findall(source))
+        | set(_FK_COLUMN.findall(source))
+        | set(_FK_OP.findall(source))
+    )
     return {t for t in targets if t not in CORE_TABLES and owners.get(t, module) != module}
 
 
