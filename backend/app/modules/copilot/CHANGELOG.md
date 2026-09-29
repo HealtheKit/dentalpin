@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix: a confirmed write tool now publishes its module namespace on the data
+  bus. The confirmation stream only returns `tool_result` (no `tool_call`), so
+  the old lookup of a tool message never matched and no page refetched (#568).
+
 - feat: Arabic subject for the morning digest email ("الملخص اليومي", same
   wording as the `ar/` template title; from #426 by @dev-7aider).
 
