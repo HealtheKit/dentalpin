@@ -318,7 +318,7 @@ async def test_invalid_credentials_share_generic_shapes(
     assert bodies["budget"] == "Budget link not found"
     assert bodies["push"] == "Invalid or expired subscribe token"
     assert bodies["leads"] == "Invalid intake key"
-    assert bodies["integrations"] == "Invalid token"
+    assert bodies["integrations"] == "Invalid token."
     joined = " ".join(bodies.values()).lower()
     assert "clinic" not in joined
     assert "patient" not in joined
