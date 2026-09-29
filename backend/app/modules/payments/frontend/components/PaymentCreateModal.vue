@@ -168,6 +168,14 @@ const methodsCtx = computed(() => ({
   select: (rail: ModuleRail) => { moduleRail.value = rail }
 }))
 
+// Whether any gateway module contributed a collection rail. On a clean
+// install there is none, and the second group must not render an empty
+// heading (#506).
+const { resolve: resolveModuleSlot } = useModuleSlots()
+const hasCollectionRails = computed(
+  () => resolveModuleSlot('payments.create.methods', methodsCtx.value).length > 0
+)
+
 // Reset whenever the modal opens — keeps state from leaking between calls.
 watch(() => props.open, async (isOpen) => {
   if (isOpen) {
@@ -461,10 +469,16 @@ function handleKeydown(e: KeyboardEvent) {
           {{ t('payments.target.lockedBudget', { budget: budgetLabel || '' }) }}
         </div>
 
-        <!-- Método — chips. One tap, no dropdown. -->
+        <!-- Método — chips. One tap, no dropdown.
+             Two groups, because the chips do two different things to the
+             money (#506): the manual methods *record* a payment that has
+             already happened elsewhere, while a gateway rail *collects*
+             one now. Rendered flat under one label, nothing told the
+             user which was which — and picking `upi` versus `Razorpay`
+             has very different consequences. -->
         <div>
           <label class="block text-xs text-muted uppercase tracking-wide mb-2">
-            {{ t('payments.new.method') }}
+            {{ hasCollectionRails ? t('payments.new.methodRecord') : t('payments.new.method') }}
           </label>
           <div class="flex flex-wrap gap-2">
             <button
@@ -481,11 +495,6 @@ function handleKeydown(e: KeyboardEvent) {
               />
               <span>{{ t(`payments.methods.${m.value}`) }}</span>
             </button>
-            <!-- Gateway rails (razorpay, …) — nothing on a clean install. -->
-            <ModuleSlot
-              name="payments.create.methods"
-              :ctx="methodsCtx"
-            />
             <button
               v-if="!showSecondaryMethods && !SECONDARY_METHODS.some(m => m.value === form.method)"
               type="button"
@@ -513,6 +522,21 @@ function handleKeydown(e: KeyboardEvent) {
               />
               <span>{{ t(`payments.methods.${m.value}`) }}</span>
             </button>
+          </div>
+        </div>
+
+        <!-- Gateway rails (razorpay, …). The whole group disappears on a
+             clean install, so a clinic without a gateway sees exactly
+             what it saw before. -->
+        <div v-if="hasCollectionRails">
+          <label class="block text-xs text-muted uppercase tracking-wide mb-2">
+            {{ t('payments.new.methodCollect') }}
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <ModuleSlot
+              name="payments.create.methods"
+              :ctx="methodsCtx"
+            />
           </div>
         </div>
 
