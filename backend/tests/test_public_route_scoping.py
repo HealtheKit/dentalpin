@@ -106,14 +106,14 @@ async def t1_setup(db_session: AsyncSession, test_clinic: Clinic) -> dict:
 async def test_budget_unknown_token_meta_404(client: AsyncClient) -> None:
     response = await client.get(f"{BUDGET}/{uuid4()}/meta")
     assert response.status_code == 404
-    assert response.json()["detail"] == "Budget link not found"
+    assert response.json()["message"] == "Budget link not found"
 
 
 @pytest.mark.asyncio
 async def test_budget_unknown_token_detail_404(client: AsyncClient) -> None:
     response = await client.get(f"{BUDGET}/{uuid4()}")
     assert response.status_code == 404
-    assert response.json()["detail"] == "Budget link not found"
+    assert response.json()["message"] == "Budget link not found"
 
 
 @pytest.mark.asyncio
@@ -289,8 +289,8 @@ async def test_invalid_credentials_share_generic_shapes(
 
     bodies["budget"] = (
         await client.get(f"{BUDGET}/{uuid4()}/meta")
-    ).json()["detail"]
-    bodies["push"] = (await client.get(f"{PUSH}/{uuid4()}")).json()["detail"]
+    ).json()["message"]
+    bodies["push"] = (await client.get(f"{PUSH}/{uuid4()}")).json()["message"]
     bodies["leads"] = (
         await client.post(
             INTAKE,
@@ -301,7 +301,7 @@ async def test_invalid_credentials_share_generic_shapes(
             },
             headers={"X-Lead-Key": "lk_missing"},
         )
-    ).json()["detail"]
+    ).json()["message"]
     token, _ = await IntegrationsService.create_token(
         db_session, clinic.id, {"name": "t1", "scopes": []}
     )
@@ -309,7 +309,7 @@ async def test_invalid_credentials_share_generic_shapes(
         await client.get(
             IPATIENTS, headers={"Authorization": "Bearer wrong-token"}
         )
-    ).json()["detail"]
+    ).json()["message"]
 
     assert bodies["budget"] == "Budget link not found"
     assert bodies["push"] == "Invalid or expired subscribe token"
