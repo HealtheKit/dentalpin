@@ -60,17 +60,14 @@ def test_pt_br_overlay_is_a_strict_subset_of_pt() -> None:
     pt_files = {f.name for f in dirs["pt"].iterdir() if f.is_file()}
     br_files = {f.name for f in dirs["pt-BR"].iterdir() if f.is_file()}
     assert br_files, "pt-BR/ exists but is empty — remove the directory"
-    assert br_files <= pt_files, (
-        f"pt-BR/ has files not in pt/: {sorted(br_files - pt_files)}"
-    )
+    assert br_files <= pt_files, f"pt-BR/ has files not in pt/: {sorted(br_files - pt_files)}"
     # Every overlay file must differ from pt (otherwise delete it
     # and fall back). Identical copies defeat the overlay design.
     for name in sorted(br_files):
         pt_text = (dirs["pt"] / name).read_text(encoding="utf-8")
         br_text = (dirs["pt-BR"] / name).read_text(encoding="utf-8")
         assert pt_text != br_text, (
-            f"pt-BR/{name} is identical to pt/{name} — delete it and let "
-            f"the renderer fall back"
+            f"pt-BR/{name} is identical to pt/{name} — delete it and let the renderer fall back"
         )
 
 

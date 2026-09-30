@@ -327,10 +327,12 @@ class EmailService:
         ]
         if locale == "pt-BR":
             template_paths.append(f"pt/{template_key}.{extension}")
-        template_paths.extend([
-            f"default/{template_key}.{extension}",
-            f"{template_key}.{extension}",
-        ])
+        template_paths.extend(
+            [
+                f"default/{template_key}.{extension}",
+                f"{template_key}.{extension}",
+            ]
+        )
 
         for template_path in template_paths:
             try:

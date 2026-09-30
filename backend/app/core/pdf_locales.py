@@ -38,6 +38,7 @@ _LABELS_ALIAS: dict[str, str] = {
     "pt-BR": "pt",
 }
 
+
 def labels_locale(locale: str) -> str:
     """Locale key for PDF caption dictionaries.
 
