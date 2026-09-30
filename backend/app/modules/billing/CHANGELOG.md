@@ -2,8 +2,7 @@
 
 ## Unreleased
 
-- feat(#509): invoice PDF accepts `pt-BR`; captions reuse the `pt` labels
-  via `labels_locale`.
+- feat(#509): invoice PDF accepts `pt-BR`; captions reuse the `pt` labels.
 
 - feat(#422): invoice PDF labels for every UI locale (fr/pt/de/hu/pl/it/ar, lifted from the layer `invoice.*` strings so PDF and screen agree); Arabic renders `dir="rtl"`.
 - feat(#232): sidebar entry grouped under the Financials header (`nav.section` "financials").

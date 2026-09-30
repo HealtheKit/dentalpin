@@ -32,17 +32,3 @@ LOCALE_BY_LANG: dict[str, str] = {
     "it": "it_IT",
     "ar": "ar",
 }
-
-# Overlay locales reusing base locale labels.
-_LABELS_ALIAS: dict[str, str] = {
-    "pt-BR": "pt",
-}
-
-
-def labels_locale(locale: str) -> str:
-    """Locale key for PDF caption dictionaries.
-
-    Overlay locales (``pt-BR`` #509) share the base locale
-    labels so modules do not duplicate every caption.
-    """
-    return _LABELS_ALIAS.get(locale, locale)

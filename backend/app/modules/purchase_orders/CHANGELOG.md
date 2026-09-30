@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-- feat(#509): purchase-order PDF accepts `pt-BR`; captions reuse the `pt`
-  labels via `labels_locale`.
-
 - Follow-up: single error toast on the procurement pages — the
   composable passes `errorToast: false` on every call the pages
   already surface themselves, including `listSuppliers` /

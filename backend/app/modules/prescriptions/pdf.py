@@ -13,8 +13,6 @@ import html
 from datetime import datetime
 from typing import Any
 
-from app.core.pdf_locales import labels_locale as _labels_locale
-
 
 def _e(value: Any) -> str:
     return html.escape("" if value is None else str(value))
@@ -233,7 +231,7 @@ def _get_labels(locale: str) -> dict[str, str]:
         "it": labels_it,
         "ar": labels_ar,
         "ta": labels_ta,
-    }.get(_labels_locale(locale), labels_en)
+    }.get(locale, labels_en)
 
 
 def build_pdf_data(

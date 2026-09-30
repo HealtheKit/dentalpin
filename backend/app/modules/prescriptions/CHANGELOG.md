@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-- feat(#509): prescription PDF accepts `pt-BR`; captions reuse the `pt`
-  labels via `labels_locale`.
-
 - fix: editor rows typed as `DraftItem` (nullable API `route`
   normalized to string by `blankLine`); fixes TS2322 on the new route
   input in CI typecheck.

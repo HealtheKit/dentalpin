@@ -8,7 +8,6 @@ from io import BytesIO
 from typing import TYPE_CHECKING
 
 from app.core.pdf_locales import LOCALE_BY_LANG as _LOCALE_BY_LANG
-from app.core.pdf_locales import labels_locale as _labels_locale
 from app.core.utils.currency import format_currency as _fmt_currency
 
 if TYPE_CHECKING:
@@ -1112,4 +1111,4 @@ class BudgetPDFService:
             "ar": labels_ar,
             "ta": labels_ta,
         }
-        return by_locale.get(_labels_locale(locale), labels_en)
+        return by_locale.get(locale, labels_en)
