@@ -219,6 +219,7 @@ async def test_import_counts_by_status_over_http(
     fake_storage: _FakeStorage,
     canned_tags: dict,
 ) -> None:
+    _ = canned_tags  # deterministic DNI-123 tags: no link match, all rows stay pending
     """GET /rvg/imports/counts (registered before /{import_id} so the
     literal is not swallowed as an id): per-status totals, clinic-scoped."""
     user_id = await _user_id(db_session)
