@@ -217,9 +217,15 @@ async def test_import_counts_by_status_over_http(
     test_patient: Patient,
     db_session: AsyncSession,
     fake_storage: _FakeStorage,
-    canned_tags: dict,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _ = canned_tags  # deterministic DNI-123 tags: no link match, all rows stay pending
+    # Unique identity: other tests in this file create DNI-123 links, and
+    # link rows survive across tests, so canned tags would auto-approve.
+    monkeypatch.setattr(
+        service_module,
+        "extract_identity_tags",
+        lambda raw: {"PatientID": "T3-COUNT-1", "PatientName": "Count^Test"},
+    )
     """GET /rvg/imports/counts (registered before /{import_id} so the
     literal is not swallowed as an id): per-status totals, clinic-scoped."""
     user_id = await _user_id(db_session)
@@ -233,9 +239,7 @@ async def test_import_counts_by_status_over_http(
     other_clinic = await _second_clinic(db_session)
     await RvgService.scan_bytes(db_session, other_clinic.id, "c4.dcm", b"four")
 
-    response = await client.get(
-        "/api/v1/imaging_viewer/rvg/imports/counts", headers=auth_headers
-    )
+    response = await client.get("/api/v1/imaging_viewer/rvg/imports/counts", headers=auth_headers)
     assert response.status_code == 200, response.text
     assert response.json()["data"] == {
         "pending": 1,
