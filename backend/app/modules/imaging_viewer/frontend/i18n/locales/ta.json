@@ -32,6 +32,7 @@
       "noSuggestion": "பொருத்தம் இல்லை - ஒதுக்க ?patient_id= உடன் திறக்கவும்",
       "loadFailed": "RVG வரிசையை ஏற்ற முடியவில்லை.",
       "scanFailed": "ஸ்கேன் தோல்வியடைந்தது. கண்காணிப்புக் கோப்புறை உள்ளமைக்கப்பட்டுள்ளதா?",
+      "scanSummary": "Scan complete: {scanned} scanned, {created} new, {approved} auto-approved, {failed} failed",
       "actionFailed": "செயல் தோல்வியடைந்தது. வரிசை ஏற்கனவே முடிவு செய்யப்பட்டிருக்கலாம்."
     },
     "annotations": {

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- feat: manual scans surface a summary toast (scanned / new / auto-approved /
+  failed counts). `hu`/`pl`/`ta`/`ar` copy for the new string is English
+  fallback pending translation.
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;

@@ -32,6 +32,7 @@
       "noSuggestion": "لا يوجد تطابق - افتح مع ?patient_id= للإسناد",
       "loadFailed": "تعذر تحميل قائمة RVG.",
       "scanFailed": "فشل المسح. هل مجلد المراقبة مهيأ؟",
+      "scanSummary": "Scan complete: {scanned} scanned, {created} new, {approved} auto-approved, {failed} failed",
       "actionFailed": "فشل الإجراء. ربما تم حسم الصف مسبقاً."
     },
     "annotations": {

@@ -32,6 +32,7 @@
       "noSuggestion": "Nincs egyezés - a hozzárendeléshez nyissa meg a ?patient_id= paraméterrel",
       "loadFailed": "Az RVG-sor betöltése nem sikerült.",
       "scanFailed": "A szkennelés nem sikerült. Be van állítva a figyelt mappa?",
+      "scanSummary": "Scan complete: {scanned} scanned, {created} new, {approved} auto-approved, {failed} failed",
       "actionFailed": "A művelet nem sikerült. Lehet, hogy a sor már el van döntve."
     },
     "annotations": {
