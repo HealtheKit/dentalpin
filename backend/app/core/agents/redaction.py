@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Any
 
 from app.core.llm.base import (
@@ -41,6 +42,7 @@ _NAME_KEYS = {"first_name", "last_name", "full_name", "name", "patient_name"}
 _PHONE_KEYS = {"phone", "mobile", "telephone", "phone_number"}
 _EMAIL_KEYS = {"email", "email_address"}
 _NATIONAL_ID_KEYS = {"dni", "nif", "tax_id", "national_id"}
+_DOB_KEYS = {"date_of_birth", "dob", "birth_date"}
 # UUID-valued reference keys -> kind
 _ID_KIND = {
     "id": "REF",
@@ -57,6 +59,8 @@ for _k in _EMAIL_KEYS:
     _KIND_FOR_KEY[_k] = "EMAIL"
 for _k in _NATIONAL_ID_KEYS:
     _KIND_FOR_KEY[_k] = "NATID"
+for _k in _DOB_KEYS:
+    _KIND_FOR_KEY[_k] = "DOB"
 
 _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
@@ -160,17 +164,21 @@ class Redactor:
             return {k: self._redact_obj(v, k) for k, v in obj.items()}
         if isinstance(obj, list):
             return [self._redact_obj(v, key) for v in obj]
-        if isinstance(obj, str):
+        if isinstance(obj, (str, date)):
             return self._redact_scalar(key, obj)
         return obj
 
-    def _redact_scalar(self, key: str | None, value: str) -> str:
+    def _redact_scalar(self, key: str | None, value: str | date) -> str | date:
         if not value:
             return value
         lkey = (key or "").lower()
         kind = _KIND_FOR_KEY.get(lkey)
         if kind is not None:
-            return self.table.tokenize(value, kind)
+            # Tool results carry dates (e.g. date_of_birth) as date objects.
+            real = value.isoformat() if isinstance(value, date) else value
+            return self.table.tokenize(real, kind)
+        if not isinstance(value, str):
+            return value
         if lkey in _ID_KIND and _UUID_RE.match(value):
             return self.table.tokenize(value, _ID_KIND[lkey])
         return value

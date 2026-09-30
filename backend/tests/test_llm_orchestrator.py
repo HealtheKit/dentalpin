@@ -282,6 +282,30 @@ def test_redactor_replaces_known_entity_in_free_text() -> None:
     assert "María González" not in redacted[0].content[0].text
 
 
+def test_redactor_tokenizes_date_of_birth() -> None:
+    # get_patient returns date_of_birth as a date object (#534).
+    from datetime import date
+
+    r = Redactor(enabled=True)
+    msg = ProviderMessage(
+        Role.TOOL,
+        [
+            ToolResultBlock(
+                "c1",
+                {
+                    "date_of_birth": date(1985, 3, 14),
+                    "dob": "1990-01-02",
+                    "birth_date": date(2001, 12, 31),
+                },
+            )
+        ],
+    )
+    content = r.redact_outgoing([msg])[0].content[0].content
+    for key in ("date_of_birth", "dob", "birth_date"):
+        assert isinstance(content[key], str) and content[key].startswith("DOB_"), key
+    assert r.rehydrate(content["date_of_birth"]) == "1985-03-14"
+
+
 # --- factory -------------------------------------------------------------
 
 
