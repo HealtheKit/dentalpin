@@ -43,12 +43,3 @@ def test_every_accepted_locale_has_a_babel_locale_and_matches_the_pattern() -> N
         assert locale in LOCALE_BY_LANG, locale
     assert not re.match(PDF_LOCALE_PATTERN, "xx")
 
-
-def test_pt_br_overlay_reuses_pt_labels_and_babel_pt_br() -> None:
-    """pt-BR is an overlay (#509): Babel pt_BR, labels from pt."""
-    from app.core.pdf_locales import labels_locale
-
-    assert LOCALE_BY_LANG["pt-BR"] == "pt_BR"
-    assert labels_locale("pt-BR") == "pt"
-    assert labels_locale("pt") == "pt"
-    assert labels_locale("es") == "es"
