@@ -32,7 +32,13 @@
       "noSuggestion": "Aucune correspondance - ouvrez avec ?patient_id= pour attribuer",
       "loadFailed": "Impossible de charger la file RVG.",
       "scanFailed": "Échec de l'analyse. Le dossier surveillé est-il configuré ?",
-      "actionFailed": "Échec de l'action. La ligne a peut-être déjà été traitée."
+      "actionFailed": "Échec de l'action. La ligne a peut-être déjà été traitée.",
+      "status": {
+        "pending": "En attente",
+        "approved": "Approuvés",
+        "rejected": "Rejetés",
+        "failed": "Échoués"
+      }
     },
     "annotations": {
       "title": "Annotations",

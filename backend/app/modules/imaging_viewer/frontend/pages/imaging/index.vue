@@ -10,7 +10,7 @@ const { can } = usePermissions()
 const route = useRoute()
 const router = useRouter()
 const { fetchStudies } = useImagingViewer()
-const { fetchImports, triggerScan, approveImport, rejectImport } = useRvgImport()
+const { fetchImports, fetchImportCounts, triggerScan, approveImport, rejectImport } = useRvgImport()
 const api = useApi()
 
 const studies = ref<ImagingStudy[]>([])
@@ -109,19 +109,31 @@ function formatStudyDate(s: ImagingStudy) {
   return d.toLocaleDateString(locale.value, { timeZone: 'UTC' })
 }
 
+const queueStatuses = ['pending', 'approved', 'rejected', 'failed'] as const
+type QueueStatus = typeof queueStatuses[number]
+const activeQueueTab = ref<QueueStatus>('pending')
+const queueCounts = ref<Record<string, number>>({})
+
 async function loadQueue() {
   if (!canRvgRead.value) return
   queueLoading.value = true
   actionError.value = null
   try {
-    const res = await fetchImports('pending')
+    const res = await fetchImports(activeQueueTab.value)
     queue.value = res.data
     queueTotal.value = res.total
+    queueCounts.value = await fetchImportCounts()
   } catch {
     actionError.value = t('imagingViewer.rvg.loadFailed')
   } finally {
     queueLoading.value = false
   }
+}
+
+function selectQueueTab(status: QueueStatus) {
+  if (activeQueueTab.value === status) return
+  activeQueueTab.value = status
+  void loadQueue()
 }
 
 async function scanNow() {
@@ -265,6 +277,24 @@ onMounted(loadQueue)
           </UButton>
         </div>
       </template>
+      <div class="flex flex-wrap gap-1">
+        <UButton
+          v-for="s in queueStatuses"
+          :key="s"
+          size="xs"
+          :variant="activeQueueTab === s ? 'solid' : 'soft'"
+          @click="selectQueueTab(s)"
+        >
+          {{ t(`imagingViewer.rvg.status.${s}`) }}
+          <UBadge
+            size="xs"
+            :color="activeQueueTab === s ? 'neutral' : 'info'"
+            variant="soft"
+          >
+            {{ queueCounts[s] ?? 0 }}
+          </UBadge>
+        </UButton>
+      </div>
       <UAlert
         v-if="actionError"
         color="error"

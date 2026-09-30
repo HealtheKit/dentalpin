@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- feat: RVG queue has per-status tabs with live counts (`GET
+  /rvg/imports/counts`), so failed and rejected rows are visible without
+  leaving the inbox. Status labels in `hu`/`pl`/`ta`/`ar` are English
+  fallback pending translation.
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;

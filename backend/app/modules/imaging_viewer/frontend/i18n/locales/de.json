@@ -32,7 +32,13 @@
       "noSuggestion": "Kein Treffer - mit ?patient_id= öffnen zum Zuordnen",
       "loadFailed": "RVG-Warteschlange konnte nicht geladen werden.",
       "scanFailed": "Scan fehlgeschlagen. Ist der Überwachungsordner konfiguriert?",
-      "actionFailed": "Aktion fehlgeschlagen. Die Zeile wurde möglicherweise bereits entschieden."
+      "actionFailed": "Aktion fehlgeschlagen. Die Zeile wurde möglicherweise bereits entschieden.",
+      "status": {
+        "pending": "Ausstehend",
+        "approved": "Freigegeben",
+        "rejected": "Abgelehnt",
+        "failed": "Fehlgeschlagen"
+      }
     },
     "annotations": {
       "title": "Annotationen",

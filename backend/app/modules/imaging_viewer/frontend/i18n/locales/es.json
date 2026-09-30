@@ -32,7 +32,13 @@
       "noSuggestion": "Sin coincidencia — abre con ?patient_id= para asignar",
       "loadFailed": "No se pudo cargar la cola RVG.",
       "scanFailed": "Falló el escaneo. ¿Está configurada la carpeta de vigilancia?",
-      "actionFailed": "Falló la acción. La fila puede estar ya decidida."
+      "actionFailed": "Falló la acción. La fila puede estar ya decidida.",
+      "status": {
+        "pending": "Pendientes",
+        "approved": "Aprobadas",
+        "rejected": "Rechazadas",
+        "failed": "Fallidas"
+      }
     },
     "annotations": {
       "title": "Anotaciones",

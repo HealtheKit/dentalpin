@@ -32,7 +32,13 @@
       "noSuggestion": "Sem correspondência — abra com ?patient_id= para atribuir",
       "loadFailed": "Não foi possível carregar a fila RVG.",
       "scanFailed": "A digitalização falhou. A pasta monitorizada está configurada?",
-      "actionFailed": "A ação falhou. A linha já pode ter sido decidida."
+      "actionFailed": "A ação falhou. A linha já pode ter sido decidida.",
+      "status": {
+        "pending": "Pendentes",
+        "approved": "Aprovadas",
+        "rejected": "Rejeitadas",
+        "failed": "Falhadas"
+      }
     },
     "annotations": {
       "title": "Anotações",
