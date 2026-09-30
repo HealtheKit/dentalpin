@@ -23,7 +23,9 @@ desde la ficha del paciente); al seleccionar un estudio se muestra su
 imagen con anotaciones encima. Mientras se resuelve el paciente, el
 selector muestra carga; un id irresoluble dice "Paciente desconocido",
 nunca un UUID. Las fechas salen en el idioma de la clínica y cada
-botón de borrar anotación tiene nombre accesible.
+botón de borrar anotación tiene nombre accesible. Debajo de la cola de
+importación se listan las identidades de sensor vinculadas, con acción
+para desvincular un emparejamiento DICOM erróneo.
 
 ## Visor
 

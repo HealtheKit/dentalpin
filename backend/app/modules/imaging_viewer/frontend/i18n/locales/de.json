@@ -32,7 +32,10 @@
       "noSuggestion": "Kein Treffer - mit ?patient_id= öffnen zum Zuordnen",
       "loadFailed": "RVG-Warteschlange konnte nicht geladen werden.",
       "scanFailed": "Scan fehlgeschlagen. Ist der Überwachungsordner konfiguriert?",
-      "actionFailed": "Aktion fehlgeschlagen. Die Zeile wurde möglicherweise bereits entschieden."
+      "actionFailed": "Aktion fehlgeschlagen. Die Zeile wurde möglicherweise bereits entschieden.",
+      "linksTitle": "Verknüpfte Sensor-Identitäten",
+      "linksEmpty": "Keine verknüpften Sensor-Identitäten.",
+      "unlink": "Verknüpfung lösen"
     },
     "annotations": {
       "title": "Annotationen",

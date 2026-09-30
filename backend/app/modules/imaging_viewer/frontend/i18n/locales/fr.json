@@ -32,7 +32,10 @@
       "noSuggestion": "Aucune correspondance - ouvrez avec ?patient_id= pour attribuer",
       "loadFailed": "Impossible de charger la file RVG.",
       "scanFailed": "Échec de l'analyse. Le dossier surveillé est-il configuré ?",
-      "actionFailed": "Échec de l'action. La ligne a peut-être déjà été traitée."
+      "actionFailed": "Échec de l'action. La ligne a peut-être déjà été traitée.",
+      "linksTitle": "Identités de capteur liées",
+      "linksEmpty": "Aucune identité de capteur liée.",
+      "unlink": "Dissocier"
     },
     "annotations": {
       "title": "Annotations",

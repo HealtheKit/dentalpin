@@ -32,7 +32,10 @@
       "noSuggestion": "Nincs egyezés - a hozzárendeléshez nyissa meg a ?patient_id= paraméterrel",
       "loadFailed": "Az RVG-sor betöltése nem sikerült.",
       "scanFailed": "A szkennelés nem sikerült. Be van állítva a figyelt mappa?",
-      "actionFailed": "A művelet nem sikerült. Lehet, hogy a sor már el van döntve."
+      "actionFailed": "A művelet nem sikerült. Lehet, hogy a sor már el van döntve.",
+      "linksTitle": "Linked sensor identities",
+      "linksEmpty": "No linked sensor identities.",
+      "unlink": "Unlink"
     },
     "annotations": {
       "title": "Annotációk",

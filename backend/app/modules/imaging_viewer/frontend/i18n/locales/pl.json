@@ -32,7 +32,10 @@
       "noSuggestion": "Brak dopasowania - otwórz z ?patient_id=, aby przypisać",
       "loadFailed": "Nie można wczytać kolejki RVG.",
       "scanFailed": "Skanowanie nie powiodło się. Czy folder obserwowany jest skonfigurowany?",
-      "actionFailed": "Akcja nie powiodła się. Wiersz mógł już zostać rozstrzygnięty."
+      "actionFailed": "Akcja nie powiodła się. Wiersz mógł już zostać rozstrzygnięty.",
+      "linksTitle": "Linked sensor identities",
+      "linksEmpty": "No linked sensor identities.",
+      "unlink": "Unlink"
     },
     "annotations": {
       "title": "Adnotacje",

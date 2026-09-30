@@ -32,7 +32,10 @@
       "noSuggestion": "No match - open with ?patient_id= to assign",
       "loadFailed": "Could not load the RVG queue.",
       "scanFailed": "Scan failed. Is the watch folder configured?",
-      "actionFailed": "Action failed. The row may already be decided."
+      "actionFailed": "Action failed. The row may already be decided.",
+      "linksTitle": "Linked sensor identities",
+      "linksEmpty": "No linked sensor identities.",
+      "unlink": "Unlink"
     },
     "annotations": {
       "title": "Annotations",

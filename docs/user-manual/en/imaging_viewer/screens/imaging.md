@@ -23,7 +23,9 @@ patient record); selecting a study shows its rendered image with
 annotation overlays on top. While the patient resolves, the selector
 shows a loading state; an unresolvable id reads "Unknown patient",
 never a raw UUID. Study dates render in the clinic locale, and every
-annotation delete button carries an accessible name.
+annotation delete button carries an accessible name. Below the import
+queue, linked sensor identities are listed with an unlink action for
+correcting a wrong DICOM pairing.
 
 ## Viewer
 
