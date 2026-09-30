@@ -219,13 +219,14 @@ async def test_import_counts_by_status_over_http(
     fake_storage: _FakeStorage,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # Unique identity: other tests in this file create DNI-123 links, and
-    # link rows survive across tests, so canned tags would auto-approve.
-    monkeypatch.setattr(
-        service_module,
-        "extract_identity_tags",
-        lambda raw: {"PatientID": "T3-COUNT-1", "PatientName": "Count^Test"},
-    )
+    # Distinct identity per file: approving one scan links its PatientID,
+    # and any later scan with the same tags would auto-approve off that
+    # link instead of staying pending.
+    def _tags(raw: bytes) -> dict:
+        marker = "C1" if raw == b"one" else ("C2" if raw == b"two" else "C3")
+        return {"PatientID": f"T3-COUNT-{marker}", "PatientName": "Count^Test"}
+
+    monkeypatch.setattr(service_module, "extract_identity_tags", _tags)
     """GET /rvg/imports/counts (registered before /{import_id} so the
     literal is not swallowed as an id): per-status totals, clinic-scoped."""
     user_id = await _user_id(db_session)
