@@ -42,4 +42,3 @@ def test_every_accepted_locale_has_a_babel_locale_and_matches_the_pattern() -> N
         assert re.match(PDF_LOCALE_PATTERN, locale), locale
         assert locale in LOCALE_BY_LANG, locale
     assert not re.match(PDF_LOCALE_PATTERN, "xx")
-
