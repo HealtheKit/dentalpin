@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- fix: approving a pending import whose watch-dir file vanished retires the
+  row as failed instead of leaving it stuck pending across every tick
+  (caller still answers 404; re-drop the file to retry).
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;

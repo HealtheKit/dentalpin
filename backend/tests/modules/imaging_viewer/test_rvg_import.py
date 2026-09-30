@@ -210,6 +210,28 @@ async def test_approve_twice_conflicts_and_unknown_patient_404s(
 
 
 @pytest.mark.asyncio
+async def test_approve_missing_source_fails_the_row(
+    test_clinic: Clinic,
+    test_patient: Patient,
+    db_session: AsyncSession,
+    fake_storage: _FakeStorage,
+    canned_tags: dict,
+) -> None:
+    """A pending row whose watch-dir file vanished must not stick in the
+    queue: approve answers 404 and retires the row as failed."""
+    user_id = await _user_id(db_session)
+    row, _ = await RvgService.scan_bytes(db_session, test_clinic.id, "gone.dcm", b"gone")
+    assert row.status == "pending"
+    with pytest.raises(LookupError):
+        await RvgService.approve(
+            db_session, test_clinic.id, row.id, test_patient.id, user_id, raw=None
+        )
+    await db_session.refresh(row)
+    assert row.status == "failed"
+    assert row.error == "Source file missing"
+
+
+@pytest.mark.asyncio
 async def test_reject_keeps_row_for_audit(
     test_clinic: Clinic,
     test_patient: Patient,
