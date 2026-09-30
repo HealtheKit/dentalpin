@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { clinicNow, clinicToday, parseWallClock } from '~/utils/wallClock'
+import { clinicNow, clinicToday, parseWallClock, toISODate } from '~/utils/wallClock'
 
 describe('parseWallClock', () => {
   it('keeps the clinic wall-clock hour regardless of the offset', () => {
@@ -68,5 +68,49 @@ describe('clinicToday', () => {
     const mm = String(local.getMonth() + 1).padStart(2, '0')
     const dd = String(local.getDate()).padStart(2, '0')
     expect(clinicToday('Not/AZone')).toBe(`${yyyy}-${mm}-${dd}`)
+  })
+})
+
+describe('toISODate', () => {
+  const TZ = process.env.TZ
+
+  afterEach(() => {
+    process.env.TZ = TZ
+  })
+
+  /** Run `fn` with the process in `tz` (node honours a runtime TZ change). */
+  function inZone<T>(tz: string, fn: () => T): T {
+    process.env.TZ = tz
+    return fn()
+  }
+
+  it('returns the calendar day the Date holds, in every zone', () => {
+    // `new Date(y, m, d)` is local midnight. Zones ahead of UTC are where
+    // the old `toISOString().slice(0, 10)` silently rolled back a day.
+    for (const tz of ['Europe/Madrid', 'Asia/Kolkata', 'America/New_York', 'UTC']) {
+      expect(inZone(tz, () => toISODate(new Date(2026, 8, 1)))).toBe('2026-09-01')
+      expect(inZone(tz, () => toISODate(new Date(2025, 11, 31)))).toBe('2025-12-31')
+      expect(inZone(tz, () => toISODate(new Date(2026, 8, 0)))).toBe('2026-08-31')
+    }
+  })
+
+  it('disagrees with toISOString exactly where the bug was (#522)', () => {
+    // The regression this guards: same Date, two renderings, one wrong.
+    const madrid = inZone('Europe/Madrid', () => {
+      const d = new Date(2026, 8, 1)
+      return { local: toISODate(d), utc: d.toISOString().slice(0, 10) }
+    })
+    expect(madrid.local).toBe('2026-09-01')
+    expect(madrid.utc).toBe('2026-08-31')
+
+    const newYork = inZone('America/New_York', () => {
+      const d = new Date(2026, 8, 1)
+      return { local: toISODate(d), utc: d.toISOString().slice(0, 10) }
+    })
+    expect(newYork.local).toBe(newYork.utc) // west of UTC was never affected
+  })
+
+  it('pads single-digit months and days', () => {
+    expect(toISODate(new Date(2026, 0, 5))).toBe('2026-01-05')
   })
 })

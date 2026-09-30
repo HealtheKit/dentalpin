@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix(#522): the `expense_date` default read the UTC day, so a clinic east of
+  UTC filing an expense before its offset had elapsed got yesterday's date
+  pre-filled. Now uses `toISODate`.
+
 - feat(#232): sidebar entry grouped under the Financials header (`nav.section` "financials").
 - fix(#431 review): CSV `amount` accepts the decimal comma (`1200,50`),
   matching the `;` sniffing for Spanish Excel exports.

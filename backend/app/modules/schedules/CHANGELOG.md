@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- fix(#522): the clinic-hours and professional-schedule pages defaulted
+  `start_date` / `end_date` and computed "today" from the UTC day. Now use
+  `toISODate`.
+
 - feat(#46): the professional-hours gate resolves flag-aware (`RBAC_FROM_DB`
   on: custom roles and per-clinic overrides apply; off: static map as before).
 

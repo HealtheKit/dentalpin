@@ -9,13 +9,10 @@
       "description": "Skonfiguruj bramkę płatności Razorpay dla tej kliniki.",
       "credentials": "Dane uwierzytelniające API",
       "mode": "Tryb",
-      "modeHint": "Używaj trybu testowego, dopóki nie potwierdzisz, że wszystko działa od początku do końca.",
       "modeTest": "Test",
       "modeLive": "Produkcyjny",
       "keyId": "ID klucza",
       "keyIdHint": "Z panelu Razorpay — bezpieczne do wyświetlenia w przeglądarce.",
-      "modeKeyMismatchLive": "Tryb Live wymaga klucza zaczynającego się od \"rzp_live_\". Twój obecny klucz zaczyna się od \"rzp_test_\".",
-      "modeKeyMismatchTest": "Tryb testowy wymaga klucza zaczynającego się od \"rzp_test_\". Twój obecny klucz zaczyna się od \"rzp_live_\".",
       "keySecret": "Klucz tajny",
       "keySecretHint": "Z panelu Razorpay. Nie zostanie ponownie wyświetlony po zapisaniu.",
       "keySecretConfiguredHint": "Klucz tajny jest już skonfigurowany. Pozostaw puste, aby go zachować.",
@@ -38,7 +35,9 @@
       "saved": "Ustawienia zapisane",
       "saveError": "Nie udało się zapisać ustawień",
       "loadError": "Nie udało się wczytać ustawień",
-      "webhookCopied": "URL webhooka skopiowany"
+      "webhookCopied": "URL webhooka skopiowany",
+      "modeDerivedHint": "Odczytywane z klucza: klucz rzp_live_ obraca prawdziwymi pieniędzmi, rzp_test_ nie.",
+      "modeUnknown": "Brak klucza"
     },
     "collect": {
       "notConfiguredHint": "Razorpay nie jest jeszcze skonfigurowany dla tej kliniki. Poproś administratora o skonfigurowanie go w Ustawieniach.",

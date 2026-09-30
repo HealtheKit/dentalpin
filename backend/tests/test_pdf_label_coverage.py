@@ -11,15 +11,21 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
 
 from app.core.auth.models import Clinic
 from app.core.pdf_locales import PDF_LOCALES, labels_locale
+from app.modules.billing.pdf import InvoicePDFService
 from app.modules.budget.models import Budget, BudgetItem
 from app.modules.budget.pdf import BudgetPDFService
 from app.modules.catalog.models import TreatmentCatalogItem
+from app.modules.documents.models import GeneratedDocument
+from app.modules.documents.pdf import _LABELS as DOC_LABELS
+from app.modules.documents.pdf import DocumentPDFService
+from app.modules.patients.models import Patient
 from app.modules.prescriptions.pdf import _get_labels as rx_labels
 from app.modules.purchase_orders.pdf import _LABELS as PO_LABELS
 
@@ -93,6 +99,36 @@ def _clinic() -> Clinic:
     )
 
 
+def _document(document_type: str = "referral") -> GeneratedDocument:
+    return GeneratedDocument(
+        id=uuid4(),
+        clinic_id=uuid4(),
+        patient_id=uuid4(),
+        document_type=document_type,
+        title="Test",
+        status="draft",
+        content={"referred_to": "Dr. Example", "reason": "Second opinion"},
+        created_at=datetime(2026, 9, 20, 12, 0, tzinfo=UTC),
+        updated_at=datetime(2026, 9, 20, 12, 0, tzinfo=UTC),
+    )
+
+
+def _patient() -> Patient:
+    return Patient(
+        id=uuid4(),
+        clinic_id=uuid4(),
+        first_name="Ana",
+        last_name="Test",
+        date_of_birth=date(1990, 5, 4),
+    )
+
+
+def _document_html(locale: str, document_type: str = "referral") -> str:
+    return DocumentPDFService._generate_html(
+        _document(document_type), _clinic(), _patient(), locale, "Dr. Test"
+    )
+
+
 def test_budget_labels_exist_for_every_accepted_locale() -> None:
     english = BudgetPDFService._get_labels("en")
     for locale in PDF_LOCALES:
@@ -142,3 +178,73 @@ def test_only_arabic_budget_is_rtl() -> None:
 def test_budget_amounts_follow_the_locale_not_the_labels() -> None:
     """German separators even though the labels are their own set."""
     assert "60,00" in BudgetPDFService._generate_html(_budget(), _clinic(), False, "de", None)
+
+
+# --- documents (#524) -----------------------------------------------------
+
+
+def test_document_labels_exist_for_every_accepted_locale() -> None:
+    english = DOC_LABELS["en"]
+    for locale in PDF_LOCALES:
+        assert locale in DOC_LABELS, locale
+        assert set(DOC_LABELS[locale]) == set(english), locale
+
+
+def test_only_arabic_document_is_rtl() -> None:
+    arabic = _document_html("ar")
+    spanish = _document_html("es")
+    assert 'dir="rtl"' in _html_tag(arabic)
+    assert "dir=" not in _html_tag(spanish)
+
+
+@pytest.mark.parametrize(
+    ("locale", "heading"),
+    [
+        ("es", "Carta de derivación"),
+        ("en", "Referral letter"),
+        ("de", "Überweisungsschreiben"),
+        ("hu", "Beutaló"),
+        ("ar", "خطاب إحالة"),
+    ],
+)
+def test_document_pdf_renders_its_own_title(locale: str, heading: str) -> None:
+    """A German clinic must not hand the patient a Spanish referral."""
+    assert heading in _document_html(locale, document_type="referral")
+
+
+# --- billing -------------------------------------------------------------
+
+
+def test_invoice_labels_exist_for_every_accepted_locale() -> None:
+    """Billing was already complete; the guard just never said so (#524)."""
+    english = InvoicePDFService._get_labels("en")
+    for locale in PDF_LOCALES:
+        labels = InvoicePDFService._get_labels(locale)
+        assert set(labels) == set(english), locale
+        if locale != "en":
+            assert labels != english, f"{locale} still falls back to English"
+
+
+# --- the guard that made this findable (#524) -----------------------------
+
+
+def _modules_shipping_a_pdf() -> list[str]:
+    root = Path(__file__).resolve().parents[1] / "app" / "modules"
+    return sorted(d.name for d in root.iterdir() if (d / "pdf.py").is_file())
+
+
+def test_every_pdf_generator_is_covered_by_this_file() -> None:
+    """Discovery, not a hand-kept list.
+
+    The #485 guard asserted over the three modules I had in hand, so
+    ``documents`` — which rendered every clinic's referral letters in
+    Spanish — was never checked (#524). A new ``pdf.py`` must not be able
+    to slip in the same way: add it to ``COVERED`` together with a test
+    above, or this fails.
+    """
+    covered = {"billing", "budget", "documents", "prescriptions", "purchase_orders"}
+    shipped = set(_modules_shipping_a_pdf())
+    assert shipped == covered, (
+        "modules shipping a pdf.py but not asserted here: "
+        f"{sorted(shipped - covered)}; listed but gone: {sorted(covered - shipped)}"
+    )

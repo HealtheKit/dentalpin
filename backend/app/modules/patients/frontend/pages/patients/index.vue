@@ -96,12 +96,13 @@ async function fetcher(q: {
   if (q.filters.do_not_contact !== null) {
     params.set('do_not_contact', q.filters.do_not_contact ? 'true' : 'false')
   }
-  // An empty selection means "no status restriction", so it must not
-  // keep filtering to active — that would show an unfiltered chip over
-  // a filtered list (#473). The API has no archived-only mode, only
-  // ``include_archived``, so "archived selected" and "nothing selected"
-  // both map to the unrestricted query.
-  if (!q.filters.status.length || q.filters.status.includes('archived')) {
+  // The chips map straight onto the API's ``status`` filter, so picking
+  // "Archived" alone returns archived patients alone (#473). An empty
+  // selection means "no status restriction" and needs ``include_archived``,
+  // because with no status list the API still hides archived rows.
+  if (q.filters.status.length) {
+    for (const value of q.filters.status) params.append('status', value)
+  } else {
     params.set('include_archived', 'true')
   }
   if (patientIdsIntersect) {

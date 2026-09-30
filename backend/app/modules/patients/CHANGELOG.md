@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- fix(#473): `GET /patients` takes a repeatable `status` query
+  parameter, so the Archived chip lists archived patients *alone*. The
+  boolean `include_archived` could only ever say "active" or "active and
+  archived", so archived-only was not expressible and the chip returned
+  active rows too. `include_archived` still applies when no `status` is
+  given, which keeps every existing caller on its current behaviour.
+
 - fix(#473): clearing the status filter no longer springs back to
   Active, and an empty selection now means "no status restriction"
   (archived included) instead of silently staying filtered to active.

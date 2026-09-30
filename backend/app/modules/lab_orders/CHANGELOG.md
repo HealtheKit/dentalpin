@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- fix(#522): the `sent_date` default read the UTC day rather than the local
+  one. Now uses `toISODate`.
+
 - feat(#232): sidebar entries grouped under the Lab header (`nav.section` "lab").
 - feat(#334): Hungarian (hu) locale for the module's frontend layer.
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- fix(#522): every date preset (`currentMonth`, `previousMonth`,
+  `currentQuarter`, `previousQuarter`, `yearToDate`) built its bounds from a
+  local midnight and rendered them with `toISOString()`, i.e. in UTC — so a
+  clinic anywhere east of UTC exported a window starting and ending one day
+  early. `previousMonth` is the default preset, so the wrong range was the
+  one selected on arrival. Now uses `toISODate`.
+
 - feat(#232): sidebar entry grouped under the Financials header (`nav.section` "financials").
 - feat(#334): Hungarian (hu) locale for the module's frontend layer.
 

@@ -91,6 +91,12 @@ const {
   }
 })
 
+// The copilot can create/update/convert leads without this page knowing.
+// Refetch when the data bus signals a ``leads`` change (ADR 0021).
+useDataBus().on('leads', () => {
+  void refresh()
+})
+
 const statusItems = computed(() =>
   STATUSES.map(value => ({ value, label: t(`leads.status.${value}`) }))
 )

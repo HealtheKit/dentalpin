@@ -157,6 +157,7 @@ class PatientService:
         city: str | None = None,
         do_not_contact: bool | None = None,
         include_archived: bool = False,
+        statuses: list[str] | None = None,
         sort: str | None = None,
     ) -> tuple[list[Patient], int]:
         """List patients with optional search + filters + sort.
@@ -165,6 +166,12 @@ class PatientService:
         "Patients with debt > 0" comes from the payments module). Empty
         list short-circuits to an empty result so callers can pass the
         payments-side result without extra branching.
+
+        ``statuses`` selects exactly those statuses and wins over
+        ``include_archived`` (#473). The boolean could only ever say
+        "active" or "active and archived", so a caller asking for
+        archived patients alone got active ones too. ``include_archived``
+        stays for existing callers and for the no-``status`` case.
         """
         page_size = min(max(page_size, 1), 100)
         page = max(page, 1)
@@ -175,7 +182,10 @@ class PatientService:
             return [], 0
 
         conditions = [Patient.clinic_id == clinic_id]
-        if not include_archived:
+        wanted = [value for value in (statuses or []) if value]
+        if wanted:
+            conditions.append(Patient.status.in_(wanted))
+        elif not include_archived:
             conditions.append(Patient.status != "archived")
 
         if patient_ids:

@@ -10,6 +10,7 @@ import type {
   SchedulingSummary,
   WaitingTimeStats
 } from '../../composables/useReports'
+import { toISODate } from '~~/app/utils/wallClock'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -53,8 +54,8 @@ const funnel = ref<AppointmentFunnel | null>(null)
 // ─── Date range ──────────────────────────────────────────────────────
 const today = new Date()
 const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-const dateFrom = ref(firstDayOfMonth.toISOString().split('T')[0] as string)
-const dateTo = ref(today.toISOString().split('T')[0] as string)
+const dateFrom = ref(toISODate(firstDayOfMonth))
+const dateTo = ref(toISODate(today))
 
 const dateRangeOptions = computed(() => [
   { label: t('reports.billing.thisMonth'), value: 'month' },
@@ -108,8 +109,8 @@ watch(selectedRange, (range) => {
       return
   }
 
-  dateFrom.value = from.toISOString().split('T')[0] as string
-  dateTo.value = to.toISOString().split('T')[0] as string
+  dateFrom.value = toISODate(from)
+  dateTo.value = toISODate(to)
 })
 
 // ─── Filters ─────────────────────────────────────────────────────────

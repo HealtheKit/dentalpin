@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- fix(#522): `useCalendarBounds` asked the availability endpoint for the
+  previous day's open hours for clinics east of UTC — the calendar hands it
+  local midnights and it rendered them with `toISOString()`. Now uses
+  `toISODate`.
+
 - Follow-up: QR check-in moved from its own hover button into the
   Quick-actions dropdown (one icon per card again); the dropdown also
   renders when QR is the only action (`hasActions || canCheckin`, so
