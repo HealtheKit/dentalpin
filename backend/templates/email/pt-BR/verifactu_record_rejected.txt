@@ -13,7 +13,7 @@ Passos:
 2. Volte a Definições → Verifactu → Fila de envio e clique em «Regenerar e reenviar».
 {% elif suggested_cta == 'edit_billing_party' -%}
 1. Abra a fatura {{ invoice_number }} e clique em «Editar os dados do cliente» na faixa de aviso.
-2. Depois de guardar, o registro é reenviado automaticamente.
+2. Depois de salvar, o registro é reenviado automaticamente.
 {% elif suggested_cta == 'edit_lines' -%}
 1. Verifique a correspondência do IVA e os montantes da fatura.
 2. Emita uma nota de crédito se a fatura já estava paga.
