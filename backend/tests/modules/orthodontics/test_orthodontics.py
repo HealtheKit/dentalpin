@@ -191,7 +191,8 @@ async def _plan_with_item(db_session, clinic_id, patient_id, professional_id):
     # expire_on_commit=False in this suite: add_item loaded plan.items as
     # empty before the item existed, and the stale collection would shadow
     # the committed row for every later reader in this session.
-    await db_session.expire_all()
+    # (expire_all is sync even on AsyncSession.)
+    db_session.expire_all()
     return plan, item
 
 
