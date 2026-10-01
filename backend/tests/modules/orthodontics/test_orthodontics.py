@@ -249,9 +249,7 @@ async def test_generate_schedule_rejects_sum_mismatch(
     case, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
     await db_session.commit()
     plan, item = await _plan_with_item(db_session, test_clinic.id, test_patient.id, doc.id)
-    await OrthoCaseService.link_plan(
-        db_session, test_clinic.id, case.id, plan.id, item.id
-    )
+    await OrthoCaseService.link_plan(db_session, test_clinic.id, case.id, plan.id, item.id)
     await db_session.commit()
     # 200 + 2 x 100 = 400 against 1200 pending.
     with pytest.raises(ValueError, match="does not match"):
@@ -270,17 +268,19 @@ async def test_generate_schedule_refuses_completed_sessions(
     case, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
     await db_session.commit()
     plan, item = await _plan_with_item(db_session, test_clinic.id, test_patient.id, doc.id)
-    await OrthoCaseService.link_plan(
-        db_session, test_clinic.id, case.id, plan.id, item.id
-    )
+    await OrthoCaseService.link_plan(db_session, test_clinic.id, case.id, plan.id, item.id)
     await db_session.commit()
     session = (
-        await db_session.execute(
-            select(PlannedTreatmentItemSession).where(
-                PlannedTreatmentItemSession.plan_item_id == item.id
+        (
+            await db_session.execute(
+                select(PlannedTreatmentItemSession).where(
+                    PlannedTreatmentItemSession.plan_item_id == item.id
+                )
             )
         )
-    ).scalars().first()
+        .scalars()
+        .first()
+    )
     session.status = "completed"
     await db_session.commit()
     with pytest.raises(ValueError, match="completed"):
