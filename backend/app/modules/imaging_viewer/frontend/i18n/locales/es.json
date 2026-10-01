@@ -32,6 +32,7 @@
       "noSuggestion": "Sin coincidencia — abre con ?patient_id= para asignar",
       "loadFailed": "No se pudo cargar la cola RVG.",
       "scanFailed": "Falló el escaneo. ¿Está configurada la carpeta de vigilancia?",
+<      "scanSummary": "Escaneo completo: {scanned} escaneados, {created} nuevos, {approved} autoaprobados, {failed} fallidos",
       "actionFailed": "Falló la acción. La fila puede estar ya decidida.",
       "linksTitle": "Identidades de sensor vinculadas",
       "linksEmpty": "Sin identidades de sensor vinculadas.",

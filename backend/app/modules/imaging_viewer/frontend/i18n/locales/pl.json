@@ -32,10 +32,11 @@
       "noSuggestion": "Brak dopasowania - otwórz z ?patient_id=, aby przypisać",
       "loadFailed": "Nie można wczytać kolejki RVG.",
       "scanFailed": "Skanowanie nie powiodło się. Czy folder obserwowany jest skonfigurowany?",
+<      "scanSummary": "Skanowanie zakończone: zeskanowane {scanned}, nowe {created}, zatwierdzone automatycznie {approved}, nieudane {failed}",
       "actionFailed": "Akcja nie powiodła się. Wiersz mógł już zostać rozstrzygnięty.",
-      "linksTitle": "Linked sensor identities",
-      "linksEmpty": "No linked sensor identities.",
-      "unlink": "Unlink"
+      "linksTitle": "Powiązane tożsamości czujników",
+      "linksEmpty": "Brak powiązanych tożsamości czujników.",
+      "unlink": "Odepnij"
     },
     "annotations": {
       "title": "Adnotacje",

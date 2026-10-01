@@ -11,6 +11,7 @@ const route = useRoute()
 const router = useRouter()
 const { fetchStudies } = useImagingViewer()
 const { fetchImports, triggerScan, approveImport, rejectImport, fetchLinks, deleteLink } = useRvgImport()
+const toast = useToast()
 const api = useApi()
 
 const studies = ref<ImagingStudy[]>([])
@@ -129,7 +130,16 @@ async function scanNow() {
   scanning.value = true
   actionError.value = null
   try {
-    await triggerScan()
+    const counts = await triggerScan()
+    toast.add({
+      title: t('imagingViewer.rvg.scanSummary', {
+        scanned: counts.scanned ?? 0,
+        created: counts.created ?? 0,
+        approved: counts.approved ?? 0,
+        failed: counts.failed ?? 0
+      }),
+      color: (counts.failed ?? 0) > 0 ? 'warning' : 'success'
+    })
     await loadQueue()
   } catch {
     actionError.value = t('imagingViewer.rvg.scanFailed')
@@ -144,6 +154,7 @@ async function approve(row: RvgImport, targetPatientId: string | null) {
   try {
     await approveImport(row.id, targetPatientId)
     await loadQueue()
+    await loadLinks()
   } catch {
     actionError.value = t('imagingViewer.rvg.actionFailed')
   }
@@ -167,13 +178,38 @@ function suggestionLabel(row: RvgImport) {
   return t('imagingViewer.rvg.noSuggestion')
 }
 
+const linkPatientNames = ref<Record<string, string>>({})
+
 async function loadLinks() {
   if (!canRvgRead.value) return
   try {
     links.value = await fetchLinks()
+    // Resolve each linked patient once so the row shows which pairing is
+    // wrong; unresolvable ids fall back to the human-readable label.
+    if (canListPatients.value) {
+      for (const link of links.value) {
+        if (linkPatientNames.value[link.patient_id] === undefined) {
+          try {
+            const res = await api.get<ApiResponse<{ first_name: string, last_name: string }>>(
+              `/api/v1/patients/${link.patient_id}`,
+              { errorToast: false }
+            )
+            linkPatientNames.value[link.patient_id] = `${res.data.last_name}, ${res.data.first_name}`
+          } catch {
+            linkPatientNames.value[link.patient_id] = t('imagingViewer.list.unknownPatient')
+          }
+        }
+      }
+    }
   } catch {
     actionError.value = t('imagingViewer.rvg.loadFailed')
   }
+}
+
+function linkLabel(l: RvgLink) {
+  const name = linkPatientNames.value[l.patient_id]
+  if (name === undefined) return l.dicom_patient_id
+  return `${l.dicom_patient_id} → ${name}`
 }
 
 function formatLinkDate(l: RvgLink) {
@@ -374,7 +410,7 @@ onMounted(() => {
             :key="l.id"
             class="flex flex-wrap items-center justify-between gap-2 text-sm"
           >
-            <span>{{ l.dicom_patient_id }} · {{ formatLinkDate(l) }}</span>
+            <span>{{ linkLabel(l) }} · {{ formatLinkDate(l) }}</span>
             <UButton
               v-if="canRvgWrite"
               size="xs"

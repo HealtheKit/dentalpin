@@ -32,10 +32,11 @@
       "noSuggestion": "لا يوجد تطابق - افتح مع ?patient_id= للإسناد",
       "loadFailed": "تعذر تحميل قائمة RVG.",
       "scanFailed": "فشل المسح. هل مجلد المراقبة مهيأ؟",
+<      "scanSummary": "اكتمل المسح: {scanned} ممسوحة، {created} جديدة، {approved} معتمدة تلقائياً، {failed} فاشلة",
       "actionFailed": "فشل الإجراء. ربما تم حسم الصف مسبقاً.",
-      "linksTitle": "Linked sensor identities",
-      "linksEmpty": "No linked sensor identities.",
-      "unlink": "Unlink"
+      "linksTitle": "هويات الاستشعار المرتبطة",
+      "linksEmpty": "لا توجد هويات استشعار مرتبطة.",
+      "unlink": "إلغاء الربط"
     },
     "annotations": {
       "title": "الشروحات",

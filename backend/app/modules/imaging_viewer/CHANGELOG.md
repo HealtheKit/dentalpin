@@ -2,9 +2,11 @@
 
 ## Unreleased
 
-- feat: RVG card lists linked sensor identities with an unlink action, so a
-  wrong DICOM PatientID pairing can be corrected in place. `hu`/`pl`/`ta`/`ar`
-  copy for the new strings is English fallback pending translation.
+<- feat: manual scans surface a summary toast (scanned / new / auto-approved /
+  failed counts).
+- feat: RVG card lists linked sensor identities with patient names and an
+  unlink action, so a wrong DICOM PatientID pairing can be corrected in
+  place; approving also refreshes the links.
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;

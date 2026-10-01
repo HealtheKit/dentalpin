@@ -32,6 +32,7 @@
       "noSuggestion": "No match - open with ?patient_id= to assign",
       "loadFailed": "Could not load the RVG queue.",
       "scanFailed": "Scan failed. Is the watch folder configured?",
+<      "scanSummary": "Scan complete: {scanned} scanned, {created} new, {approved} auto-approved, {failed} failed",
       "actionFailed": "Action failed. The row may already be decided.",
       "linksTitle": "Linked sensor identities",
       "linksEmpty": "No linked sensor identities.",
