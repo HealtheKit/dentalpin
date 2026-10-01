@@ -23,9 +23,12 @@ patient record); selecting a study shows its rendered image with
 annotation overlays on top. While the patient resolves, the selector
 shows a loading state; an unresolvable id reads "Unknown patient",
 never a raw UUID. Study dates render in the clinic locale, and every
-annotation delete button carries an accessible name. The RVG queue is
+<annotation delete button carries an accessible name. Triggering a manual
+RVG watch-folder scan reports a summary toast (scanned / new /
+auto-approved / failed counts). The RVG queue is
 tabbed by status (pending / approved / rejected / failed) with live
-counts on each tab.
+counts on each tab; actions show only on pending rows and failed rows
+show their error.
 
 ## Viewer
 

@@ -22,7 +22,7 @@
     },
     "rvg": {
       "title": "RVG importálási sor ({total} függőben)",
-      "empty": "Nincsenek függőben lévő RVG-fájlok. Minden szkennelés után itt jelennek meg az új szenzorfájlok.",
+      "empty": "Nincs megjeleníthető importálás.",
       "scanNow": "Szkennelés most",
       "approveSuggestion": "Javaslat jóváhagyása",
       "approveCurrentPatient": "Hozzárendelés az aktuális beteghez",
@@ -32,12 +32,13 @@
       "noSuggestion": "Nincs egyezés - a hozzárendeléshez nyissa meg a ?patient_id= paraméterrel",
       "loadFailed": "Az RVG-sor betöltése nem sikerült.",
       "scanFailed": "A szkennelés nem sikerült. Be van állítva a figyelt mappa?",
+      "scanSummary": "Szkennelés kész: {scanned} szkennelve, {created} új, {approved} automatikusan jóváhagyva, {failed} sikertelen",
       "actionFailed": "A művelet nem sikerült. Lehet, hogy a sor már el van döntve.",
       "status": {
-        "pending": "Pending",
-        "approved": "Approved",
-        "rejected": "Rejected",
-        "failed": "Failed"
+        "pending": "Függőben",
+        "approved": "Jóváhagyva",
+        "rejected": "Elutasítva",
+        "failed": "Sikertelen"
       }
     },
     "annotations": {

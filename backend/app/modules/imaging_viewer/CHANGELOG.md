@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+- feat: manual scans surface a summary toast (scanned / new / auto-approved /
+  failed counts).
 - feat: RVG queue has per-status tabs with live counts (`GET
   /rvg/imports/counts`), so failed and rejected rows are visible without
-  leaving the inbox. Status labels in `hu`/`pl`/`ta`/`ar` are English
-  fallback pending translation.
+  leaving the inbox. Row actions and suggestions show only on the pending
+  tab; failed rows show their error; the title and empty state are
+  tab-neutral.
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;

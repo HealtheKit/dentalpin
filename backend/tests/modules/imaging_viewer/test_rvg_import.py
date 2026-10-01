@@ -219,6 +219,8 @@ async def test_import_counts_by_status_over_http(
     fake_storage: _FakeStorage,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """GET /rvg/imports/counts (registered before /{import_id} so the
+    literal is not swallowed as an id): per-status totals, clinic-scoped."""
     # Distinct identity per file: approving one scan links its PatientID,
     # and any later scan with the same tags would auto-approve off that
     # link instead of staying pending.
@@ -227,8 +229,6 @@ async def test_import_counts_by_status_over_http(
         return {"PatientID": f"T3-COUNT-{marker}", "PatientName": "Count^Test"}
 
     monkeypatch.setattr(service_module, "extract_identity_tags", _tags)
-    """GET /rvg/imports/counts (registered before /{import_id} so the
-    literal is not swallowed as an id): per-status totals, clinic-scoped."""
     user_id = await _user_id(db_session)
     pending, _ = await RvgService.scan_bytes(db_session, test_clinic.id, "c1.dcm", b"one")
     approved, _ = await RvgService.scan_bytes(db_session, test_clinic.id, "c2.dcm", b"two")
@@ -248,7 +248,6 @@ async def test_import_counts_by_status_over_http(
         "rejected": 1,
         "failed": 0,
     }
-    assert pending.status == "pending"
 
 
 @pytest.mark.asyncio

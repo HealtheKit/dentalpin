@@ -23,9 +23,12 @@ desde la ficha del paciente); al seleccionar un estudio se muestra su
 imagen con anotaciones encima. Mientras se resuelve el paciente, el
 selector muestra carga; un id irresoluble dice "Paciente desconocido",
 nunca un UUID. Las fechas salen en el idioma de la clínica y cada
-botón de borrar anotación tiene nombre accesible. La cola RVG tiene
+<botón de borrar anotación tiene nombre accesible. Al lanzar un escaneo
+manual de la carpeta RVG se muestra un resumen (escaneados / nuevos /
+autoaprobados / fallidos). La cola RVG tiene
 pestañas por estado (pendientes / aprobadas / rechazadas / fallidas)
-con conteos en vivo.
+con conteos en vivo; las acciones solo se muestran en pendientes y las
+fallidas muestran su error.
 
 ## Visor
 

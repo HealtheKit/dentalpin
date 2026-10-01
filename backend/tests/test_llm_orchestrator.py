@@ -282,6 +282,35 @@ def test_redactor_replaces_known_entity_in_free_text() -> None:
     assert "María González" not in redacted[0].content[0].text
 
 
+def test_redactor_tokenizes_date_of_birth() -> None:
+    # get_patient returns date_of_birth as a date; the registry jsonifies
+    # it to an ISO string before the redactor sees it (#534).
+    from datetime import date
+
+    from app.core.agents.tooling import jsonify
+
+    r = Redactor(enabled=True)
+    msg = ProviderMessage(
+        Role.TOOL,
+        [
+            ToolResultBlock(
+                "c1",
+                jsonify(
+                    {
+                        "date_of_birth": date(1985, 3, 14),
+                        "dob": date(1990, 1, 2),
+                        "birth_date": date(2001, 12, 31),
+                    }
+                ),
+            )
+        ],
+    )
+    content = r.redact_outgoing([msg])[0].content[0].content
+    for key in ("date_of_birth", "dob", "birth_date"):
+        assert isinstance(content[key], str) and content[key].startswith("DOB_"), key
+    assert r.rehydrate(content["date_of_birth"]) == "1985-03-14"
+
+
 # --- factory -------------------------------------------------------------
 
 

@@ -10,7 +10,8 @@ const { can } = usePermissions()
 const route = useRoute()
 const router = useRouter()
 const { fetchStudies } = useImagingViewer()
-const { fetchImports, fetchImportCounts, triggerScan, approveImport, rejectImport } = useRvgImport()
+<const { fetchImports, fetchImportCounts, triggerScan, approveImport, rejectImport } = useRvgImport()
+const toast = useToast()
 const api = useApi()
 
 const studies = ref<ImagingStudy[]>([])
@@ -119,10 +120,13 @@ async function loadQueue() {
   queueLoading.value = true
   actionError.value = null
   try {
-    const res = await fetchImports(activeQueueTab.value)
+    const [res, counts] = await Promise.all([
+      fetchImports(activeQueueTab.value),
+      fetchImportCounts()
+    ])
     queue.value = res.data
     queueTotal.value = res.total
-    queueCounts.value = await fetchImportCounts()
+    queueCounts.value = counts
   } catch {
     actionError.value = t('imagingViewer.rvg.loadFailed')
   } finally {
@@ -140,7 +144,16 @@ async function scanNow() {
   scanning.value = true
   actionError.value = null
   try {
-    await triggerScan()
+    const counts = await triggerScan()
+    toast.add({
+      title: t('imagingViewer.rvg.scanSummary', {
+        scanned: counts.scanned ?? 0,
+        created: counts.created ?? 0,
+        approved: counts.approved ?? 0,
+        failed: counts.failed ?? 0
+      }),
+      color: (counts.failed ?? 0) > 0 ? 'warning' : 'success'
+    })
     await loadQueue()
   } catch {
     actionError.value = t('imagingViewer.rvg.scanFailed')
@@ -266,7 +279,7 @@ onMounted(loadQueue)
     <UCard v-if="canRvgRead">
       <template #header>
         <div class="flex items-center justify-between">
-          <span class="font-medium">{{ t('imagingViewer.rvg.title', { total: queueTotal }) }}</span>
+          <span class="font-medium">{{ t('imagingViewer.rvg.title') }}</span>
           <UButton
             v-if="canRvgWrite"
             icon="i-lucide-refresh-cw"
@@ -322,12 +335,21 @@ onMounted(loadQueue)
             <p class="text-sm font-medium">
               {{ row.filename }}
             </p>
-            <p class="text-xs text-gray-500">
+            <p
+              v-if="activeQueueTab === 'pending'"
+              class="text-xs text-gray-500"
+            >
               {{ suggestionLabel(row) }}
+            </p>
+            <p
+              v-if="row.error"
+              class="text-xs text-red-500"
+            >
+              {{ row.error }}
             </p>
           </div>
           <div
-            v-if="canRvgWrite"
+            v-if="canRvgWrite && activeQueueTab === 'pending'"
             class="flex gap-2"
           >
             <UButton
