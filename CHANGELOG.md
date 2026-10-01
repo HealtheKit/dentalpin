@@ -11,43 +11,122 @@ frontend as a Nuxt layer under its own Python package.
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-09-30
+
 ### Added
 
-- Backend startup warns about `.env` keys that are not app settings (e.g.
-  `SENTRY_DNS` instead of `SENTRY_DSN`), which `extra="ignore"` would
-  otherwise drop silently. Keys owned by docker compose and Nuxt stay quiet
-  (#517, @ZoliQua).
-- Arabic (`ar`) as a clinic communication language: the 14 email templates
-  under `backend/templates/email/ar/` (authored by Haider Habeeb,
-  @dev-7aider, in #426), `ar` accepted by the setup and clinic-language
-  endpoints, and RTL layout in the shared email `base.html`. Email
-  templates now receive `locale`, so `<html lang>` matches the sent
-  language instead of always `es`.
-
+- **Twelve new optional modules** (all manual-install from the admin UI):
+  - **`sdi_it`** — Italian FatturaPA/SDI e-invoicing: FPR12 builder,
+    B2B gate, PEC transport with IMAP receipt polling, settings and
+    records pages and an invoice SDI panel (#410, #418, #435, #436,
+    #133, thanks @ZoliQua).
+  - **`sistema_ts`** — Sistema Tessera Sanitaria submission of paid
+    patient invoices, patient opposition and per-item `tipoSpesa`
+    (#437, #442, #134, thanks @ZoliQua).
+  - **`payment_gateways`** + **`razorpay`** — a provider-neutral
+    gateway contract with Razorpay as the first adapter; test/live mode
+    derived from the key prefix (#439, #445, #474, #481, #518, #263,
+    thanks @tresundios and @ZoliQua).
+  - **`sms_gateway`** — SMS delivery through pluggable providers for
+    the notifications SMS channel (#392, #231, thanks @lamanji).
+  - **`leads`** — inbound lead capture and pipeline (#476, #568,
+    thanks @Valeriooooh and @abdd8433).
+  - **`prescriptions`** — clinical prescriptions with compliance hooks
+    and a localized PDF (#465, #490, #269, thanks @lamanji).
+  - **`imaging_viewer`** — in-app DICOM study viewer (OHIF embed) on
+    media documents (#503, #569, thanks @lamanji).
+  - **`imaging_ai`** — on-demand AI segmentation jobs over imaging
+    studies behind a Runner protocol (#504, #570, thanks @lamanji).
+  - **`orthodontics`** — case tracking with monthly controls, slice A
+    (#505, #270, thanks @lamanji).
+  - **`treasury`** — cash and bank accounts with transfers and
+    memo-gated corrections (#463, #491, #502, thanks @lamanji).
+  - **`staff_attendance`** — clock in/out, current state and a daily
+    report (#462, #492, #501, thanks @lamanji).
+  - **`patient_segments`** — clinic-local patient tags for grouping
+    and campaigns (#461, thanks @lamanji).
+- **HttpOnly cookie sessions** with rotating, reuse-detecting refresh
+  tokens and CSRF protection (ADR 0023), a warning when a split-host
+  deploy can never receive the cookies, and session refresh for blob
+  downloads, media streams and copilot (#394, #449, #451, #457, #353,
+  thanks @ZoliQua).
+- **Reports**: financial (aging buckets, issued trend, CSV),
+  patient-stats and operational families (#385, #434, #230, thanks
+  @lamanji).
+- **Agenda QR check-in** with signed short-lived tokens and a public
+  page, from the appointment quick-actions menu; ADR 0037 sets the
+  kiosk self check-in design (#464, #493, #512, thanks @lamanji).
+- **Notifications: built-in WebPush channel** with VAPID (#430, #63,
+  thanks @lamanji).
 - **Sidebar super-sections + Settings super-groups** (#232): module nav
-  items now self-place under five stable headers — `clinical`, `lab`,
-  `financials`, `inventory`, `practice` — declared via a `section` key
-  in each module's backend-driven manifest navigation; the Settings
-  rail collapses its nine flat categories into five labelled
-  super-groups (`Clinical setup`, `Clinical management`, `Financial
-  configuration`, `System & add-ons`, `My preferences`). Presentation
-  only: every route, permission and module name is unchanged. Copilot's
-  standalone sidebar entry is removed (launcher already lives in the
-  app-overlay floating button).
-- Backend error tracking via the Sentry protocol (self-hosted GlitchTip
-  compatible): set `SENTRY_DSN` in the environment (never committed) to
-  enable; unset by default, never raises, PII never attached
-  (`send_default_pii=False`, query string dropped, UUID/token path
-  segments scrubbed to `[id]`). Performance tracing is a separate opt-in
-  (`SENTRY_TRACES_SAMPLE_RATE`, default `0.0`). Backend only — no DSN
-  reaches the browser. GDPR clinics need a DPA before pointing this at a
-  cloud backend — self-hosted GlitchTip otherwise
-  (`docs/technical/compliance-posture.md`).
-- **Settings → Modules**: the module list now supports text search, a
-  per-state filter (installed / uninstalled / pending / disabled / error)
-  and pagination, synced to the URL so results can be linked.
+  items self-place under `clinical`, `lab`, `financials`, `inventory`
+  and `practice`; the Settings rail groups its categories into five
+  labelled super-groups and every settings page gets one back control.
+  Presentation only; copilot's standalone sidebar entry is removed
+  (#429, #467, #488, thanks @lamanji and @ZoliQua).
+- **Settings → Modules**: upgrade/installable signals, text search,
+  per-state filter and pagination synced to the URL (#427, #447, #47,
+  thanks @lamanji and @BabuBahir).
 - **Auth RBAC step 4** (#46): `role_id` writes on membership/user
-  endpoints with flag-aware callers; demo seeder persists the FK.
+  endpoints with flag-aware callers; ADR 0029 (#415, #438, thanks
+  @lamanji).
+- **CSV import** with dry-run for patients and expenses, plus patient
+  restore (#431, thanks @lamanji).
+- **Ops**: `db backup` CLI and a disaster-recovery runbook (#432);
+  opt-in backend error tracking via the Sentry protocol (GlitchTip
+  compatible), DSN-gated and PII-free, with tracing as a separate
+  opt-in (#466, #498, thanks @lamanji).
+- **Copilot**: LLM provider registry (#456, #332, thanks
+  @Aryan-coder-student); WRITE-versus-DESTRUCTIVE tool dispatch rule
+  codified (#516, thanks @lamanji).
+- **Arabic**: email templates and `ar` as a clinic communication
+  language with RTL email layout (#508, from #426 by Haider Habeeb,
+  @dev-7aider); Arabic for the remaining layers and extracted plural
+  rules (#414, #428, #389, thanks @lamanji).
+- Backend startup names `.env` keys that are not app settings instead
+  of dropping them silently, and tolerates non-app keys (#513, #517,
+  thanks @lamanji and @ZoliQua).
+- **ADRs** on country billing positions: Portugal 0027 and France 0028
+  (#408, #409, #412), Germany (#443), Poland and Brazil (#453), United
+  States (#454) and Mexico (#455) (thanks @ZoliQua); 0038 subject export
+  registry for GDPR (#574, #475, thanks @lamanji).
+- `MAINTAINERS.md` with the review bar and merge criteria (#416) and
+  strategy docs (#433, thanks @lamanji).
+
+### Changed
+
+- **License**: Licensor set to Wikiparty Labs S.L. (#417, #419).
+- **Payments**: recording a payment is split from collecting one
+  through a gateway (#519, #506, thanks @ZoliQua).
+- **Odontogram**: realistic occlusal view and crown profile without
+  root (#364, #48, thanks @Mr-Neutr0n).
+- Frontend Node engines pinned and LF endings enforced for shell/YAML
+  (#478, thanks @lamanji).
+
+### Fixed
+
+- **PDFs render in every UI locale**: invoices (#423, #484, #422),
+  budgets, purchase orders and prescriptions (#450, #487, #441, #485)
+  and managed documents (#525, #524) (thanks @ZoliQua and @lamanji).
+- Hydration mismatches in the settings rail and client-registered slots
+  (#425, #458, #424, thanks @ZoliQua).
+- Date pickers send the local calendar day, not its UTC rendering
+  (#523, #522, thanks @ZoliQua).
+- List filters: a cleared filter stays cleared and the Archived filter
+  lists archived patients alone (#479, #520, #473, thanks @ZoliQua).
+- Odontogram plan dropdown rebuilt on the supported items API (#471,
+  #459, thanks @ZoliQua).
+- Notifications read treatment names from a single
+  `budget_treatments_context` (#528, #527, thanks @ZoliQua).
+- Copilot publishes the data-bus namespace after a confirmed write
+  (#577).
+- Alembic: Windows-safe `version_locations`, guards for leftover dirs
+  and for cross-module FKs without `depends_on` (#472, #477, #511,
+  #572, #507, thanks @ZoliQua and @lamanji).
+- Coolify compose passes the demo flag to backend and frontend (#529).
+- Payroll draft delete actions, single error toast on procurement
+  pages and documents clean-ups (#413, #496, #497, thanks @lamanji).
+- `frontend/modules.json` restored to its canonical form (#584).
 
 ## [2.6.0] - 2026-09-07
 

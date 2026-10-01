@@ -32,6 +32,7 @@
       "noSuggestion": "Kein Treffer - mit ?patient_id= öffnen zum Zuordnen",
       "loadFailed": "RVG-Warteschlange konnte nicht geladen werden.",
       "scanFailed": "Scan fehlgeschlagen. Ist der Überwachungsordner konfiguriert?",
+      "scanSummary": "Scan abgeschlossen: {scanned} gescannt, {created} neu, {approved} automatisch freigegeben, {failed} fehlgeschlagen",
       "actionFailed": "Aktion fehlgeschlagen. Die Zeile wurde möglicherweise bereits entschieden."
     },
     "annotations": {

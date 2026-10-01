@@ -11,6 +11,7 @@ const route = useRoute()
 const router = useRouter()
 const { fetchStudies } = useImagingViewer()
 const { fetchImports, triggerScan, approveImport, rejectImport } = useRvgImport()
+const toast = useToast()
 const api = useApi()
 
 const studies = ref<ImagingStudy[]>([])
@@ -128,7 +129,16 @@ async function scanNow() {
   scanning.value = true
   actionError.value = null
   try {
-    await triggerScan()
+    const counts = await triggerScan()
+    toast.add({
+      title: t('imagingViewer.rvg.scanSummary', {
+        scanned: counts.scanned ?? 0,
+        created: counts.created ?? 0,
+        approved: counts.approved ?? 0,
+        failed: counts.failed ?? 0
+      }),
+      color: (counts.failed ?? 0) > 0 ? 'warning' : 'success'
+    })
     await loadQueue()
   } catch {
     actionError.value = t('imagingViewer.rvg.scanFailed')
