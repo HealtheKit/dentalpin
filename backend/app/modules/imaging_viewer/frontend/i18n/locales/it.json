@@ -32,6 +32,7 @@
       "noSuggestion": "Nessuna corrispondenza - apri con ?patient_id= per assegnare",
       "loadFailed": "Impossibile caricare la coda RVG.",
       "scanFailed": "Scansione non riuscita. La cartella monitorata è configurata?",
+      "scanSummary": "Scansione completata: {scanned} scansionati, {created} nuovi, {approved} approvati automaticamente, {failed} non riusciti",
       "actionFailed": "Azione non riuscita. La riga potrebbe essere già stata decisa."
     },
     "annotations": {
