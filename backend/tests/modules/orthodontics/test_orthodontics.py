@@ -190,9 +190,10 @@ async def _plan_with_item(db_session, clinic_id, patient_id, professional_id):
     await db_session.commit()
     # expire_on_commit=False in this suite: add_item loaded plan.items as
     # empty before the item existed, and the stale collection would shadow
-    # the committed row for every later reader in this session.
-    # (expire_all is sync even on AsyncSession.)
-    db_session.expire_all()
+    # the committed row for every later reader in this session. Refresh
+    # only that collection (a global expire_all poisons every ORM object
+    # the test touches later -> MissingGreenlet on attribute access).
+    await db_session.refresh(plan, ["items"])
     return plan, item
 
 
