@@ -10,7 +10,7 @@ const { can } = usePermissions()
 const route = useRoute()
 const router = useRouter()
 const { fetchStudies } = useImagingViewer()
-<const { fetchImports, fetchImportCounts, triggerScan, approveImport, rejectImport } = useRvgImport()
+const { fetchImports, fetchImportCounts, triggerScan, approveImport, rejectImport } = useRvgImport()
 const toast = useToast()
 const api = useApi()
 
