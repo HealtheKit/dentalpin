@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;
