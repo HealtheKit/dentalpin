@@ -189,7 +189,10 @@ async def test_budget_cookie_for_other_budget_401(
         json={"method": "phone_last4", "value": "1222"},
     )
     assert verify.status_code == 204
-    cookie = verify.headers["set-cookie"].split(";")[0]
+    # Re-key A's session under B's cookie name so the `tok` claim check
+    # (not just the per-token cookie name) is what rejects it.
+    value = verify.headers["set-cookie"].split(";")[0].split("=", 1)[1]
+    cookie = f"bdg_session_{budget_b.public_token}={value}"
     response = await client.get(f"{BUDGET}/{budget_b.public_token}", headers={"Cookie": cookie})
     assert response.status_code == 401
 
@@ -278,7 +281,7 @@ async def test_push_redeem_binds_token_patient(
 
 @pytest.mark.asyncio
 async def test_invalid_credentials_share_generic_shapes(
-    client: AsyncClient, db_session: AsyncSession, t1_setup: dict
+    client: AsyncClient, t1_setup: dict
 ) -> None:
     clinic = t1_setup["clinic"]
     bodies = {}
@@ -300,9 +303,6 @@ async def test_invalid_credentials_share_generic_shapes(
             headers={"X-Lead-Key": "lk_missing"},
         )
     ).json()["message"]
-    token, _ = await IntegrationsService.create_token(
-        db_session, clinic.id, {"name": "t1", "scopes": []}
-    )
     bodies["integrations"] = (
         await client.get(IPATIENTS, headers={"Authorization": "Bearer wrong-token"})
     ).json()["message"]
@@ -321,13 +321,11 @@ async def test_invalid_credentials_share_generic_shapes(
 async def test_integration_token_cannot_read_foreign_patient(
     client: AsyncClient, db_session: AsyncSession, t1_setup: dict
 ) -> None:
-    from app.modules.patients.models import Patient as PatientModel  # noqa: E402
-
     clinic = t1_setup["clinic"]
     other = Clinic(id=uuid4(), name="Foreign", tax_id="B00000000", address={}, settings={})
     db_session.add(other)
     await db_session.flush()
-    foreign = PatientModel(id=uuid4(), clinic_id=other.id, first_name="F", last_name="X")
+    foreign = Patient(id=uuid4(), clinic_id=other.id, first_name="F", last_name="X")
     db_session.add(foreign)
     await db_session.commit()
 
