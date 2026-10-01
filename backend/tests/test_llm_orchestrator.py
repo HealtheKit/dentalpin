@@ -283,8 +283,11 @@ def test_redactor_replaces_known_entity_in_free_text() -> None:
 
 
 def test_redactor_tokenizes_date_of_birth() -> None:
-    # get_patient returns date_of_birth as a date object (#534).
+    # get_patient returns date_of_birth as a date; the registry jsonifies
+    # it to an ISO string before the redactor sees it (#534).
     from datetime import date
+
+    from app.core.agents.tooling import jsonify
 
     r = Redactor(enabled=True)
     msg = ProviderMessage(
@@ -292,11 +295,13 @@ def test_redactor_tokenizes_date_of_birth() -> None:
         [
             ToolResultBlock(
                 "c1",
-                {
-                    "date_of_birth": date(1985, 3, 14),
-                    "dob": "1990-01-02",
-                    "birth_date": date(2001, 12, 31),
-                },
+                jsonify(
+                    {
+                        "date_of_birth": date(1985, 3, 14),
+                        "dob": date(1990, 1, 2),
+                        "birth_date": date(2001, 12, 31),
+                    }
+                ),
             )
         ],
     )

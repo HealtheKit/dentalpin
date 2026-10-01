@@ -26,7 +26,6 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass, field
-from datetime import date
 from typing import Any
 
 from app.core.llm.base import (
@@ -164,21 +163,17 @@ class Redactor:
             return {k: self._redact_obj(v, k) for k, v in obj.items()}
         if isinstance(obj, list):
             return [self._redact_obj(v, key) for v in obj]
-        if isinstance(obj, (str, date)):
+        if isinstance(obj, str):
             return self._redact_scalar(key, obj)
         return obj
 
-    def _redact_scalar(self, key: str | None, value: str | date) -> str | date:
+    def _redact_scalar(self, key: str | None, value: str) -> str:
         if not value:
             return value
         lkey = (key or "").lower()
         kind = _KIND_FOR_KEY.get(lkey)
         if kind is not None:
-            # Tool results carry dates (e.g. date_of_birth) as date objects.
-            real = value.isoformat() if isinstance(value, date) else value
-            return self.table.tokenize(real, kind)
-        if not isinstance(value, str):
-            return value
+            return self.table.tokenize(value, kind)
         if lkey in _ID_KIND and _UUID_RE.match(value):
             return self.table.tokenize(value, _ID_KIND[lkey])
         return value
