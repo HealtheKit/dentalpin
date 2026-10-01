@@ -9,6 +9,7 @@ here — collection stays in the payments screen (ADR 0010).
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -350,12 +351,35 @@ class OrthoCaseService:
         """Build the installment schedule through the plan's session
         API — never raw rows — so the plan-owns-lines (#176) and
         repricing (#243) invariants hold. Money is booked later, one
-        session at a time, from the payments screen (ADR 0010)."""
+        session at a time, from the payments screen (ADR 0010).
+
+        The new sessions REPLACE the item's pending ones (added first,
+        then the old pending rows removed via ``delete_session``), so a
+        real item — which always ships a default session worth the full
+        line price — never ends up double-counted. The new total must
+        equal the pending amount (#270, 5.2); completed sessions refuse
+        the whole operation rather than being silently rewritten.
+        """
         case = await _get_case(db, clinic_id, case_id)
         if case is None:
             raise LookupError("Case not found in this clinic")
         if case.treatment_plan_id is None or case.plan_item_id is None:
             raise ValueError("Link a treatment plan item before generating installments")
+        plan = await TreatmentPlanService.get(db, clinic_id, case.treatment_plan_id)
+        if plan is None:
+            raise LookupError("Linked treatment plan not found")
+        item = next((i for i in plan.items or [] if i.id == case.plan_item_id), None)
+        if item is None:
+            raise LookupError("Linked plan item not found")
+        if any(s.status == "completed" for s in item.sessions or []):
+            raise ValueError("Item already has completed sessions")
+        pending = [s for s in item.sessions or [] if s.status == "pending"]
+        pending_total = sum((Decimal(str(s.amount)) for s in pending), Decimal("0"))
+        new_total = Decimal(str(down_payment)) + months * Decimal(str(monthly_amount))
+        if new_total != pending_total:
+            raise ValueError(
+                f"Schedule total {new_total} does not match pending amount {pending_total}"
+            )
         await TreatmentPlanService.add_session_manual(
             db,
             clinic_id,
@@ -370,6 +394,10 @@ class OrthoCaseService:
                 case.treatment_plan_id,
                 case.plan_item_id,
                 {"label": f"Installment {month}", "amount": monthly_amount},
+            )
+        for old in pending:
+            await TreatmentPlanService.delete_session(
+                db, clinic_id, case.treatment_plan_id, case.plan_item_id, old.id
             )
         await db.flush()
         return await OrthoCaseService.installments(db, clinic_id, case_id)

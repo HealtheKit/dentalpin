@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
@@ -160,8 +161,11 @@ async def test_settings_seed_idempotent(db_session: AsyncSession, test_clinic: C
 
 
 async def _plan_with_item(db_session, clinic_id, patient_id, professional_id):
+    """Build the plan + item through TreatmentPlanService so the item
+    carries the real default session (single pending session worth the
+    treatment's price snapshot) instead of zero sessions."""
     from app.modules.odontogram.models import Treatment
-    from app.modules.treatment_plan.models import PlannedTreatmentItem, TreatmentPlan
+    from app.modules.treatment_plan.service import TreatmentPlanService
 
     treatment = Treatment(
         clinic_id=clinic_id,
@@ -170,25 +174,24 @@ async def _plan_with_item(db_session, clinic_id, patient_id, professional_id):
         scope="global_mouth",
         status="planned",
         recorded_at=datetime.now(UTC),
+        price_snapshot=Decimal("1200.00"),
     )
     db_session.add(treatment)
     await db_session.flush()
-    plan = TreatmentPlan(
-        clinic_id=clinic_id,
-        patient_id=patient_id,
-        plan_number=f"PLAN-{uuid4().hex[:8]}",
-        status="active",
-        created_by=professional_id,
+    plan = await TreatmentPlanService.create(
+        db_session,
+        clinic_id,
+        professional_id,
+        {"patient_id": patient_id, "title": "Ortho plan"},
     )
-    db_session.add(plan)
-    await db_session.flush()
-    item = PlannedTreatmentItem(
-        clinic_id=clinic_id,
-        treatment_plan_id=plan.id,
-        treatment_id=treatment.id,
+    item = await TreatmentPlanService.add_item(
+        db_session, clinic_id, plan.id, {"treatment_id": treatment.id}
     )
-    db_session.add(item)
     await db_session.commit()
+    # expire_on_commit=False in this suite: add_item loaded plan.items as
+    # empty before the item existed, and the stale collection would shadow
+    # the committed row for every later reader in this session.
+    await db_session.expire_all()
     return plan, item
 
 
@@ -223,9 +226,11 @@ async def test_plan_link_schedule_installments(
     assert linked.plan_item_id == item.id
 
     schedule = await OrthoCaseService.generate_schedule(
-        db_session, test_clinic.id, case.id, 200.0, 2, 100.0
+        db_session, test_clinic.id, case.id, 200.0, 2, 500.0
     )
     await db_session.commit()
+    # The item's default session (1200 pending) is REPLACED, not kept
+    # alongside the new ones: down 200 + 2 x 500 == 1200 pending.
     assert len(schedule["sessions"]) == 3
     assert schedule["sessions"][0]["label"] == "Down payment"
     assert schedule["sessions"][1]["label"] == "Installment 1"
@@ -234,6 +239,54 @@ async def test_plan_link_schedule_installments(
 
     reread = await OrthoCaseService.installments(db_session, test_clinic.id, case.id)
     assert len(reread["sessions"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_generate_schedule_rejects_sum_mismatch(
+    db_session: AsyncSession, test_clinic: Clinic, test_patient
+):
+    doc = await _professional(db_session, test_clinic.id)
+    case, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
+    await db_session.commit()
+    plan, item = await _plan_with_item(db_session, test_clinic.id, test_patient.id, doc.id)
+    await OrthoCaseService.link_plan(
+        db_session, test_clinic.id, case.id, plan.id, item.id
+    )
+    await db_session.commit()
+    # 200 + 2 x 100 = 400 against 1200 pending.
+    with pytest.raises(ValueError, match="does not match"):
+        await OrthoCaseService.generate_schedule(
+            db_session, test_clinic.id, case.id, 200.0, 2, 100.0
+        )
+
+
+@pytest.mark.asyncio
+async def test_generate_schedule_refuses_completed_sessions(
+    db_session: AsyncSession, test_clinic: Clinic, test_patient
+):
+    from app.modules.treatment_plan.models import PlannedTreatmentItemSession
+
+    doc = await _professional(db_session, test_clinic.id)
+    case, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
+    await db_session.commit()
+    plan, item = await _plan_with_item(db_session, test_clinic.id, test_patient.id, doc.id)
+    await OrthoCaseService.link_plan(
+        db_session, test_clinic.id, case.id, plan.id, item.id
+    )
+    await db_session.commit()
+    session = (
+        await db_session.execute(
+            select(PlannedTreatmentItemSession).where(
+                PlannedTreatmentItemSession.plan_item_id == item.id
+            )
+        )
+    ).scalars().first()
+    session.status = "completed"
+    await db_session.commit()
+    with pytest.raises(ValueError, match="completed"):
+        await OrthoCaseService.generate_schedule(
+            db_session, test_clinic.id, case.id, 200.0, 2, 500.0
+        )
 
     unlinked, _ = await OrthoCaseService.unlink_plan(db_session, test_clinic.id, case.id)
     await db_session.commit()

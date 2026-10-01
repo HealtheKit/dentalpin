@@ -377,7 +377,7 @@ watch(() => props.caseId, refresh, { immediate: true })
         </div>
         <div class="flex gap-2">
           <UButton
-            v-if="canWriteCase && installments.sessions.length === 0"
+            v-if="canWriteCase"
             size="sm"
             variant="soft"
             @click="showSchedule = true"
@@ -585,7 +585,9 @@ watch(() => props.caseId, refresh, { immediate: true })
             <span class="text-sm">{{ t('orthodontics.control.appointment') }}:</span>
             <USelect
               v-model="ctlAppointment"
-              :options="[{ label: '—', value: null }, ...upcomingAppointments.map(a => ({ label: formatDate(a.start_time), value: a.id }))]"
+              :items="[{ label: '—', value: null }, ...upcomingAppointments.map(a => ({ label: formatDate(a.start_time), value: a.id }))]"
+              value-key="value"
+              label-key="label"
             />
           </div>
           <div
@@ -595,7 +597,9 @@ watch(() => props.caseId, refresh, { immediate: true })
             <span class="text-sm">{{ t('orthodontics.control.session') }}:</span>
             <USelect
               v-model="ctlSession"
-              :options="[{ label: '—', value: null }, ...installments.sessions.filter(s => s.status === 'pending').map(s => ({ label: `${s.sequence} · ${s.label}`, value: s.id }))]"
+              :items="[{ label: '—', value: null }, ...installments.sessions.filter(s => s.status === 'pending').map(s => ({ label: `${s.sequence} · ${s.label}`, value: s.id }))]"
+              value-key="value"
+              label-key="label"
             />
           </div>
         </div>
@@ -647,13 +651,17 @@ watch(() => props.caseId, refresh, { immediate: true })
         <div class="space-y-3">
           <USelect
             v-model="pickedPlan"
-            :options="patientPlans.map(p => ({ label: `${p.plan_number} · ${p.status}`, value: p.id }))"
+            :items="patientPlans.map(p => ({ label: `${p.plan_number} · ${p.status}`, value: p.id }))"
+            value-key="value"
+            label-key="label"
             :placeholder="t('orthodontics.plan.title')"
           />
           <USelect
             v-if="pickedPlanItems.length > 0"
             v-model="pickedItem"
-            :options="pickedPlanItems.map((it, idx) => ({ label: `Item ${idx + 1}`, value: it.id }))"
+            :items="pickedPlanItems.map((it, idx) => ({ label: `Item ${idx + 1}`, value: it.id }))"
+            value-key="value"
+            label-key="label"
           />
         </div>
       </template>
