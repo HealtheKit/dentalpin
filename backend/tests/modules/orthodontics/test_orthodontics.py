@@ -304,7 +304,9 @@ async def test_plan_link_second_case_conflicts(
 ):
     doc = await _professional(db_session, test_clinic.id)
     plan, item = await _plan_with_item(db_session, test_clinic.id, test_patient.id, doc.id)
-    first, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
+    first, _ = await OrthoCaseService.create(
+        db_session, test_clinic.id, _case_data(test_patient.id)
+    )
     second, _ = await OrthoCaseService.create(
         db_session, test_clinic.id, _case_data(test_patient.id)
     )
