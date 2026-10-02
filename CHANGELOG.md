@@ -11,6 +11,15 @@ frontend as a Nuxt layer under its own Python package.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Login on plain-HTTP installs** — since 2.7.0 the session cookies
+  were always `Secure` in production, which browsers drop over
+  `http://` on anything but localhost: a LAN install at
+  `http://192.168.x.x` logged in and bounced straight back to `/login`.
+  `Secure` now follows the scheme the browser used
+  (`X-Forwarded-Proto`, else `Origin`); HTTPS deployments are unchanged.
+
 ## [2.7.0] - 2026-09-30
 
 ### Added
