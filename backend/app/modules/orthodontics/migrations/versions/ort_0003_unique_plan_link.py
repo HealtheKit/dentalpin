@@ -15,9 +15,7 @@ branch_labels: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.create_unique_constraint(
-        "uq_ortho_cases_plan_link", "ortho_cases", ["treatment_plan_id"]
-    )
+    op.create_unique_constraint("uq_ortho_cases_plan_link", "ortho_cases", ["treatment_plan_id"])
 
 
 def downgrade() -> None:

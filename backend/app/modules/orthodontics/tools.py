@@ -111,9 +111,7 @@ def get_tools() -> list[Tool]:
         ),
         Tool(
             name="list_overdue_ortho_controls",
-            description=(
-                "Casos de ortodoncia activos con el próximo control vencido."
-            ),
+            description=("Casos de ortodoncia activos con el próximo control vencido."),
             parameters=ListOverdueOrthoControlsArgs,
             handler=_list_overdue_ortho_controls,
             permissions=["orthodontics.cases.read"],
