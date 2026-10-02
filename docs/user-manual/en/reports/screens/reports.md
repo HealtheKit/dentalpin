@@ -3,18 +3,12 @@ module: reports
 screen: dashboard
 route: /reports
 related_endpoints:
-  - GET /api/v1/payments/reports/summary
-  - GET /api/v1/payments/reports/trends
-  - GET /api/v1/payments/reports/by-method
-  - GET /api/v1/payments/reports/by-professional
-  - GET /api/v1/payments/reports/aging-receivables
   - GET /api/v1/reports/scheduling/first-visits
   - GET /api/v1/reports/scheduling/funnel
 related_permissions:
   - reports.billing.read
   - reports.budgets.read
   - reports.scheduling.read
-  - payments.reports.read
 related_paths:
   - backend/app/modules/reports/frontend/pages/reports/index.vue
   - backend/app/modules/reports/frontend/composables/useDashboardSnapshot.ts
@@ -66,7 +60,7 @@ date-filtered.
 
 | What you see | Required permission |
 |--------------|--------------------|
-| Cash collected, patient credit, production, methods, charts, avg ticket, aging | `payments.reports.read` |
+| Cash collected, patient credit, production, methods, charts, avg ticket, aging | `payments.reports.read` (detail: the payments reports screen) |
 | New patients, no-show rate | `reports.scheduling.read` |
 | Billing drilldown | `reports.billing.read` |
 | Budgets drilldown | `reports.budgets.read` |
