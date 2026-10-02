@@ -1,6 +1,6 @@
 ---
 module: clinical_notes
-last_verified_commit: 0000000
+last_verified_commit: 2195ad0e
 ---
 
 # Clinical Notes — permissions

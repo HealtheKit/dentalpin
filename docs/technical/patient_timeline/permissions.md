@@ -1,6 +1,6 @@
 ---
 module: patient_timeline
-last_verified_commit: 0000000
+last_verified_commit: 2195ad0e
 ---
 
 # Patient Timeline — permissions

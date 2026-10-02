@@ -1,6 +1,6 @@
 ---
 module: migration_import
-last_verified_commit: HEAD
+last_verified_commit: 2195ad0e
 ---
 
 # migration_import — permissions
