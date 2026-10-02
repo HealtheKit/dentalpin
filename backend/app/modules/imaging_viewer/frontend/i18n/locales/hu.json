@@ -21,7 +21,7 @@
       "visualizationNote": "Csak megjelenítési segédlet - soha nem diagnózis."
     },
     "rvg": {
-      "title": "RVG importálási sor ({total} függőben)",
+      "title": "RVG importálási sor",
       "empty": "Nincs megjeleníthető importálás.",
       "scanNow": "Szkennelés most",
       "approveSuggestion": "Javaslat jóváhagyása",

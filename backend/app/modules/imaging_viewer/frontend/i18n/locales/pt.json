@@ -21,7 +21,7 @@
       "visualizationNote": "Apenas ajuda visual — nunca um diagnóstico."
     },
     "rvg": {
-      "title": "Fila de importação RVG ({total} pendentes)",
+      "title": "Fila de importação RVG",
       "empty": "Nenhuma importação nesta visualização.",
       "scanNow": "Digitalizar agora",
       "approveSuggestion": "Aprovar sugestão",

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- fix: drop the stale `{total}` interpolation from the RVG queue title in
+  ar/hu/pl/pt/ta (the title renders without params since the counts moved to
+  the status tabs; en/de/es/fr/it already dropped it on main).
 - feat: manual scans surface a summary toast (scanned / new / auto-approved /
   failed counts).
 - feat: RVG queue has per-status tabs with live counts (`GET

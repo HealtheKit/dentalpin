@@ -21,7 +21,7 @@
       "visualizationNote": "Tylko pomoc wizualna - nigdy diagnoza."
     },
     "rvg": {
-      "title": "Kolejka importu RVG ({total} oczekujących)",
+      "title": "Kolejka importu RVG",
       "empty": "Brak importów w tym widoku.",
       "scanNow": "Skanuj teraz",
       "approveSuggestion": "Zatwierdź sugestię",
