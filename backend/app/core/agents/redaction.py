@@ -41,6 +41,7 @@ _NAME_KEYS = {"first_name", "last_name", "full_name", "name", "patient_name"}
 _PHONE_KEYS = {"phone", "mobile", "telephone", "phone_number"}
 _EMAIL_KEYS = {"email", "email_address"}
 _NATIONAL_ID_KEYS = {"dni", "nif", "tax_id", "national_id"}
+_DOB_KEYS = {"date_of_birth", "dob", "birth_date"}
 # UUID-valued reference keys -> kind
 _ID_KIND = {
     "id": "REF",
@@ -57,6 +58,8 @@ for _k in _EMAIL_KEYS:
     _KIND_FOR_KEY[_k] = "EMAIL"
 for _k in _NATIONAL_ID_KEYS:
     _KIND_FOR_KEY[_k] = "NATID"
+for _k in _DOB_KEYS:
+    _KIND_FOR_KEY[_k] = "DOB"
 
 _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
