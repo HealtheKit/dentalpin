@@ -33,9 +33,24 @@ CSRF_HEADER = "X-CSRF-Token"
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 
 
-def _secure() -> bool:
+def _secure(request: Request | None = None) -> bool:
+    """``Secure`` in production, unless the browser reached us over plain
+    HTTP: it drops ``Secure`` cookies from an ``http://`` response on any
+    host but localhost, so a LAN install at ``http://192.168.x.x`` logged in
+    and bounced straight back to ``/login``. The scheme comes from the
+    proxy's ``X-Forwarded-Proto`` or, for a direct cross-origin call, the
+    page ``Origin``. SSR refreshes carry neither and keep ``Secure``.
+    """
     # Plain http://localhost in dev/e2e can't carry Secure cookies.
-    return settings.ENVIRONMENT == "production"
+    if settings.ENVIRONMENT != "production":
+        return False
+    if request is None:
+        return True
+    proto = (
+        request.headers.get("x-forwarded-proto")
+        or urlsplit(request.headers.get("origin", "")).scheme
+    )
+    return proto.split(",")[0].strip().lower() != "http"
 
 
 def _domain() -> str | None:
@@ -111,6 +126,7 @@ def set_session_cookies(
     request: Request | None = None,
 ) -> None:
     warn_if_host_only(request)
+    secure = _secure(request)
     access_ttl = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     refresh_ttl = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
     response.set_cookie(
@@ -118,7 +134,7 @@ def set_session_cookies(
         access_token,
         max_age=access_ttl,
         httponly=True,
-        secure=_secure(),
+        secure=secure,
         samesite="lax",
         path="/",
         domain=_domain(),
@@ -128,7 +144,7 @@ def set_session_cookies(
         refresh_token,
         max_age=refresh_ttl,
         httponly=True,
-        secure=_secure(),
+        secure=secure,
         samesite="lax",
         path="/",
         domain=_domain(),
@@ -138,7 +154,7 @@ def set_session_cookies(
         csrf_token,
         max_age=refresh_ttl,
         httponly=False,  # the double-submit half JS must read
-        secure=_secure(),
+        secure=secure,
         samesite="lax",
         path="/",
         domain=_domain(),
