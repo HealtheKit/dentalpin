@@ -23,7 +23,9 @@ desde la ficha del paciente); al seleccionar un estudio se muestra su
 imagen con anotaciones encima. Mientras se resuelve el paciente, el
 selector muestra carga; un id irresoluble dice "Paciente desconocido",
 nunca un UUID. Las fechas salen en el idioma de la clínica y cada
-botón de borrar anotación tiene nombre accesible.
+botón de borrar anotación tiene nombre accesible. Al lanzar un escaneo
+manual de la carpeta RVG se muestra un resumen (escaneados / nuevos /
+autoaprobados / fallidos).
 
 ## Visor
 
