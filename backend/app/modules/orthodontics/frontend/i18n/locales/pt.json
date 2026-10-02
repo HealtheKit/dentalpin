@@ -18,7 +18,9 @@
       "active": "Ativo",
       "paused": "Pausado",
       "finished": "Concluído",
-      "transferred_out": "Transferido"
+      "transferred_out": "Transferido",
+      "session_pending": "Pendente",
+      "session_completed": "Concluída"
     },
     "inbox": {
       "title": "Ortodontia",
@@ -66,7 +68,8 @@
       "history": "Controles",
       "empty": "Ainda sem controles",
       "appointment": "Consulta",
-      "session": "Prestação recebida"
+      "session": "Sessão vinculada",
+      "sessionHint": "Somente referência - a cobrança acontece em Pagamentos."
     },
     "card": {
       "title": "Ortodontia",
@@ -102,11 +105,13 @@
       "link": "Associar plano",
       "unlink": "Desassociar plano",
       "noLink": "Sem plano associado (pacientes transferidos podem ser acompanhados sem um)",
-      "paid": "{n} pagas",
+      "completed": "{n} concluídas",
       "pending": "{n} pendentes",
       "generate": "Gerar prestações",
       "collect": "Receber prestação",
+      "confirmUnlink": "Desvincular o plano de tratamento?",
       "downPayment": "Entrada",
+      "installmentN": "Mensalidade {n}",
       "months": "Meses",
       "monthlyAmount": "Valor mensal",
       "closeSuggested": "Caso transferido com plano associado: considere encerrar o plano."

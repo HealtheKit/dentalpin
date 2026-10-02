@@ -66,9 +66,10 @@ async def _list_overdue_ortho_controls(
     ctx: AgentContext, params: ListOverdueOrthoControlsArgs
 ) -> dict:
     rows = await OrthoCaseService.list_overdue(ctx.db, ctx.clinic_id)
+    total = len(rows)
     rows = rows[: params.limit]
     return {
-        "total": len(rows),
+        "total": total,
         "cases": [_case_summary(case, annotation) for case, annotation in rows],
     }
 
@@ -101,7 +102,7 @@ def get_tools() -> list[Tool]:
             name="get_ortho_case_status",
             description=(
                 "Estado de un caso de ortodoncia: aparato, arcos en boca, "
-                "progreso de controles y próximo control. Requiere confirmación del usuario."
+                "progreso de controles y próximo control."
             ),
             parameters=GetOrthoCaseStatusArgs,
             handler=_get_ortho_case_status,
@@ -111,8 +112,7 @@ def get_tools() -> list[Tool]:
         Tool(
             name="list_overdue_ortho_controls",
             description=(
-                "Casos de ortodoncia activos con el próximo control vencido. "
-                "Requiere confirmación del usuario."
+                "Casos de ortodoncia activos con el próximo control vencido."
             ),
             parameters=ListOverdueOrthoControlsArgs,
             handler=_list_overdue_ortho_controls,

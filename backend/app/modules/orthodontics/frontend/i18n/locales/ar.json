@@ -18,7 +18,9 @@
       "active": "نشط",
       "paused": "متوقف مؤقتًا",
       "finished": "منتهٍ",
-      "transferred_out": "محوَّل"
+      "transferred_out": "محوَّل",
+      "session_pending": "معلقة",
+      "session_completed": "مكتملة"
     },
     "inbox": {
       "title": "تقويم الأسنان",
@@ -66,7 +68,8 @@
       "history": "المتابعات",
       "empty": "لا توجد متابعات بعد",
       "appointment": "الموعد",
-      "session": "القسط المحصَّل"
+      "session": "جلسة مرتبطة",
+      "sessionHint": "للمرجع فقط - يتم التحصيل في المدفوعات."
     },
     "card": {
       "title": "تقويم الأسنان",
@@ -102,11 +105,13 @@
       "link": "ربط الخطة",
       "unlink": "إلغاء ربط الخطة",
       "noLink": "لا توجد خطة مرتبطة (يمكن متابعة المرضى المحوَّلين بدون خطة)",
-      "paid": "{n} مدفوعة",
+      "completed": "{n} مكتملة",
       "pending": "{n} معلقة",
       "generate": "إنشاء الأقساط",
       "collect": "تحصيل القسط",
+      "confirmUnlink": "إلغاء ربط خطة العلاج؟",
       "downPayment": "الدفعة الأولى",
+      "installmentN": "القسط {n}",
       "months": "الأشهر",
       "monthlyAmount": "المبلغ الشهري",
       "closeSuggested": "تم تحويل الحالة مع خطة مرتبطة: يُنصح بإغلاق الخطة."

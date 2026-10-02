@@ -53,7 +53,7 @@ class OrthoCase(Base):
     reopened_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     treatment_plan_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("treatment_plans.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("treatment_plans.id"), nullable=True, unique=True
     )
     plan_item_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("planned_treatment_items.id"), nullable=True

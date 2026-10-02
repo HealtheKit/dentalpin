@@ -18,7 +18,9 @@
       "active": "Attivo",
       "paused": "In pausa",
       "finished": "Terminato",
-      "transferred_out": "Trasferito"
+      "transferred_out": "Trasferito",
+      "session_pending": "In attesa",
+      "session_completed": "Completata"
     },
     "inbox": {
       "title": "Ortodonzia",
@@ -66,7 +68,8 @@
       "history": "Controlli",
       "empty": "Ancora nessun controllo",
       "appointment": "Appuntamento",
-      "session": "Rata incassata"
+      "session": "Sessione collegata",
+      "sessionHint": "Solo riferimento - l'incasso avviene in Pagamenti."
     },
     "card": {
       "title": "Ortodonzia",
@@ -102,11 +105,13 @@
       "link": "Collega piano",
       "unlink": "Scollega piano",
       "noLink": "Nessun piano collegato (i pazienti trasferiti possono essere seguiti senza piano)",
-      "paid": "{n} pagate",
+      "completed": "{n} completate",
       "pending": "{n} in attesa",
       "generate": "Genera rate",
       "collect": "Incassa rata",
+      "confirmUnlink": "Scollegare il piano di trattamento?",
       "downPayment": "Acconto",
+      "installmentN": "Rata {n}",
       "months": "Mesi",
       "monthlyAmount": "Importo mensile",
       "closeSuggested": "Caso trasferito con piano collegato: valutare la chiusura del piano."

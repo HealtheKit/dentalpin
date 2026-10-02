@@ -18,7 +18,9 @@
       "active": "Activo",
       "paused": "En pausa",
       "finished": "Finalizado",
-      "transferred_out": "Derivado"
+      "transferred_out": "Derivado",
+      "session_pending": "Pendiente",
+      "session_completed": "Completada"
     },
     "inbox": {
       "title": "Ortodoncia",
@@ -66,7 +68,8 @@
       "history": "Controles",
       "empty": "Aún no hay controles",
       "appointment": "Cita",
-      "session": "Cuota cobrada"
+      "session": "Sesión vinculada",
+      "sessionHint": "Solo referencia - el cobro se hace en Pagos."
     },
     "card": {
       "title": "Ortodoncia",
@@ -102,11 +105,13 @@
       "link": "Vincular plan",
       "unlink": "Desvincular plan",
       "noLink": "Sin plan vinculado (los pacientes derivados pueden seguirse sin uno)",
-      "paid": "{n} pagadas",
+      "completed": "{n} completadas",
       "pending": "{n} pendientes",
       "generate": "Generar cuotas",
       "collect": "Cobrar cuota",
+      "confirmUnlink": "¿Desvincular el plan de tratamiento?",
       "downPayment": "Pago inicial",
+      "installmentN": "Mensualidad {n}",
       "months": "Meses",
       "monthlyAmount": "Importe mensual",
       "closeSuggested": "Caso derivado con plan vinculado: considere cerrar el plan."

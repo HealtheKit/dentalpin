@@ -18,7 +18,9 @@
       "active": "Active",
       "paused": "Paused",
       "finished": "Finished",
-      "transferred_out": "Transferred out"
+      "transferred_out": "Transferred out",
+      "session_pending": "Pending",
+      "session_completed": "Completed"
     },
     "inbox": {
       "title": "Orthodontics",
@@ -66,7 +68,8 @@
       "history": "Controls",
       "empty": "No controls yet",
       "appointment": "Appointment",
-      "session": "Collected installment"
+      "session": "Linked session",
+      "sessionHint": "Reference only - collecting happens in Payments."
     },
     "card": {
       "title": "Orthodontics",
@@ -102,11 +105,13 @@
       "link": "Link plan",
       "unlink": "Unlink plan",
       "noLink": "No plan linked (transfer patients can track without one)",
-      "paid": "{n} paid",
+      "completed": "{n} completed",
       "pending": "{n} pending",
       "generate": "Generate installments",
       "collect": "Collect installment",
+      "confirmUnlink": "Unlink the treatment plan?",
       "downPayment": "Down payment",
+      "installmentN": "Installment {n}",
       "months": "Months",
       "monthlyAmount": "Monthly amount",
       "closeSuggested": "Case transferred out with a linked plan: consider closing the plan."

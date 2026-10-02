@@ -68,11 +68,15 @@ async function openSettings() {
 }
 
 async function saveSettings() {
-  await updateSettings(
-    editWires.value.split('\n'),
-    editProcedures.value.split('\n')
-  )
-  showSettings.value = false
+  try {
+    await updateSettings(
+      editWires.value.split('\n'),
+      editProcedures.value.split('\n')
+    )
+    showSettings.value = false
+  } catch {
+    toast.add({ title: t('orthodontics.errors.saveFailed'), color: 'error' })
+  }
 }
 
 onMounted(refresh)

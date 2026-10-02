@@ -18,7 +18,9 @@
       "active": "Actif",
       "paused": "En pause",
       "finished": "Terminé",
-      "transferred_out": "Transféré"
+      "transferred_out": "Transféré",
+      "session_pending": "En attente",
+      "session_completed": "Terminée"
     },
     "inbox": {
       "title": "Orthodontie",
@@ -66,7 +68,8 @@
       "history": "Contrôles",
       "empty": "Aucun contrôle pour l'instant",
       "appointment": "Rendez-vous",
-      "session": "Échéance encaissée"
+      "session": "Séance liée",
+      "sessionHint": "Référence uniquement - l'encaissement se fait dans Paiements."
     },
     "card": {
       "title": "Orthodontie",
@@ -102,11 +105,13 @@
       "link": "Lier le plan",
       "unlink": "Dissocier le plan",
       "noLink": "Aucun plan lié (les patients transférés peuvent être suivis sans plan)",
-      "paid": "{n} payées",
+      "completed": "{n} terminées",
       "pending": "{n} en attente",
       "generate": "Générer les échéances",
       "collect": "Encaisser l'échéance",
+      "confirmUnlink": "Dissocier le plan de traitement ?",
       "downPayment": "Acompte",
+      "installmentN": "Mensualité {n}",
       "months": "Mois",
       "monthlyAmount": "Montant mensuel",
       "closeSuggested": "Cas transféré avec un plan lié : envisagez de clore le plan."

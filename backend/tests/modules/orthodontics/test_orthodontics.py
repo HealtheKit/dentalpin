@@ -237,7 +237,7 @@ async def test_plan_link_schedule_installments(
     assert schedule["sessions"][0]["label"] == "Down payment"
     assert schedule["sessions"][1]["label"] == "Installment 1"
     assert schedule["pending_count"] == 3
-    assert schedule["paid_count"] == 0
+    assert schedule["completed_count"] == 0
 
     reread = await OrthoCaseService.installments(db_session, test_clinic.id, case.id)
     assert len(reread["sessions"]) == 3
@@ -296,6 +296,31 @@ async def test_generate_schedule_refuses_completed_sessions(
 
     with pytest.raises(ValueError, match="No treatment plan linked"):
         await OrthoCaseService.installments(db_session, test_clinic.id, case.id)
+
+
+@pytest.mark.asyncio
+async def test_plan_link_second_case_conflicts(
+    client, auth_headers, db_session: AsyncSession, test_clinic: Clinic, test_patient
+):
+    doc = await _professional(db_session, test_clinic.id)
+    plan, item = await _plan_with_item(db_session, test_clinic.id, test_patient.id, doc.id)
+    first, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
+    second, _ = await OrthoCaseService.create(
+        db_session, test_clinic.id, _case_data(test_patient.id)
+    )
+    await db_session.commit()
+    ok = await client.post(
+        f"/api/v1/orthodontics/cases/{first.id}/plan-link",
+        json={"treatment_plan_id": str(plan.id), "plan_item_id": str(item.id)},
+        headers=auth_headers,
+    )
+    assert ok.status_code == 200, ok.text
+    clash = await client.post(
+        f"/api/v1/orthodontics/cases/{second.id}/plan-link",
+        json={"treatment_plan_id": str(plan.id), "plan_item_id": str(item.id)},
+        headers=auth_headers,
+    )
+    assert clash.status_code == 409
 
 
 @pytest.mark.asyncio
@@ -434,6 +459,42 @@ async def test_list_overdue_and_settings_update(
 
     overdue = await OrthoCaseService.list_overdue(db_session, test_clinic.id)
     assert [c.id for c, _ in overdue] == [case.id]
+
+    # The tool reports the full total even when the limit truncates rows.
+    from app.core.agents import AgentContext, AgentMode, tool_registry
+    from app.modules.orthodontics.tools import (
+        ListOverdueOrthoControlsArgs,
+        _list_overdue_ortho_controls,
+    )
+
+    case2, _ = await OrthoCaseService.create(
+        db_session, test_clinic.id, _case_data(test_patient.id)
+    )
+    await db_session.commit()
+    past2 = datetime.now(UTC) - timedelta(weeks=12)
+    db_session.add(
+        OrthoControl(
+            clinic_id=test_clinic.id,
+            case_id=case2.id,
+            performed_at=past2,
+            performed_by=doc.id,
+            procedures=[],
+            next_control_weeks=4,
+        )
+    )
+    await db_session.commit()
+    ctx = AgentContext(
+        agent_id=uuid4(),
+        session_id=uuid4(),
+        clinic_id=test_clinic.id,
+        mode=AgentMode.SUPERVISED,
+        permissions=["orthodontics.cases.read"],
+        tools=tool_registry,
+        db=db_session,
+    )
+    result = await _list_overdue_ortho_controls(ctx, ListOverdueOrthoControlsArgs(limit=1))
+    assert result["total"] == 2
+    assert len(result["cases"]) == 1
 
     settings = await OrthoSettingsService.update(
         db_session, test_clinic.id, ["NiTi .014", "  ", "Steel .016"], ["ipr"]

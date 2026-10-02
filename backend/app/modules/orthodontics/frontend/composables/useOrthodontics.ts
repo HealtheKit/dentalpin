@@ -58,7 +58,7 @@ export interface OrthoInstallments {
   treatment_plan_id: string
   plan_item_id: string
   sessions: OrthoSession[]
-  paid_count: number
+  completed_count: number
   pending_count: number
 }
 
@@ -134,6 +134,8 @@ export function useOrthodontics() {
     down_payment: number
     months: number
     monthly_amount: number
+    down_payment_label?: string
+    installment_labels?: string[]
   }): Promise<OrthoInstallments> {
     const response = await api.post<ApiResponse<OrthoInstallments>>(
       `/api/v1/orthodontics/cases/${caseId}/schedule`,

@@ -8,6 +8,7 @@
  */
 import type { OrthoCase, OrthoControl, OrthoInstallments, OrthoSettings } from '../composables/useOrthodontics'
 import { PERMISSIONS } from '~~/app/config/permissions'
+import { useActiveModulesState, useModules } from '~~/app/composables/useModules'
 import { orthoMonth } from '../utils/orthoMonth'
 
 const props = defineProps<{ caseId: string }>()
@@ -16,6 +17,12 @@ const { t, te, locale } = useI18n()
 const toast = useToast()
 const { can } = usePermissions()
 const api = useApi()
+const { ensureLoaded: ensureModulesLoaded } = useModules()
+const activeModules = useActiveModulesState()
+const canCollect = computed(
+  () => can(PERMISSIONS.payments.recordRead)
+    && (activeModules.value ?? []).some(m => m.name === 'payments')
+)
 const { getCase, changeStatus, listControls, registerControl, getSettings, linkPlan, unlinkPlan, generateSchedule, getInstallments } = useOrthodontics()
 
 const canControl = computed(() => can(PERMISSIONS.orthodontics.controlsWrite))
@@ -79,6 +86,16 @@ function formatDate(iso: string | null): string {
   return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(new Date(iso))
 }
 
+function formatDateTime(iso: string | null): string {
+  if (!iso) return '—'
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
+}
+
+function sessionStatusLabel(status: string): string {
+  const key = `orthodontics.status.session_${status}`
+  return te(key) ? t(key) : status
+}
+
 const isTerminal = computed(() =>
   item.value?.status === 'finished' || item.value?.status === 'transferred_out'
 )
@@ -101,6 +118,7 @@ function notifyError(key: 'saveFailed' | 'loadFailed') {
 async function refresh() {
   isLoading.value = true
   try {
+    await ensureModulesLoaded()
     item.value = await getCase(props.caseId)
     controls.value = await listControls(props.caseId)
     settings.value = await getSettings()
@@ -142,7 +160,8 @@ async function openControl() {
         '/api/v1/agenda/appointments',
         { query: { patient_id: item.value.patient_id } }
       )
-      upcomingAppointments.value = res.data
+      const now = Date.now()
+      upcomingAppointments.value = res.data.filter(a => new Date(a.start_time).getTime() >= now)
     } catch {
       upcomingAppointments.value = []
     }
@@ -217,25 +236,67 @@ const pickedPlanItems = computed(() => {
   return plan ? plan.items : []
 })
 
+const pickedItemLabels = ref<Record<string, string>>({})
+
+function pickedItemLabel(id: string, idx: number) {
+  return pickedItemLabels.value[id] ?? `Item ${idx + 1}`
+}
+
+watch(pickedPlan, async (id) => {
+  pickedItemLabels.value = {}
+  if (!id || !canPlans.value) return
+  try {
+    const res = await api.get<{ data: {
+      items: { id: string, treatment?: { clinical_type?: string | null, catalog_item?: { name?: string | null } | null } | null }[]
+    } }>(`/api/v1/treatment-plans/treatment-plans/${id}`)
+    for (const it of res.data.items ?? []) {
+      pickedItemLabels.value[it.id] = it.treatment?.catalog_item?.name
+        ?? it.treatment?.clinical_type
+        ?? ''
+    }
+  } catch {
+    pickedItemLabels.value = {}
+  }
+})
+
 async function savePlanLink() {
   if (!pickedPlan.value || !pickedItem.value) return
-  item.value = await linkPlan(props.caseId, pickedPlan.value, pickedItem.value)
-  showPlan.value = false
-  await refresh()
+  try {
+    item.value = await linkPlan(props.caseId, pickedPlan.value, pickedItem.value)
+    showPlan.value = false
+    await refresh()
+  } catch {
+    notifyError('saveFailed')
+  }
 }
 
 async function removePlanLink() {
-  item.value = await unlinkPlan(props.caseId)
-  await refresh()
+  if (!confirm(t('orthodontics.plan.confirmUnlink'))) return
+  try {
+    item.value = await unlinkPlan(props.caseId)
+    await refresh()
+  } catch {
+    notifyError('saveFailed')
+  }
 }
 
 async function saveSchedule() {
-  installments.value = await generateSchedule(props.caseId, {
-    down_payment: schedDown.value,
-    months: schedMonths.value,
-    monthly_amount: schedAmount.value
-  })
-  showSchedule.value = false
+  try {
+    installments.value = await generateSchedule(props.caseId, {
+      down_payment: schedDown.value,
+      months: schedMonths.value,
+      monthly_amount: schedAmount.value,
+      down_payment_label: t('orthodontics.plan.downPayment'),
+      installment_labels: Array.from(
+        { length: schedMonths.value },
+        (_, i) => t('orthodontics.plan.installmentN', { n: i + 1 })
+      )
+    })
+    showSchedule.value = false
+    await refresh()
+  } catch {
+    notifyError('saveFailed')
+  }
 }
 
 async function onPhotoPicked(event: Event) {
@@ -363,14 +424,14 @@ watch(() => props.caseId, refresh, { immediate: true })
       </div>
       <div v-else-if="installments">
         <div class="mb-2 text-sm">
-          {{ t('orthodontics.plan.paid', { n: installments.paid_count }) }} ·
+          {{ t('orthodontics.plan.completed', { n: installments.completed_count }) }} ·
           {{ t('orthodontics.plan.pending', { n: installments.pending_count }) }}
         </div>
         <div class="mb-2 flex flex-wrap gap-1">
           <UBadge
             v-for="s in installments.sessions"
             :key="s.id"
-            :label="`${s.sequence} · ${s.status}`"
+            :label="`${s.sequence} · ${sessionStatusLabel(s.status)}`"
             :variant="s.status === 'completed' ? 'solid' : 'soft'"
             size="sm"
           />
@@ -385,6 +446,7 @@ watch(() => props.caseId, refresh, { immediate: true })
             {{ t('orthodontics.plan.generate') }}
           </UButton>
           <UButton
+            v-if="canCollect"
             size="sm"
             :to="`/payments?patient_id=${item.patient_id}`"
           >
@@ -585,7 +647,7 @@ watch(() => props.caseId, refresh, { immediate: true })
             <span class="text-sm">{{ t('orthodontics.control.appointment') }}:</span>
             <USelect
               v-model="ctlAppointment"
-              :items="[{ label: '—', value: null }, ...upcomingAppointments.map(a => ({ label: formatDate(a.start_time), value: a.id }))]"
+              :items="[{ label: '—', value: null }, ...upcomingAppointments.map(a => ({ label: formatDateTime(a.start_time), value: a.id }))]"
               value-key="value"
               label-key="label"
             />
@@ -601,6 +663,9 @@ watch(() => props.caseId, refresh, { immediate: true })
               value-key="value"
               label-key="label"
             />
+            <p class="text-xs text-gray-500">
+              {{ t('orthodontics.control.sessionHint') }}
+            </p>
           </div>
         </div>
       </template>
@@ -659,7 +724,7 @@ watch(() => props.caseId, refresh, { immediate: true })
           <USelect
             v-if="pickedPlanItems.length > 0"
             v-model="pickedItem"
-            :items="pickedPlanItems.map((it, idx) => ({ label: `Item ${idx + 1}`, value: it.id }))"
+            :items="pickedPlanItems.map((it, idx) => ({ label: pickedItemLabel(it.id, idx), value: it.id }))"
             value-key="value"
             label-key="label"
           />

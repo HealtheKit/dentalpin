@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
@@ -136,16 +137,21 @@ class OrthoPlanLink(BaseModel):
 
 
 class OrthoScheduleCreate(BaseModel):
-    down_payment: float = Field(ge=0)
+    down_payment: Decimal = Field(ge=0)
     months: int = Field(ge=1, le=60)
-    monthly_amount: float = Field(ge=0)
+    monthly_amount: Decimal = Field(ge=0)
+    # Session labels in the caller's language (the UI's own strings), so
+    # generated rows never store English fallback text. Absent labels keep
+    # the legacy English ones for older API clients.
+    down_payment_label: str | None = Field(default=None, max_length=120)
+    installment_labels: list[str] | None = None
 
 
 class OrthoSessionBrief(BaseModel):
     id: UUID
     sequence: int
     label: str | None
-    amount: float
+    amount: Decimal
     status: str
 
 
@@ -153,5 +159,5 @@ class OrthoInstallmentsResponse(BaseModel):
     treatment_plan_id: UUID
     plan_item_id: UUID
     sessions: list[OrthoSessionBrief]
-    paid_count: int
+    completed_count: int
     pending_count: int

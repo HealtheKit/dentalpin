@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- fix (maintainer review, round 2): schedule generation replaces pending
+  sessions and validates the total (`ort_0003` unique plan link answers 409
+  on double-link); money is `Decimal` end to end; session labels come from
+  the frontend; session pointers are validated; plan link/unlink/schedule/
+  settings surface errors with toasts and unlink confirms; Collect shows
+  only with payments installed + read; pickers show treatment names,
+  translated statuses and upcoming appointments with time; dead validators
+  removed; tool copy fixed and overdue total precedes the limit;
+  `treatment_plan_id` unique (`ort_0003`).
 - fix(#522): the new-case `start_date` default read the UTC day instead of the
   local one. Now uses `toISODate`.
 - fix (maintainer review): inbox shows the patient's name (batched, no

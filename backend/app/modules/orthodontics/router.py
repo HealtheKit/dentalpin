@@ -6,6 +6,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import (
@@ -236,6 +237,10 @@ async def link_plan(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except IntegrityError as exc:
+        raise HTTPException(
+            status_code=409, detail="Treatment plan already linked to another case"
+        ) from exc
     if found is None:
         raise HTTPException(status_code=404, detail="Case not found")
     case, annotation = found
@@ -270,7 +275,14 @@ async def generate_schedule(
 ) -> ApiResponse[OrthoInstallmentsResponse]:
     try:
         result = await OrthoCaseService.generate_schedule(
-            db, ctx.clinic_id, case_id, data.down_payment, data.months, data.monthly_amount
+            db,
+            ctx.clinic_id,
+            case_id,
+            data.down_payment,
+            data.months,
+            data.monthly_amount,
+            data.down_payment_label,
+            data.installment_labels,
         )
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

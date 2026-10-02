@@ -12,7 +12,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.events import EventType, event_bus
@@ -22,7 +22,7 @@ from app.modules.recalls.service import RecallService
 from app.modules.treatment_plan.service import TreatmentPlanService
 
 from .defaults import DEFAULT_PROCEDURES, DEFAULT_WIRES
-from .models import CASE_STATUSES, HYGIENE_LEVELS, OrthoCase, OrthoControl, OrthoSettings
+from .models import CASE_STATUSES, OrthoCase, OrthoControl, OrthoSettings
 from .schemas import (
     OrthoCaseCreate,
     OrthoCaseUpdate,
@@ -93,6 +93,23 @@ async def _require_member(db: AsyncSession, clinic_id: UUID, user_id: UUID) -> N
         raise ValueError("Invalid member for this clinic")
 
 
+async def _require_linked_session(
+    db: AsyncSession, clinic_id: UUID, case: OrthoCase, session_id: UUID
+) -> None:
+    """The control's session pointer must name a session of the case's
+    linked plan item — never an arbitrary (or another clinic's) UUID."""
+    if case.treatment_plan_id is None or case.plan_item_id is None:
+        raise ValueError("Link a treatment plan item before pointing at its sessions")
+    plan = await TreatmentPlanService.get(db, clinic_id, case.treatment_plan_id)
+    if plan is None:
+        raise LookupError("Linked treatment plan not found")
+    item = next((i for i in plan.items or [] if i.id == case.plan_item_id), None)
+    if item is None:
+        raise LookupError("Linked plan item not found")
+    if all(s.id != session_id for s in item.sessions or []):
+        raise ValueError("Session does not belong to the linked plan item")
+
+
 async def _require_appointment(
     db: AsyncSession, clinic_id: UUID, patient_id: UUID, appointment_id: UUID
 ) -> None:
@@ -131,6 +148,13 @@ def _control_next_due(control: OrthoControl) -> date | None:
     if control.next_control_weeks is None:
         return None
     return (control.performed_at + timedelta(weeks=control.next_control_weeks)).date()
+
+
+def _installment_label(installment_labels: list[str] | None, month: int) -> str:
+    """Caller-provided (translated) label, else the legacy English one."""
+    if installment_labels:
+        return installment_labels[month - 1]
+    return f"Installment {month}"
 
 
 async def _annotate_cases(db: AsyncSession, cases: list[OrthoCase]) -> list[dict]:
@@ -344,9 +368,11 @@ class OrthoCaseService:
         db: AsyncSession,
         clinic_id: UUID,
         case_id: UUID,
-        down_payment: float,
+        down_payment: Decimal,
         months: int,
-        monthly_amount: float,
+        monthly_amount: Decimal,
+        down_payment_label: str | None = None,
+        installment_labels: list[str] | None = None,
     ) -> dict:
         """Build the installment schedule through the plan's session
         API — never raw rows — so the plan-owns-lines (#176) and
@@ -373,9 +399,11 @@ class OrthoCaseService:
             raise LookupError("Linked plan item not found")
         if any(s.status == "completed" for s in item.sessions or []):
             raise ValueError("Item already has completed sessions")
+        if installment_labels is not None and len(installment_labels) != months:
+            raise ValueError("installment_labels must hold exactly one label per month")
         pending = [s for s in item.sessions or [] if s.status == "pending"]
-        pending_total = sum((Decimal(str(s.amount)) for s in pending), Decimal("0"))
-        new_total = Decimal(str(down_payment)) + months * Decimal(str(monthly_amount))
+        pending_total = sum((s.amount for s in pending), Decimal("0"))
+        new_total = down_payment + months * monthly_amount
         if new_total != pending_total:
             raise ValueError(
                 f"Schedule total {new_total} does not match pending amount {pending_total}"
@@ -385,7 +413,7 @@ class OrthoCaseService:
             clinic_id,
             case.treatment_plan_id,
             case.plan_item_id,
-            {"label": "Down payment", "amount": down_payment},
+            {"label": down_payment_label or "Down payment", "amount": down_payment},
         )
         for month in range(1, months + 1):
             await TreatmentPlanService.add_session_manual(
@@ -393,7 +421,10 @@ class OrthoCaseService:
                 clinic_id,
                 case.treatment_plan_id,
                 case.plan_item_id,
-                {"label": f"Installment {month}", "amount": monthly_amount},
+                {
+                    "label": _installment_label(installment_labels, month),
+                    "amount": monthly_amount,
+                },
             )
         for old in pending:
             await TreatmentPlanService.delete_session(
@@ -426,12 +457,12 @@ class OrthoCaseService:
                     "id": s.id,
                     "sequence": s.sequence,
                     "label": s.label,
-                    "amount": float(s.amount),
+                    "amount": s.amount,
                     "status": s.status,
                 }
                 for s in sessions
             ],
-            "paid_count": sum(1 for s in sessions if s.status == "completed"),
+            "completed_count": sum(1 for s in sessions if s.status == "completed"),
             "pending_count": sum(1 for s in sessions if s.status == "pending"),
         }
 
@@ -475,6 +506,8 @@ class OrthoControlService:
             await _require_member(db, clinic_id, performed_by)
         if data.appointment_id is not None:
             await _require_appointment(db, clinic_id, case.patient_id, data.appointment_id)
+        if data.session_id is not None:
+            await _require_linked_session(db, clinic_id, case, data.session_id)
         control = OrthoControl(
             clinic_id=clinic_id,
             case_id=case.id,
@@ -501,7 +534,8 @@ class OrthoControlService:
         # freeze generation (Q3); terminal cases can't register at all.
         if control.next_control_weeks is not None and case.status != "paused":
             due = _control_next_due(control)
-            assert due is not None
+            if due is None:
+                raise ValueError("Cannot compute the next control date")
             await RecallService.create(
                 db,
                 clinic_id,
@@ -583,11 +617,6 @@ class OrthoSettingsService:
         return settings
 
     @staticmethod
-    async def seed_count(db: AsyncSession) -> int:
-        result = await db.execute(select(func.count(OrthoSettings.id)))
-        return result.scalar_one()
-
-    @staticmethod
     async def update(
         db: AsyncSession, clinic_id: UUID, wires: list[str], procedures: list[str]
     ) -> OrthoSettings:
@@ -596,18 +625,3 @@ class OrthoSettingsService:
         settings.procedures = [p.strip() for p in procedures if p.strip()][:100]
         await db.flush()
         return settings
-
-
-async def validate_wire(db: AsyncSession, clinic_id: UUID, wire: str | None) -> None:
-    """Wire names should come from the clinic catalog; unknown names are
-    allowed (free-text escape hatch) — the UI chips are the guide, not a gate."""
-    if wire is None:
-        return
-    settings = await OrthoSettingsService.get_or_seed(db, clinic_id)
-    if wire not in settings.wires and len(wire) > 40:
-        raise ValueError("Wire label too long")
-
-
-async def validate_hygiene(hygiene: str | None) -> None:
-    if hygiene is not None and hygiene not in HYGIENE_LEVELS:
-        raise ValueError(f"Unknown hygiene level '{hygiene}'")

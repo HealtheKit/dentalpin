@@ -18,7 +18,9 @@
       "active": "Aktiv",
       "paused": "Pausiert",
       "finished": "Abgeschlossen",
-      "transferred_out": "Überwiesen"
+      "transferred_out": "Überwiesen",
+      "session_pending": "Ausstehend",
+      "session_completed": "Abgeschlossen"
     },
     "inbox": {
       "title": "Kieferorthopädie",
@@ -66,7 +68,8 @@
       "history": "Kontrollen",
       "empty": "Noch keine Kontrollen",
       "appointment": "Termin",
-      "session": "Eingezahlte Rate"
+      "session": "Verknüpfte Sitzung",
+      "sessionHint": "Nur Referenz - Inkasso erfolgt unter Zahlungen."
     },
     "card": {
       "title": "Kieferorthopädie",
@@ -102,11 +105,13 @@
       "link": "Plan verknüpfen",
       "unlink": "Plan trennen",
       "noLink": "Kein Plan verknüpft (überwiesene Patienten können auch ohne Plan betreut werden)",
-      "paid": "{n} gezahlt",
+      "completed": "{n} abgeschlossen",
       "pending": "{n} offen",
       "generate": "Raten erzeugen",
       "collect": "Rate einziehen",
+      "confirmUnlink": "Behandlungsplan trennen?",
       "downPayment": "Anzahlung",
+      "installmentN": "Rate {n}",
       "months": "Monate",
       "monthlyAmount": "Monatsbetrag",
       "closeSuggested": "Fall mit verknüpftem Plan überwiesen: Erwägen Sie, den Plan zu schließen."
