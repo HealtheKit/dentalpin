@@ -18,7 +18,9 @@ def test_environment_rejects_unknown_value() -> None:
 
 @pytest.mark.parametrize("value", ["development", "test", "production"])
 def test_environment_accepts_known_values(value: str) -> None:
-    assert Settings(ENVIRONMENT=value).ENVIRONMENT == value
+    # Explicit long secret: ambient CI secrets are short, and the
+    # production SECRET_KEY floor must not mask the enum check.
+    assert Settings(ENVIRONMENT=value, SECRET_KEY="x" * 32).ENVIRONMENT == value
 
 
 @pytest.mark.asyncio
