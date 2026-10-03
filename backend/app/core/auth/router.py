@@ -77,11 +77,11 @@ from .service import (
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-# Rate limiting is on everywhere except the pytest suite (#530): a
-# reachable non-production deploy (staging, preview, default compose on
-# a public host, or a typo in ENVIRONMENT) otherwise has unbounded
-# password brute force. Playwright E2E logs in far below 5/minute with
-# its single worker, and pytest sets TESTING=true, so neither trips.
+# Rate limiting is on everywhere except test runs (#530): a reachable
+# non-production deploy (staging, preview, default compose on a public
+# host, or a typo in ENVIRONMENT) otherwise has unbounded password
+# brute force. pytest sets TESTING=true via conftest; CI e2e sets it in
+# its .env (its specs log in far above 5/minute).
 _limiter_enabled = not settings.TESTING
 limiter = Limiter(key_func=get_remote_address, enabled=_limiter_enabled)
 
