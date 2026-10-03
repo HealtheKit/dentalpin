@@ -77,10 +77,12 @@ from .service import (
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-# Rate limiting guards production. Dev + test disable it so local flows
-# (manual clicking, Playwright E2E, pytest) don't run into 5/minute
-# caps after a handful of reloads.
-_limiter_enabled = settings.ENVIRONMENT == "production" and not settings.TESTING
+# Rate limiting is on everywhere except the pytest suite (#530): a
+# reachable non-production deploy (staging, preview, default compose on
+# a public host, or a typo in ENVIRONMENT) otherwise has unbounded
+# password brute force. Playwright E2E logs in far below 5/minute with
+# its single worker, and pytest sets TESTING=true, so neither trips.
+_limiter_enabled = not settings.TESTING
 limiter = Limiter(key_func=get_remote_address, enabled=_limiter_enabled)
 
 
