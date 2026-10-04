@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- fix(#611): report CSVs run every cell through `csv_cell`. Professional
+  names and address areas reach those rows from user data, and a value
+  starting with `=`, `+`, `-` or `@` is executed by Excel/LibreOffice on
+  open. Decimal totals and counts are untouched — the guard is
+  type-aware.
+
 - fix(#522): the billing, budgets and scheduling report pages, the home
   dashboard snapshot and the week-glance panel all built their ranges from
   local midnights and sent them as UTC, so every clinic east of UTC saw a
