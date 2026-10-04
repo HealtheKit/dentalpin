@@ -1,0 +1,44 @@
+name: Deploy to english.demo.dentalpin.in
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy deployment files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: |
+            docker-compose.prod.yml
+            .env
+          target: /opt/dentalpin-demo-english/
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd /opt/dentalpin-demo-english
+            
+            # Pull latest Docker images (if using pre-built images)
+            docker compose -f docker-compose.pro.yml pull
+            
+            # Restart containers
+            docker compose -f docker-compose.pro.yml down
+            docker compose -f docker-compose.pro.yml up -d
+            
+            # Cleanup old images
+            docker image prune -f
