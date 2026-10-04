@@ -44,6 +44,7 @@ services:
       # Seeds the demo clinic on first boot. Leave at 0 for a real clinic.
       SEED_ON_STARTUP: ${SEED_ON_STARTUP:-0}
       SEED_LANG: ${SEED_LANG:-es}
+      SEED_COUNTRY: ${SEED_COUNTRY:-in}
     volumes:
       - storage_data:/app/storage
     depends_on:
