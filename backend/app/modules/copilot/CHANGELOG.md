@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix(#532): re-confirming an approved write replays the stored result
+  instead of executing the tool again (retry/double-click safe).
 - fix(#586): redaction tokens are salted per conversation
   (`copilot_conversations.redaction_salt`, minted on first use, never
   logged) and widened to 12 hex chars. Same value maps to unrelated
