@@ -443,8 +443,7 @@ function lastUsedLabel(iso: string | null): string {
             <pre
               class="text-caption bg-surface-muted rounded-token-md p-3 overflow-x-auto whitespace-pre"
               dir="ltr"
-            >{{
-            curlExample }}</pre>
+            >{{ curlExample }}</pre>
           </div>
 
           <UAlert
