@@ -114,6 +114,7 @@
       "installmentN": "Mensualidad {n}",
       "months": "Meses",
       "monthlyAmount": "Importe mensual",
+      "pendingTotal": "Total pendiente: {n}",
       "closeSuggested": "Caso derivado con plan vinculado: considere cerrar el plan."
     },
     "settings": {

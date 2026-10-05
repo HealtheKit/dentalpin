@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- fix (maintainer review, round 3): plan picker uses the correct
+  `/api/v1/treatment_plan/...` prefix; item labels resolve from the
+  plan detail (`names[locale] ?? names.es ?? first value`,
+  `clinical_type` and `Item N` fallbacks); schedule modal has labeled
+  inputs with the pending total shown and client-side total check
+  (single toast via `errorToast: false`); session badges show
+  `label · amount`; plan statuses translated, pickers full-width.
 - fix (maintainer review, round 2): schedule generation replaces pending
   sessions and validates the total (`ort_0003` unique plan link answers 409
   on double-link); money is `Decimal` end to end; session labels come from

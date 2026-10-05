@@ -114,6 +114,7 @@
       "installmentN": "Rate {n}",
       "months": "Monate",
       "monthlyAmount": "Monatsbetrag",
+      "pendingTotal": "Pending total: {n}",
       "closeSuggested": "Fall mit verknüpftem Plan überwiesen: Erwägen Sie, den Plan zu schließen."
     },
     "settings": {

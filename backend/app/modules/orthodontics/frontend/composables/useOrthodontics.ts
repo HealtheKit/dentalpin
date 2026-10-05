@@ -139,7 +139,8 @@ export function useOrthodontics() {
   }): Promise<OrthoInstallments> {
     const response = await api.post<ApiResponse<OrthoInstallments>>(
       `/api/v1/orthodontics/cases/${caseId}/schedule`,
-      payload
+      payload,
+      { errorToast: false }
     )
     return response.data
   }

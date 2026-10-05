@@ -114,6 +114,7 @@
       "installmentN": "Rata {n}",
       "months": "Mesi",
       "monthlyAmount": "Importo mensile",
+      "pendingTotal": "Pending total: {n}",
       "closeSuggested": "Caso trasferito con piano collegato: valutare la chiusura del piano."
     },
     "settings": {

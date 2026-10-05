@@ -114,6 +114,7 @@
       "installmentN": "Mensualité {n}",
       "months": "Mois",
       "monthlyAmount": "Montant mensuel",
+      "pendingTotal": "Pending total: {n}",
       "closeSuggested": "Cas transféré avec un plan lié : envisagez de clore le plan."
     },
     "settings": {

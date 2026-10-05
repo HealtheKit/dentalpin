@@ -72,7 +72,7 @@ const allowedStatuses = computed(() => {
 })
 
 const showPlan = ref(false)
-const patientPlans = ref<{ id: string, plan_number: string, status: string, items: { id: string }[] }[]>([])
+const patientPlans = ref<{ id: string, plan_number: string, status: string }[]>([])
 const pickedPlan = ref('')
 const pickedItem = ref('')
 
@@ -93,6 +93,11 @@ function formatDateTime(iso: string | null): string {
 
 function sessionStatusLabel(status: string): string {
   const key = `orthodontics.status.session_${status}`
+  return te(key) ? t(key) : status
+}
+
+function planStatusLabel(status: string): string {
+  const key = `treatmentPlans.status.${status}`
   return te(key) ? t(key) : status
 }
 
@@ -220,8 +225,8 @@ async function openPlanPicker() {
   patientPlans.value = []
   if (canPlans.value && item.value) {
     try {
-      const res = await api.get<{ data: { id: string, plan_number: string, status: string, items: { id: string }[] }[] }>(
-        `/api/v1/treatment-plans/treatment-plans/patient/${item.value.patient_id}`
+      const res = await api.get<{ data: { id: string, plan_number: string, status: string }[] }>(
+        `/api/v1/treatment_plan/treatment-plans/patient/${item.value.patient_id}`
       )
       patientPlans.value = res.data
     } catch {
@@ -231,31 +236,42 @@ async function openPlanPicker() {
   showPlan.value = true
 }
 
-const pickedPlanItems = computed(() => {
-  const plan = patientPlans.value.find(p => p.id === pickedPlan.value)
-  return plan ? plan.items : []
-})
+const pickedPlanItems = ref<{ id: string }[]>([])
 
 const pickedItemLabels = ref<Record<string, string>>({})
 
 function pickedItemLabel(id: string, idx: number) {
-  return pickedItemLabels.value[id] ?? `Item ${idx + 1}`
+  return pickedItemLabels.value[id] || `Item ${idx + 1}`
+}
+
+function resolveTreatmentName(
+  treatment?: { clinical_type?: string | null, catalog_item?: { names?: Record<string, string> | null } | null } | null
+): string {
+  const names = treatment?.catalog_item?.names
+  if (names) {
+    const first = Object.values(names).find(v => v) as string | undefined
+    return names[locale.value] || names.es || first || ''
+  }
+  return ''
 }
 
 watch(pickedPlan, async (id) => {
   pickedItemLabels.value = {}
+  pickedPlanItems.value = []
   if (!id || !canPlans.value) return
   try {
     const res = await api.get<{ data: {
-      items: { id: string, treatment?: { clinical_type?: string | null, catalog_item?: { name?: string | null } | null } | null }[]
-    } }>(`/api/v1/treatment-plans/treatment-plans/${id}`)
-    for (const it of res.data.items ?? []) {
-      pickedItemLabels.value[it.id] = it.treatment?.catalog_item?.name
-        ?? it.treatment?.clinical_type
-        ?? ''
+      items: { id: string, treatment?: { clinical_type?: string | null, catalog_item?: { names?: Record<string, string> | null } | null } | null }[]
+    } }>(`/api/v1/treatment_plan/treatment-plans/${id}`)
+    pickedPlanItems.value = res.data.items ?? []
+    for (const it of pickedPlanItems.value) {
+      pickedItemLabels.value[it.id] = resolveTreatmentName(it.treatment)
+        || it.treatment?.clinical_type
+        || ''
     }
   } catch {
     pickedItemLabels.value = {}
+    pickedPlanItems.value = []
   }
 })
 
@@ -280,7 +296,21 @@ async function removePlanLink() {
   }
 }
 
+const pendingAmount = computed(() =>
+  (installments.value?.sessions ?? [])
+    .filter(s => s.status === 'pending')
+    .reduce((sum, s) => sum + Number(s.amount), 0)
+)
+
+// Client-side twin of the backend total check: no round trip for a
+// mismatch the server would reject (sums compared in cents).
+const schedValid = computed(() =>
+  schedMonths.value >= 1
+  && Math.round(((schedDown.value || 0) + schedMonths.value * (schedAmount.value || 0) - pendingAmount.value) * 100) === 0
+)
+
 async function saveSchedule() {
+  if (!schedValid.value) return
   try {
     installments.value = await generateSchedule(props.caseId, {
       down_payment: schedDown.value,
@@ -431,7 +461,7 @@ watch(() => props.caseId, refresh, { immediate: true })
           <UBadge
             v-for="s in installments.sessions"
             :key="s.id"
-            :label="`${s.sequence} · ${sessionStatusLabel(s.status)}`"
+            :label="`${s.label || `#${s.sequence}`} · ${s.amount}`"
             :variant="s.status === 'completed' ? 'solid' : 'soft'"
             size="sm"
           />
@@ -716,10 +746,11 @@ watch(() => props.caseId, refresh, { immediate: true })
         <div class="space-y-3">
           <USelect
             v-model="pickedPlan"
-            :items="patientPlans.map(p => ({ label: `${p.plan_number} · ${p.status}`, value: p.id }))"
+            :items="patientPlans.map(p => ({ label: `${p.plan_number} · ${planStatusLabel(p.status)}`, value: p.id }))"
             value-key="value"
             label-key="label"
             :placeholder="t('orthodontics.plan.title')"
+            class="w-full"
           />
           <USelect
             v-if="pickedPlanItems.length > 0"
@@ -727,6 +758,7 @@ watch(() => props.caseId, refresh, { immediate: true })
             :items="pickedPlanItems.map((it, idx) => ({ label: pickedItemLabel(it.id, idx), value: it.id }))"
             value-key="value"
             label-key="label"
+            class="w-full"
           />
         </div>
       </template>
@@ -746,28 +778,40 @@ watch(() => props.caseId, refresh, { immediate: true })
     >
       <template #body>
         <div class="space-y-3">
-          <UInput
-            v-model.number="schedDown"
-            type="number"
-            min="0"
-            :placeholder="t('orthodontics.plan.downPayment')"
-          />
-          <UInput
-            v-model.number="schedMonths"
-            type="number"
-            min="1"
-            :placeholder="t('orthodontics.plan.months')"
-          />
-          <UInput
-            v-model.number="schedAmount"
-            type="number"
-            min="0"
-            :placeholder="t('orthodontics.plan.monthlyAmount')"
-          />
+          <div class="text-sm">
+            {{ t('orthodontics.plan.pendingTotal', { n: pendingAmount }) }}
+          </div>
+          <UFormField :label="t('orthodontics.plan.downPayment')">
+            <UInput
+              v-model.number="schedDown"
+              type="number"
+              min="0"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField :label="t('orthodontics.plan.months')">
+            <UInput
+              v-model.number="schedMonths"
+              type="number"
+              min="1"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField :label="t('orthodontics.plan.monthlyAmount')">
+            <UInput
+              v-model.number="schedAmount"
+              type="number"
+              min="0"
+              class="w-full"
+            />
+          </UFormField>
         </div>
       </template>
       <template #footer>
-        <UButton @click="saveSchedule">
+        <UButton
+          :disabled="!schedValid"
+          @click="saveSchedule"
+        >
           {{ t('orthodontics.case.save') }}
         </UButton>
       </template>

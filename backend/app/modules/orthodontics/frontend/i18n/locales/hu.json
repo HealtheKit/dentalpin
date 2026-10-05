@@ -114,6 +114,7 @@
       "installmentN": "{n}. törlesztőrészlet",
       "months": "Hónapok",
       "monthlyAmount": "Havi összeg",
+      "pendingTotal": "Pending total: {n}",
       "closeSuggested": "Az eset átirányítva, kapcsolt tervvel: fontolja meg a terv lezárását."
     },
     "settings": {
