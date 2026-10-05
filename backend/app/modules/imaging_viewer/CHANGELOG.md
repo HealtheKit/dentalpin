@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - feat: manual scans surface a summary toast (scanned / new / auto-approved /
   failed counts).
 - feat: RVG card lists linked sensor identities with patient names and an

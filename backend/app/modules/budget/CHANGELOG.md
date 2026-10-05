@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- feat(i18n): Telugu (`te`) quote PDF labels.
 - fix: the public `/meta` patient-name lookup is now clinic-scoped
   (`AND clinic_id`). The id already comes from the budget's own row so this
   was not exploitable, but an id-only query is a checklist point-3 miss.

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
+- feat(i18n): Telugu (`te`) prescription PDF labels.
 - feat(#509): the prescription PDF for `pt-BR` reuses the `pt` labels.
 
 - fix: editor rows typed as `DraftItem` (nullable API `route`

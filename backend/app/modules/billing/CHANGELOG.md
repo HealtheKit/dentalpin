@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- feat(i18n): Telugu (`te`) invoice PDF labels; `Noto Sans Telugu` joins the PDF font stack.
 - feat(#509): invoice PDF accepts `pt-BR`; captions reuse the `pt` labels.
 
 - feat(#422): invoice PDF labels for every UI locale (fr/pt/de/hu/pl/it/ar, lifted from the layer `invoice.*` strings so PDF and screen agree); Arabic renders `dir="rtl"`.

@@ -13,6 +13,10 @@ frontend as a Nuxt layer under its own Python package.
 
 ### Added
 
+- **Telugu (`te`, తెలుగు) locale** — core app and every module layer,
+  patient email templates (HTML + TXT), PDF labels, and a Telugu demo
+  seed (`--lang te`): an India GST clinic in Hyderabad, Telangana
+  (state 36) with traditional Telugu patient names. `README.te.md` added.
 - **Brazilian Portuguese (`pt-BR`) as a host-only overlay on `pt`** (#509):
   small delta locale file, `fallbackLocale` chain `pt-BR → pt → en`, Nuxt UI
   `pt_br`, communications language + Brazil country preset, PDF Babel `pt_BR`,

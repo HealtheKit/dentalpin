@@ -41,6 +41,7 @@ BUDGET_HEADINGS = {
     "it": "Preventivo",
     "ar": "عرض أسعار",
     "ta": "மதிப்பீடு",
+    "te": "అంచనా",
 }
 
 

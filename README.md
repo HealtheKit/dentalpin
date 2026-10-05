@@ -5,6 +5,7 @@
 [![fr](https://img.shields.io/badge/lang-fr-blue.svg)](./README.fr.md)
 [![pt](https://img.shields.io/badge/lang-pt-brightgreen.svg)](./README.pt.md)
 [![ta](https://img.shields.io/badge/lang-ta-green.svg)](./README.ta.md)
+[![te](https://img.shields.io/badge/lang-te-teal.svg)](./README.te.md)
 [![de](https://img.shields.io/badge/lang-de-black.svg)](./README.de.md)
 [![hu](https://img.shields.io/badge/lang-hu-orange.svg)](./README.hu.md)
 [![pl](https://img.shields.io/badge/lang-pl-lightgrey.svg)](./README.pl.md)
@@ -131,6 +132,9 @@ docker-compose up -d
 
 # India GST demo clinic (Tamil UI, or English UI with --country in)
 ./scripts/seed-demo.sh --lang ta
+
+# India GST demo clinic in Hyderabad, Telangana (Telugu UI)
+./scripts/seed-demo.sh --lang te
 ```
 
 Open http://localhost:3000
@@ -186,7 +190,7 @@ See [docs/user-manual/en/demo.md](docs/user-manual/en/demo.md) for full details 
 
 ### User Experience
 - **Visual Selectors** — Smart dropdowns showing recent patients and popular treatments
-- **Ten-Language Interface** — English, Spanish, French, Portuguese (Portugal + Brazilian overlay), Tamil, German, Hungarian, Polish, Italian and Arabic — core app and every module
+- **Eleven-Language Interface** — English, Spanish, French, Portuguese (Portugal + Brazilian overlay), Tamil, Telugu, German, Hungarian, Polish, Italian and Arabic — core app and every module
 - **Dark Mode** — System-aware theme switching
 - **Responsive Design** — Works on desktop and tablet
 
@@ -198,8 +202,8 @@ See [docs/user-manual/en/demo.md](docs/user-manual/en/demo.md) for full details 
 
 ## Languages
 
-The interface ships in **ten languages** — English, Español, Français, Português (Portugal and Brazilian),
-தமிழ் (Tamil), Deutsch, Magyar, Polski, Italiano and العربية (Arabic) — covering the core app **and
+The interface ships in **eleven languages** — English, Español, Français, Português (Portugal and Brazilian),
+தமிழ் (Tamil), తెలుగు (Telugu), Deutsch, Magyar, Polski, Italiano and العربية (Arabic) — covering the core app **and
 every module layer**, with a CI-enforced key-parity test so locales can't silently
 drift. Polish uses its full three-form plural rules.
 
