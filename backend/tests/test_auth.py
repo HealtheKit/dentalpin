@@ -1,7 +1,9 @@
 """Tests for authentication endpoints."""
 
+from collections.abc import AsyncGenerator
+
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +12,8 @@ from app.core.auth.models import User
 from app.core.auth.rbac import invalidate_rbac_cache
 from app.core.auth.seed_rbac import seed_rbac
 from app.core.auth.service import create_access_token
+from app.database import get_db
+from app.main import app
 
 
 @pytest.mark.asyncio
@@ -18,6 +22,35 @@ async def test_health_check(client: AsyncClient) -> None:
     response = await client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
+
+
+@pytest.mark.asyncio
+async def test_readiness_check_hides_database_error() -> None:
+    """Readiness failures keep database details out of the public body."""
+
+    class FailingSession:
+        async def execute(self, _query: object) -> None:
+            raise RuntimeError("db.internal:5432 SELECT secret FROM users")
+
+    async def override_get_db() -> AsyncGenerator[FailingSession, None]:
+        yield FailingSession()
+
+    previous_override = app.dependency_overrides.get(get_db)
+    try:
+        app.dependency_overrides[get_db] = override_get_db
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.get("/health/ready")
+    finally:
+        if previous_override is None:
+            app.dependency_overrides.pop(get_db, None)
+        else:
+            app.dependency_overrides[get_db] = previous_override
+
+    assert response.status_code == 503
+    assert response.json() == {"status": "unready", "version": "2.0.0"}
+    assert "db.internal" not in response.text
+    assert "SELECT secret" not in response.text
 
 
 _SETUP_PAYLOAD = {
