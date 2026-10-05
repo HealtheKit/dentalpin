@@ -198,13 +198,14 @@ See [docs/user-manual/en/demo.md](docs/user-manual/en/demo.md) for full details 
 
 ## Languages
 
-The interface ships in **ten languages** — English, Español, Français, Português(Portugal and Brazilian),
+The interface ships in **ten languages** — English, Español, Français, Português (Portugal and Brazilian),
 தமிழ் (Tamil), Deutsch, Magyar, Polski, Italiano and العربية (Arabic) — covering the core app **and
 every module layer**, with a CI-enforced key-parity test so locales can't silently
 drift. Polish uses its full three-form plural rules.
 
 Patient-facing communications (email templates, PDFs) currently render in
-**five languages** (es, en, fr, pt, ta)(pt-BR reuses some pt templates, only shipping those differing from pt);
+every UI language, plus
+`pt-BR` as an overlay that only ships the templates whose wording differs from `pt`;
 each clinic picks its communication language independently of the staff UI language.
 
 Want your language? Adding one is a translation-only contribution — see the
