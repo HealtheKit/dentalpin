@@ -24,8 +24,9 @@ services:
       SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       # Explicit test opt-out for rate limiting and friends (#530).
-      # Empty default parses as False; CI e2e sets TESTING=true.
-      TESTING: ${TESTING:-}
+      # Must default to "false": pydantic rejects an empty string as a
+      # bool, so `${TESTING:-}` would crash the backend at boot.
+      TESTING: ${TESTING:-false}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
       STORAGE_LOCAL_PATH: ${STORAGE_LOCAL_PATH:-/app/storage}
