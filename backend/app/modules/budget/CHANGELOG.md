@@ -5,6 +5,8 @@
 - fix: the public `/meta` patient-name lookup is now clinic-scoped
   (`AND clinic_id`). The id already comes from the budget's own row so this
   was not exploitable, but an id-only query is a checklist point-3 miss.
+- feat(#509): the quote PDF for `pt-BR` reuses the `pt` labels.
+
 - fix(#522): the "today" and "in N days" markers on the budget list, and the
   `valid_from` default on the new-budget form, read the UTC day instead of
   the local one. Now use `toISODate`.
