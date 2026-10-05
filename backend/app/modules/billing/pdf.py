@@ -996,6 +996,11 @@ class InvoicePDFService:
             },
         }
 
+        labels_pt_br = {
+            "tax_id": "CPF/CNPJ",
+            "address": "Endereço",
+        }
+
         labels_de = {
             "invoice": "Rechnung",
             "credit_note": "Rechnungskorrektur",
@@ -1201,6 +1206,8 @@ class InvoicePDFService:
             return labels_fr
         if locale == "pt":
             return labels_pt
+        if locale == "pt-BR":
+            return {**labels_pt, **labels_pt_br}
         if locale == "de":
             return labels_de
         if locale == "hu":
