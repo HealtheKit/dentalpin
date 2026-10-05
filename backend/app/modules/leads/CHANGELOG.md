@@ -17,6 +17,12 @@
   lead, instead of staying stale until a manual reload.
 - Key "last used" timestamp now formats with the active UI locale,
   matching every other date in the module.
+- Removed dead code: the retired `availability?: string` field in
+  `LeadFormValues` (superseded by `availability_days`/`availability_slot`)
+  and six unused i18n keys (`leads.availability`, `leads.convert.subtitle`,
+  `leads.settings.keyConfigured`, `leads.settings.deactivate`,
+  `leads.routing.explainer`, `leads.errors.load`) across all ten locales
+  plus the host app's `pt-BR` overlay.
 
 ### Changed
 
