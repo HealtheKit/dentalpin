@@ -17,7 +17,7 @@ import RotateKeyConfirmModal from './RotateKeyConfirmModal.vue'
  * Mounted by the host's dynamic route /settings/[category]/[page].vue,
  * so no definePageMeta here.
  */
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const { can } = usePermissions()
 const config = useRuntimeConfig()
@@ -199,7 +199,7 @@ async function copy(value: string | null | undefined) {
 }
 
 function lastUsedLabel(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleString() : t('leads.settings.never')
+  return iso ? new Date(iso).toLocaleString(locale.value) : t('leads.settings.never')
 }
 </script>
 
