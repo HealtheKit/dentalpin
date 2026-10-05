@@ -71,6 +71,10 @@ services:
       # (`grep "csp violation"`). Flip to enforce once the log is quiet.
       # See docs/technical/security-csp.md.
       NUXT_CSP_MODE: ${NUXT_CSP_MODE:-report}
+      # Only matters if the image runs the Vite dev server (the
+      # build-images.yml image does): lets Vite accept the demo hosts
+      # without depending on the config baked into the image.
+      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: ${VITE_ALLOWED_HOSTS:-.demo.dentalpin.in}
     depends_on:
       backend:
         condition: service_started
