@@ -91,11 +91,6 @@ function formatDateTime(iso: string | null): string {
   return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
 }
 
-function sessionStatusLabel(status: string): string {
-  const key = `orthodontics.status.session_${status}`
-  return te(key) ? t(key) : status
-}
-
 function planStatusLabel(status: string): string {
   const key = `treatmentPlans.status.${status}`
   return te(key) ? t(key) : status
@@ -236,7 +231,15 @@ async function openPlanPicker() {
   showPlan.value = true
 }
 
-const pickedPlanItems = ref<{ id: string }[]>([])
+interface PlanDetailItem {
+  id: string
+  treatment?: {
+    clinical_type?: string | null
+    catalog_item?: { names?: Record<string, string> | null } | null
+  } | null
+}
+
+const pickedPlanItems = ref<PlanDetailItem[]>([])
 
 const pickedItemLabels = ref<Record<string, string>>({})
 
