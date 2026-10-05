@@ -488,7 +488,7 @@ async def get_me(
 @router.get("/users", response_model=PaginatedApiResponse[UserWithRoleResponse])
 async def list_users(
     ctx: Annotated[ClinicContext, Depends(get_clinic_context)],
-    _: Annotated[None, Depends(require_permission("admin.users.write"))],
+    _: Annotated[None, Depends(require_permission("admin.users.read"))],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> PaginatedApiResponse[UserWithRoleResponse]:
     """List all users in the current clinic (admin only)."""
@@ -538,11 +538,13 @@ async def create_user(
     clinic_id = data.clinic_id if data.clinic_id else ctx.clinic_id
     if clinic_id != ctx.clinic_id:
         caller_is_admin = await db.execute(
-            select(ClinicMembership.id).where(
+            select(ClinicMembership.id)
+            .where(
                 ClinicMembership.user_id == ctx.user_id,
                 ClinicMembership.clinic_id == clinic_id,
                 ClinicMembership.role == "admin",
             )
+            .limit(1)
         )
         if caller_is_admin.scalar_one_or_none() is None:
             raise HTTPException(
@@ -737,7 +739,29 @@ async def update_user(
             user.token_version += 1
 
     # Update role in membership
-    if data.role is not None:
+    if data.role is not None and data.role != membership.role:
+        # Prevent admins from demoting themselves out of the role.
+        if user.id == ctx.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot change your own role",
+            )
+        # Prevent demoting the clinic's last admin.
+        if membership.role == "admin":
+            remaining_admins = await db.scalar(
+                select(func.count())
+                .select_from(ClinicMembership)
+                .where(
+                    ClinicMembership.clinic_id == ctx.clinic_id,
+                    ClinicMembership.role == "admin",
+                    ClinicMembership.user_id != user.id,
+                )
+            )
+            if not remaining_admins:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot demote the clinic's last admin",
+                )
         membership.role = data.role
         membership.role_id = await resolve_role_id(db, membership.clinic_id, data.role)
 
@@ -1000,7 +1024,7 @@ async def update_budget_settings(
 
 
 class _CommunicationsSettingsPatch(BaseModel):
-    language: str | None = Field(default=None, pattern="^(es|en|fr|pt|ta|de|hu|pl|it|ar)$")
+    language: str | None = Field(default=None, pattern="^(es|en|fr|pt|pt-BR|ta|te|de|hu|pl|it|ar)$")
 
 
 class _CommunicationsSettingsResponse(BaseModel):

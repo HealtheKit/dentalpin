@@ -26,7 +26,7 @@ DentalPin is built as independent modules under `backend/app/modules/<name>/` wi
 - Respect module isolation. Do **not** create cross-module dependencies that are not declared in the module's `manifest.depends`.
 - Prefer the **event bus** for cross-module reactions. Direct service-to-service imports across modules are forbidden unless the target is in `depends`.
 - Cross-module FKs are allowed **only** when the target is in `depends`. CI rejects migrations otherwise.
-- Each module owns its Alembic branch (`branch_labels = ("<name>",)`). Never thread one module's revisions through another's chain — uninstall safety depends on it (issue #56).
+- Each module owns its Alembic branch (`branch_labels = ("<name>",)`). Never thread one module's revisions through another's chain — uninstall safety depends on it (issue #56). Legacy exception (#555): the `clinical` module predates the branch contract (`legacy: True`, `removable: False`, migrations stay on the main linear chain); the removable gate in `manifest_validator.py` only constrains `removable: True` modules.
 - Permissions are namespaced: a module returns `resource.action` from `get_permissions()`; the registry prefixes with the module name.
 
 **Before adding a feature, read `docs/technical/creating-modules.md`** — it is the source of truth for module structure, lifecycle, manifest, slots, events, tools/agents, and migrations.
@@ -107,6 +107,7 @@ cd frontend && npm run typecheck:layers   # vue-tsc over host + all module layer
 ./scripts/reset-db.sh        # drop, dentalpin db upgrade (core + installed modules)
 ./scripts/seed-demo.sh       # demo clinic, users, sample data
 ./scripts/seed-demo.sh --lang ta                  # + India GST demo (Tamil UI; module must be installed)
+./scripts/seed-demo.sh --lang te                  # + India GST demo (Telugu UI, Hyderabad/Telangana; module must be installed)
 ./scripts/seed-demo.sh --lang en --country in      # + India GST demo (English UI) — see docs/modules/india_gst.md §3.5
 
 # Demo login
