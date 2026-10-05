@@ -7,6 +7,11 @@
   starting with `=`, `+`, `-` or `@` is executed by Excel/LibreOffice on
   open. Decimal totals and counts are untouched — the guard is
   type-aware.
+- fix(#610): the operational report's `plan_pipeline` counted soft-deleted
+  treatment plans. `TreatmentPlan` carries `deleted_at` and the owning
+  module filters it on every read; this aggregate did not, so a deleted
+  plan went on being reported as work in progress. The sibling billing
+  report already applies the same filter in twelve places.
 
 - fix(#522): the billing, budgets and scheduling report pages, the home
   dashboard snapshot and the week-glance panel all built their ranges from

@@ -136,6 +136,33 @@ async def test_simple_text_turn_yields_final_and_usage() -> None:
 
 
 @pytest.mark.asyncio
+async def test_turn_bound_fails_closed_without_budget() -> None:
+    """An endless tool loop ends in BudgetExceeded, not a hang (#536)."""
+    reg = _FakeRegistry({"m.echo": _tool("echo", ToolCategory.READ)})
+    scripts = [[ToolUse(f"t{i}", "m.echo", {}), Done("tool_calls")] for i in range(4)]
+    provider = _FakeProvider(scripts)
+    history = [ProviderMessage(Role.USER, [TextBlock("hi")])]
+
+    events = await _collect(
+        run_turn(
+            ctx=_ctx(reg),
+            provider=provider,
+            system="s",
+            history=history,
+            tool_names=["m.echo"],
+            redactor=Redactor(enabled=False),
+            model="gpt-4.1",
+            budget=None,
+            max_iterations=3,
+        )
+    )
+
+    assert len(provider.calls) == 3
+    assert isinstance(events[-1], BudgetExceeded)
+    assert not any(isinstance(e, Final) for e in events)
+
+
+@pytest.mark.asyncio
 async def test_read_tool_executes_then_answers() -> None:
     reg = _FakeRegistry({"m.echo": _tool("echo", ToolCategory.READ)})
     provider = _FakeProvider(
@@ -309,6 +336,38 @@ def test_redactor_tokenizes_date_of_birth() -> None:
     for key in ("date_of_birth", "dob", "birth_date"):
         assert isinstance(content[key], str) and content[key].startswith("DOB_"), key
     assert r.rehydrate(content["date_of_birth"]) == "1985-03-14"
+
+
+def test_salted_tokens_are_stable_for_one_salt() -> None:
+    """Turn-to-turn stability: same salt + value rebuilds the same token."""
+    first = Redactor(enabled=True, salt="aa" * 16).table.tokenize("1985-03-14", "DOB")
+    second = Redactor(enabled=True, salt="aa" * 16).table.tokenize("1985-03-14", "DOB")
+    assert first == second
+
+
+def test_salted_tokens_differ_across_salts() -> None:
+    """Cross-conversation unlinkability (#586)."""
+    a = Redactor(enabled=True, salt="aa" * 16).table.tokenize("1985-03-14", "DOB")
+    b = Redactor(enabled=True, salt="bb" * 16).table.tokenize("1985-03-14", "DOB")
+    assert a != b
+
+
+def test_salted_token_is_12_hex() -> None:
+    import re
+
+    token = Redactor(enabled=True, salt="aa" * 16).table.tokenize("600123123", "PHONE")
+    assert re.fullmatch(r"PHONE_[0-9a-f]{12}", token), token
+
+
+def test_salted_round_trip() -> None:
+    r = Redactor(enabled=True, salt="cc" * 16)
+    msg = ProviderMessage(
+        Role.TOOL,
+        [ToolResultBlock("c1", {"full_name": "María González"})],
+    )
+    token = r.redact_outgoing([msg])[0].content[0].content["full_name"]
+    assert token != "María González"
+    assert r.rehydrate(token) == "María González"
 
 
 # --- factory -------------------------------------------------------------

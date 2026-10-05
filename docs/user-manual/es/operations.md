@@ -24,6 +24,12 @@ Cubre los comandos que ejecuta un operador — no los internos de Python.
   cierra la sesión del usuario y toda escritura falla con "CSRF token
   missing" porque la aplicación tampoco puede leer la cookie `dp_csrf`.
   El backend avisa en el log con el valor a poner.
+  El dominio padre tiene que ser tuyo. Dominios de hosting como
+  `onrender.com`, `vercel.app`, `herokuapp.com` o `sslip.io` son sufijos
+  públicos: el navegador trata cada subdominio como un sitio distinto y
+  rechaza `COOKIE_DOMAIN=.onrender.com`, así que el login responde 200 y
+  `/auth/me` 401. Pon un dominio propio en ambos servicios, o sírvelos
+  desde un único origen.
 
 Comprobación rápida:
 
@@ -359,6 +365,7 @@ DELETE FROM alembic_version;
 | Desinstalación bloqueada: "required by ..." | Existe una dependencia inversa | Desinstalar primero los dependientes, o `--force` |
 | Sesión cerrada en cada recarga, aunque navegar funciona | Aplicación y API en hosts distintos con `COOKIE_DOMAIN` vacío: las cookies de sesión nunca llegan a la aplicación | Fijar `COOKIE_DOMAIN` al dominio padre compartido (p. ej. `.example.com`) y reiniciar el backend |
 | Cada guardado responde `403 CSRF token missing or invalid`, aunque leer funciona | La misma causa: la aplicación no puede leer la cookie `dp_csrf`, así que nunca envía la cabecera `X-CSRF-Token` | La misma solución: fijar `COOKIE_DOMAIN` al dominio padre compartido |
+| El login responde 200, luego `/auth/me` 401 y vuelve a la pantalla de login | Aplicación y API en un dominio de hosting que es sufijo público (`*.onrender.com`, `*.vercel.app`…): el navegador rechaza las cookies | Poner un dominio propio en ambos (`app.example.com` + `api.example.com`) y fijar `COOKIE_DOMAIN=.example.com` |
 
 ---
 
