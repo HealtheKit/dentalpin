@@ -127,7 +127,14 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  devServer: {
+    host: '0.0.0.0'
+  },
+
   vite: {
+    server: {
+      allowedHosts: ['english.demo.dentalpin.in', 'telugu.demo.dentalpin.in', 'tamil.demo.dentalpin.in', 'hindi.demo.dentalpin.in', 'localhost', '127.0.0.1']
+    },
     optimizeDeps: {
       // Pre-bundle deps that Vite otherwise discovers at runtime. Runtime
       // discovery triggers a full page reload, which in CI races Playwright's

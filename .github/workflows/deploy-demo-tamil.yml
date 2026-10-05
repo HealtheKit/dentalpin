@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USERNAME }}
           key: ${{ secrets.DEPLOY_KEY }}
           source: |
-            docker-compose.prod.yml
+            docker-compose.pro.yml
             .env
           target: /opt/dentalpin-demo-tamil/
 
