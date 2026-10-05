@@ -28,13 +28,17 @@ async def test_readiness_check_hides_database_error() -> None:
     async def override_get_db() -> AsyncGenerator[FailingSession, None]:
         yield FailingSession()
 
+    previous_override = app.dependency_overrides.get(get_db)
     try:
         app.dependency_overrides[get_db] = override_get_db
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.get("/health/ready")
     finally:
-        app.dependency_overrides.clear()
+        if previous_override is None:
+            app.dependency_overrides.pop(get_db, None)
+        else:
+            app.dependency_overrides[get_db] = previous_override
 
     assert response.status_code == 503
     assert response.json() == {"status": "unready", "version": "2.0.0"}
