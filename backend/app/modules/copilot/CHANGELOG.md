@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- fix(#586): redaction tokens are salted per conversation
+  (`copilot_conversations.redaction_salt`, minted on first use, never
+  logged) and widened to 12 hex chars. Same value maps to unrelated
+  tokens across conversations; dictionary attacks over low-cardinality
+  fields (e.g. birth dates) no longer apply to the token holder.
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
+- feat(i18n): Telugu (`te`) morning-digest email subject.
 - fix: a confirmed write tool now publishes its module namespace on the data
   bus. The confirmation stream only returns `tool_result` (no `tool_call`), so
   the old lookup of a tool message never matched and no page refetched (#568).
