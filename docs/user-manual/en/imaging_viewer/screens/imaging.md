@@ -28,7 +28,9 @@ RVG watch-folder scan reports a summary toast (scanned / new /
 auto-approved / failed counts). The RVG queue is
 tabbed by status (pending / approved / rejected / failed) with live
 counts on each tab; actions show only on pending rows and failed rows
-show their error.
+show their error. Below the import
+queue, linked sensor identities are listed with patient names and an
+unlink action for correcting a wrong DICOM pairing.
 
 ## Viewer
 

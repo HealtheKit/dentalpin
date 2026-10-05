@@ -39,7 +39,10 @@
         "approved": "Aprovadas",
         "rejected": "Rejeitadas",
         "failed": "Falhadas"
-      }
+      },
+      "linksTitle": "Identidades de sensor vinculadas",
+      "linksEmpty": "Nenhuma identidade de sensor vinculada.",
+      "unlink": "Desvincular"
     },
     "annotations": {
       "title": "Anotações",

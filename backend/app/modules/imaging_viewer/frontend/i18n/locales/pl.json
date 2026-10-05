@@ -39,7 +39,10 @@
         "approved": "Zatwierdzone",
         "rejected": "Odrzucone",
         "failed": "Nieudane"
-      }
+      },
+      "linksTitle": "Powiązane tożsamości czujników",
+      "linksEmpty": "Brak powiązanych tożsamości czujników.",
+      "unlink": "Odepnij"
     },
     "annotations": {
       "title": "Adnotacje",

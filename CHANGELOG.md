@@ -11,6 +11,45 @@ frontend as a Nuxt layer under its own Python package.
 
 ## [Unreleased]
 
+### Added
+
+- **Telugu (`te`, తెలుగు) locale** — core app and every module layer,
+  patient email templates (HTML + TXT), PDF labels, and a Telugu demo
+  seed (`--lang te`): an India GST clinic in Hyderabad, Telangana
+  (state 36) with traditional Telugu patient names. `README.te.md` added.
+- **Brazilian Portuguese (`pt-BR`) as a host-only overlay on `pt`** (#509):
+  small delta locale file, `fallbackLocale` chain `pt-BR → pt → en`, Nuxt UI
+  `pt_br`, communications language + Brazil country preset, PDF Babel `pt_BR`,
+  labels reused from `pt`, email templates falling back `pt-BR → pt`.
+  Only templates with vocabulary deltas live under `backend/templates/email/pt-BR/`).
+
+## [2.7.1] - 2026-10-02
+
+### Fixed
+
+- **Login on plain-HTTP installs** — since 2.7.0 the session cookies
+  were always `Secure` in production, which browsers drop over
+  `http://` on anything but localhost: a LAN install at
+  `http://192.168.x.x` logged in and bounced straight back to `/login`.
+  `Secure` now follows the scheme the browser used
+  (`X-Forwarded-Proto`, else `Origin`); HTTPS deployments are unchanged
+  (#594).
+- **Copilot** — `date_of_birth` is redacted before it reaches the LLM
+  provider (#585, #534, thanks @readyagentsdev).
+- **Dev environment** — the frontend container heals a stale
+  `node_modules` anonymous volume on start (#588, thanks @lamanji).
+
+### Changed
+
+- **`imaging_viewer`** — RVG folder scans report their counts in a
+  summary toast (#580, thanks @lamanji).
+
+### Tests
+
+- Public-route audit with adversarial tenant-scoping pins (#579, thanks
+  @lamanji) and a lint that forbids UTC day-slicing in the UI (#576,
+  #522, thanks @ZoliQua).
+
 ## [2.7.0] - 2026-09-30
 
 ### Added

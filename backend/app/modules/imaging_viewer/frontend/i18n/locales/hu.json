@@ -39,7 +39,10 @@
         "approved": "Jóváhagyva",
         "rejected": "Elutasítva",
         "failed": "Sikertelen"
-      }
+      },
+      "linksTitle": "Összekapcsolt szenzorazonosítók",
+      "linksEmpty": "Nincsenek összekapcsolt szenzorazonosítók.",
+      "unlink": "Leválasztás"
     },
     "annotations": {
       "title": "Annotációk",

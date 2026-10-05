@@ -39,7 +39,10 @@
         "approved": "Approuvés",
         "rejected": "Rejetés",
         "failed": "Échoués"
-      }
+      },
+      "linksTitle": "Identités de capteur liées",
+      "linksEmpty": "Aucune identité de capteur liée.",
+      "unlink": "Dissocier"
     },
     "annotations": {
       "title": "Annotations",

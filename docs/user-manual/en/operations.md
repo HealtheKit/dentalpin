@@ -24,6 +24,11 @@ operator runs — not the Python internals.
   out, and every write fails with "CSRF token missing" because the app
   cannot read the `dp_csrf` cookie either. The backend logs a warning
   naming the value to set.
+  The parent must be a domain you own. Hosting domains such as
+  `onrender.com`, `vercel.app`, `herokuapp.com` or `sslip.io` are public
+  suffixes: browsers treat each subdomain as a different site and reject
+  `COOKIE_DOMAIN=.onrender.com`, so login answers 200 and `/auth/me` 401.
+  Put a custom domain on both services, or serve them from one origin.
 
 Smoke-check:
 
@@ -347,6 +352,7 @@ DELETE FROM alembic_version;
 | Uninstall blocked: "required by ..." | Reverse dependency exists | Uninstall dependents first, or `--force` |
 | Logged out on every page refresh, while clicking around works | App and API on different hosts with `COOKIE_DOMAIN` empty, so the session cookies never reach the app | Set `COOKIE_DOMAIN` to the shared parent domain (e.g. `.example.com`) and restart the backend |
 | Every save answers `403 CSRF token missing or invalid`, while reading works | Same cause: the app cannot read the `dp_csrf` cookie, so the `X-CSRF-Token` header is never sent | Same fix: set `COOKIE_DOMAIN` to the shared parent domain |
+| Login answers 200, then `/auth/me` 401 and back to the login screen | App and API on a hosting domain that is a public suffix (`*.onrender.com`, `*.vercel.app`…): the browser rejects the cookies | Put a custom domain on both (`app.example.com` + `api.example.com`) and set `COOKIE_DOMAIN=.example.com` |
 
 ---
 
