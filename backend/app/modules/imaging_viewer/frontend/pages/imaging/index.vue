@@ -2,6 +2,7 @@
 import { useImagingViewer, useRvgImport, type ImagingStudy, type RvgImport, type RvgLink } from '../../composables/useImagingViewer'
 import type { ApiResponse, PaginatedResponse } from '~~/app/types'
 import { PERMISSIONS } from '~~/app/config/permissions'
+import { errorDetail } from '~~/app/utils/error'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -155,8 +156,12 @@ async function approve(row: RvgImport, targetPatientId: string | null) {
     await approveImport(row.id, targetPatientId)
     await loadQueue()
     await loadLinks()
-  } catch {
-    actionError.value = t('imagingViewer.rvg.actionFailed')
+  } catch (e) {
+    // The row may have changed under us (file vanished, decided
+    // elsewhere): reload so the queue shows the truth, and surface the
+    // backend's reason instead of the generic failure line.
+    await loadQueue()
+    actionError.value = errorDetail(e) ?? t('imagingViewer.rvg.actionFailed')
   }
 }
 
