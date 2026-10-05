@@ -2,8 +2,11 @@
 
 ## Unreleased
 
-<- feat: manual scans surface a summary toast (scanned / new / auto-approved /
+- feat: manual scans surface a summary toast (scanned / new / auto-approved /
   failed counts).
+- feat: RVG card lists linked sensor identities with patient names and an
+  unlink action, so a wrong DICOM PatientID pairing can be corrected in
+  place; approving also refreshes the links.
 - fix: a failed approve reloads the queue and surfaces the backend's reason
   instead of the generic failure line, so a vanished file reads as what it
   is and re-dropping it retries cleanly (rows stay pending; Reject still
