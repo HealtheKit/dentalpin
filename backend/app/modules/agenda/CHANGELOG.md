@@ -6,6 +6,7 @@
   membership rows (`.limit(1)` existence read, same fix as #598 for
   orthodontics). `clinic_memberships` has no unique `(clinic_id, user_id)`
   constraint, so a duplicate used to 500 with `MultipleResultsFound`.
+- feat(i18n): Telugu (`te`) default cabinet name for new clinics.
 - fix(#522): `useCalendarBounds` asked the availability endpoint for the
   previous day's open hours for clinics east of UTC — the calendar hands it
   local midnights and it rendered them with `toISOString()`. Now uses
