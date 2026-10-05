@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- fix(#611): party names and descriptions in `facturas.csv` / `cobros.csv`
+  are neutralised against spreadsheet formula injection before the file
+  reaches the accountant. Decimal amounts keep their own formatting path,
+  so a credit note stays a negative number rather than becoming text.
+
 - feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - fix(#522): every date preset (`currentMonth`, `previousMonth`,
   `currentQuarter`, `previousQuarter`, `yearToDate`) built its bounds from a

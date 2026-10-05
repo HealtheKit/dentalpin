@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- fix(#611): the recall CSV export no longer emits live spreadsheet
+  formulas. Patient names arrive through the public lead intake and
+  `reason_note` is free text; both are now apostrophe-prefixed when they
+  start with a formula character. As a side effect, `+34…` phone numbers
+  stop being formula cells in Excel.
+
 - feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - feat(i18n): Telugu (`te`) demo recall notes in the seed.
 - feat(#232): sidebar entry grouped under the Clinical header (`nav.section` "clinical").

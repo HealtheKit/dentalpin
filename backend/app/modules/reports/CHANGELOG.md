@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- fix(#611): report CSVs run every cell through `csv_cell`. Professional
+  names and address areas reach those rows from user data, and a value
+  starting with `=`, `+`, `-` or `@` is executed by Excel/LibreOffice on
+  open. Decimal totals and counts are untouched — the guard is
+  type-aware.
 - fix(#610): the operational report's `plan_pipeline` counted soft-deleted
   treatment plans. `TreatmentPlan` carries `deleted_at` and the owning
   module filters it on every read; this aggregate did not, so a deleted
