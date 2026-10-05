@@ -34,12 +34,14 @@ BUDGET_HEADINGS = {
     "en": "Quote",
     "fr": "Devis",
     "pt": "Orçamento",
+    "pt-BR": "Orçamento",
     "de": "Kostenvoranschlag",
     "hu": "Árajánlat",
     "pl": "Kosztorys",
     "it": "Preventivo",
     "ar": "عرض أسعار",
     "ta": "மதிப்பீடு",
+    "te": "అంచనా",
 }
 
 
