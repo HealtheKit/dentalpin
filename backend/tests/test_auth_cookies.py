@@ -235,6 +235,36 @@ async def test_cookie_domain_setting_widens_cookies_for_split_hosts(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("headers", "secure"),
+    [
+        ({}, True),  # SSR refresh: no proxy header, no Origin
+        ({"X-Forwarded-Proto": "https"}, True),
+        ({"X-Forwarded-Proto": "http"}, False),  # LAN install behind Caddy on http://
+        ({"Origin": "http://192.168.1.10:3000"}, False),  # direct, split-port
+        ({"Origin": "https://app.example.com"}, True),
+    ],
+)
+async def test_production_cookies_drop_secure_only_over_plain_http(
+    client: AsyncClient, monkeypatch, headers: dict, secure: bool
+) -> None:
+    """Browsers discard Secure cookies from an http:// response, so a plain
+    HTTP install logged in and bounced back to /login (2.7.0 regression)."""
+    from app.config import settings
+
+    await _bootstrap(client)
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    resp = await client.post(
+        LOGIN,
+        data={"username": "admin@example.com", "password": "SecurePass1234"},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+    for name in ("dp_access", "dp_refresh", "dp_csrf"):
+        assert ("; secure" in _cookie_flags(resp, name).lower()) is secure
+
+
+@pytest.mark.asyncio
 async def test_refresh_rate_key_reads_cookie_when_body_is_empty() -> None:
     """The browser refresh has no body; the limiter must still key by user."""
     from uuid import uuid4

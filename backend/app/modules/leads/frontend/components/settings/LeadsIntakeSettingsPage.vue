@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { PERMISSIONS } from '~~/app/config/permissions'
 import { errorMessage } from '~~/app/utils/error'
 import { useLeadsSettings, type LeadSettings } from '../../composables/useLeadsSettings'
+import RotateKeyConfirmModal from './RotateKeyConfirmModal.vue'
 
 /**
  * Settings -> Integrations -> "Formulario web".
@@ -16,7 +17,7 @@ import { useLeadsSettings, type LeadSettings } from '../../composables/useLeadsS
  * Mounted by the host's dynamic route /settings/[category]/[page].vue,
  * so no definePageMeta here.
  */
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const { can } = usePermissions()
 const config = useRuntimeConfig()
@@ -44,7 +45,8 @@ const settings = ref<LeadSettings | null>(null)
 const capInput = ref<number>(200)
 // Plaintext of a freshly rotated key: local state only, never re-fetched.
 const freshKey = ref<string | null>(null)
-
+const showRotateConfirm = ref(false)
+const rotateError = ref<string | null>(null)
 const CAP_MAX = 5000
 
 onMounted(async () => {
@@ -76,6 +78,16 @@ async function load() {
 const countToday = computed(() => {
   const current = settings.value
   if (!current) return 0
+  // UTC on purpose, and the one place in the tree where it is right: the
+  // backend stamps `day_count_date` with Postgres `current_date`
+  // (service.py:267), which evaluates in the *database session's*
+  // timezone — UTC on every shipped deployment, since no compose file
+  // sets TZ and postgres:15-alpine defaults to it. `toISOString()` is UTC
+  // by definition, so this compares like with like. `toISODate` (browser
+  // local) or `clinicToday` (clinic local) would each introduce a
+  // mismatch during that zone's offset window. The durable fix is for the
+  // server to answer "is this count today" — see #500 item 3.
+  // eslint-disable-next-line no-restricted-syntax -- mirrors Postgres current_date (#522)
   const today = new Date().toISOString().slice(0, 10)
   return current.day_count_date === today ? current.day_count : 0
 })
@@ -139,15 +151,18 @@ async function saveCap() {
 
 async function rotate() {
   rotating.value = true
+  rotateError.value = null
   try {
     const response = await rotateIntakeKey()
     freshKey.value = response.data.key
     await load()
+    showRotateConfirm.value = false
     toast.add({ title: t('leads.settings.rotate'), color: 'success' })
   } catch (e: unknown) {
+    rotateError.value = errorMessage(e, t('leads.errors.rotate'))
     toast.add({
       title: t('common.error'),
-      description: errorMessage(e, t('leads.errors.rotate')),
+      description: rotateError.value,
       color: 'error'
     })
   } finally {
@@ -184,7 +199,7 @@ async function copy(value: string | null | undefined) {
 }
 
 function lastUsedLabel(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleString() : t('leads.settings.never')
+  return iso ? new Date(iso).toLocaleString(locale.value) : t('leads.settings.never')
 }
 </script>
 
@@ -342,8 +357,7 @@ function lastUsedLabel(iso: string | null): string {
               class="mt-4"
               variant="outline"
               icon="i-lucide-key-round"
-              :loading="rotating"
-              @click="rotate"
+              @click="showRotateConfirm = true"
             >
               {{ t('leads.settings.rotate') }}
             </UButton>
@@ -352,6 +366,13 @@ function lastUsedLabel(iso: string | null): string {
             </p>
           </template>
         </UCard>
+
+        <RotateKeyConfirmModal
+          v-model:open="showRotateConfirm"
+          :loading="rotating"
+          :error="rotateError"
+          @confirm="rotate"
+        />
 
         <!-- The freshly rotated key: shown once, kept only in local state. -->
         <UCard v-if="freshKey">

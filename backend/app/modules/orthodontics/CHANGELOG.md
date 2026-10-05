@@ -11,6 +11,11 @@
   translated statuses and upcoming appointments with time; dead validators
   removed; tool copy fixed and overdue total precedes the limit;
   `treatment_plan_id` unique (`ort_0003`).
+- fix(#590): the clinic-membership checks behind control registration
+  tolerate duplicated membership rows (`.limit(1)` existence read).
+  `clinic_memberships` has no unique `(clinic_id, user_id)` constraint,
+  so a duplicate used to 500 with `MultipleResultsFound`.
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - fix(#522): the new-case `start_date` default read the UTC day instead of the
   local one. Now uses `toISODate`.
 - fix (maintainer review): inbox shows the patient's name (batched, no
