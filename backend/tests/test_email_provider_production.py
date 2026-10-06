@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import logging
 
+import pytest
+
 from app.core.email.service import EmailService
 
 
@@ -52,3 +54,55 @@ def test_env_example_documents_the_setting() -> None:
     body = example.read_text(encoding="utf-8")
     for key in ("EMAIL_PROVIDER", "EMAIL_ENABLED", "EMAIL_SMTP_HOST"):
         assert key in body, key
+
+
+def _compose_env(path) -> set[str]:
+    """Keys the backend service passes through, from a compose file."""
+    import re
+
+    body = path.read_text(encoding="utf-8")
+    after = body.split("\n  backend:", 1)[1]
+    # The next service starts at exactly two spaces + a name; anything more
+    # indented still belongs to backend.
+    nxt = re.search(r"^  \S", after, re.M)
+    backend = after[: nxt.start()] if nxt else after
+    return set(re.findall(r"^\s{6}([A-Z][A-Z0-9_]*):", backend, re.M))
+
+
+@pytest.mark.parametrize("compose", ["docker-compose.prod.yml", "docker-compose.coolify.yml"])
+def test_production_compose_forwards_every_email_setting(compose: str) -> None:
+    """The remedy we print must be applicable where we print it.
+
+    Neither prod compose file declares `env_file`, so a setting that is not
+    listed under `environment:` never reaches the container. Telling an
+    operator to set `EMAIL_PROVIDER=smtp` while the SMTP host, user and
+    password stay at their defaults hands them a broken remedy (#614).
+    """
+    from pathlib import Path
+
+    from app.config import Settings
+
+    declared = {n for n in Settings.model_fields if n.startswith("EMAIL_")}
+    forwarded = _compose_env(Path(__file__).resolve().parents[2] / compose)
+    missing = sorted(declared - forwarded)
+    assert not missing, f"{compose} does not forward: {missing}"
+
+
+@pytest.mark.parametrize("compose", ["docker-compose.prod.yml", "docker-compose.coolify.yml"])
+def test_boolean_email_settings_have_a_real_default(compose: str) -> None:
+    """``${X:-}`` resolves to an empty string, which fails bool parsing at boot."""
+    import re
+    from pathlib import Path
+
+    from app.config import Settings
+
+    body = (Path(__file__).resolve().parents[2] / compose).read_text(encoding="utf-8")
+    bools = {
+        n
+        for n, f in Settings.model_fields.items()
+        if n.startswith("EMAIL_") and f.annotation is bool
+    }
+    for name in sorted(bools):
+        m = re.search(rf"^\s+{name}: \$\{{{name}:-(.*?)\}}", body, re.M)
+        assert m, f"{compose}: {name} not forwarded with a default"
+        assert m.group(1) != "", f"{compose}: {name} defaults to empty, which fails bool parsing"
