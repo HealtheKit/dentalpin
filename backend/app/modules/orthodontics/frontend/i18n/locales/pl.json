@@ -114,7 +114,7 @@
       "installmentN": "Rata {n}",
       "months": "Miesiące",
       "monthlyAmount": "Kwota miesięczna",
-      "pendingTotal": "Pending total: {n}",
+      "pendingTotal": "Suma do zapłaty: {n}",
       "closeSuggested": "Przypadek przekazany dalej z powiązanym planem: rozważ zamknięcie planu."
     },
     "settings": {

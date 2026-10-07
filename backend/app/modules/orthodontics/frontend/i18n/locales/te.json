@@ -114,7 +114,7 @@
       "installmentN": "Installment {n}",
       "months": "Months",
       "monthlyAmount": "Monthly amount",
-      "pendingTotal": "Pending total: {n}",
+      "pendingTotal": "పెండింగ్ మొత్తం: {n}",
       "closeSuggested": "Case transferred out with a linked plan: consider closing the plan."
     },
     "settings": {

@@ -114,7 +114,7 @@
       "installmentN": "القسط {n}",
       "months": "الأشهر",
       "monthlyAmount": "المبلغ الشهري",
-      "pendingTotal": "Pending total: {n}",
+      "pendingTotal": "الإجمالي المعلّق: {n}",
       "closeSuggested": "تم تحويل الحالة مع خطة مرتبطة: يُنصح بإغلاق الخطة."
     },
     "settings": {
