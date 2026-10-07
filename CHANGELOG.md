@@ -13,6 +13,11 @@ frontend as a Nuxt layer under its own Python package.
 
 ### Added
 
+- **Same-origin API proxy for split-domain PaaS hosts** (`NUXT_API_PROXY=true`):
+  the frontend forwards `/api/v1/**` to `NUXT_API_BASE_URL_SERVER`, so
+  deploys on public-suffix hosts (`*.onrender.com`, `*.vercel.app`…) keep
+  host-only session cookies without a custom domain. Off by default. Setup in
+  `docs/user-manual/{en,es}/operations.md` §1.
 - **Telugu (`te`, తెలుగు) locale** — core app and every module layer,
   patient email templates (HTML + TXT), PDF labels, and a Telugu demo
   seed (`--lang te`): an India GST clinic in Hyderabad, Telangana
