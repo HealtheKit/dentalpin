@@ -660,23 +660,32 @@ async def test_editing_a_control_refreshes_in_mouth_wires(
 
 
 @pytest.mark.asyncio
-async def test_duplicate_membership_does_not_500_control_registration(
+async def test_duplicate_membership_rejected_for_control_registration(
     db_session: AsyncSession, test_clinic: Clinic, test_patient
 ):
-    """clinic_memberships has no unique (clinic_id, user_id) constraint,
-    so a duplicated row must not 500 the membership check (#590)."""
+    """Since core 0009 duplicates are impossible: the second membership
+    row is rejected, and registration works with the single row (#590)."""
+    from sqlalchemy.exc import IntegrityError
+
     doc = await _professional(db_session, test_clinic.id)
+    # Plain ids first: the expected IntegrityError + rollback below
+    # expires every ORM object in this shared session.
+    doc_id = doc.id
+    clinic_id = test_clinic.id
+    patient_id = test_patient.id
     db_session.add(
-        ClinicMembership(id=uuid4(), user_id=doc.id, clinic_id=test_clinic.id, role="dentist")
+        ClinicMembership(id=uuid4(), user_id=doc_id, clinic_id=clinic_id, role="dentist")
     )
-    await db_session.commit()
-    case, _ = await OrthoCaseService.create(db_session, test_clinic.id, _case_data(test_patient.id))
+    with pytest.raises(IntegrityError):
+        await db_session.commit()
+    await db_session.rollback()
+    case, _ = await OrthoCaseService.create(db_session, clinic_id, _case_data(patient_id))
     control = await OrthoControlService.register(
         db_session,
-        test_clinic.id,
+        clinic_id,
         case.id,
         OrthoControlCreate(procedures=["checkup"], next_control_weeks=4),
-        performed_by=doc.id,
+        performed_by=doc_id,
     )
     await db_session.commit()
     assert control.id is not None
