@@ -9,6 +9,7 @@
 
 ### Fixed
 
+- Telugu strings for the rotate-key confirmation (locale parity test).
 - Convert drawer: the Edit button now requires `leads.write` and Create
   patient `leads.write` + `patients.write`, mirroring the API — a dentist
   (`patients.*`, `leads.read`) no longer clicks into a 403.
