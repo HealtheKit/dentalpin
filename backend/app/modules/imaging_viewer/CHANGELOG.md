@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- fix(i18n): Telugu strings for the RVG linked-identities panel (parity test).
 - feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - feat: manual scans surface a summary toast (scanned / new / auto-approved /
   failed counts).
