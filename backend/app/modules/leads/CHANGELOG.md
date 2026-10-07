@@ -5,6 +5,8 @@
 ### Added
 
 - feat(i18n): Telugu (`te`) locale for the module's frontend layer.
+- fix(i18n): `te` gains the missing `settings.confirmRotate` keys
+  (English fallback until translated).
 - feat(i18n): Telugu (`te`) web-form identity label on routed recalls.
 
 ### Fixed
