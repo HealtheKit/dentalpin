@@ -11,6 +11,17 @@ frontend as a Nuxt layer under its own Python package.
 
 ## [Unreleased]
 
+### Security
+
+- **A budget could be assigned a professional from another clinic.**
+  `assigned_professional_id` was a plain FK to `users` with no
+  membership check, so a caller naming a user id from a different clinic
+  had it stored — and the budget then rendered that user's name back. An
+  unknown id surfaced as a `ForeignKeyViolation`, i.e. a 500 for what is
+  a bad request. Both paths now answer 400, on create and on update. The
+  patient on the same route was already checked against the clinic; the
+  professional was not.
+
 ### Changed
 
 - **Upgrade note (production):** `BUDGET_PUBLIC_SECRET_KEY` is now
