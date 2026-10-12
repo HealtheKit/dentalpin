@@ -1,6 +1,7 @@
 # Changelog — leads module
 
 ## Unreleased
+- Added user-manual screenshots for the lead queue and web form settings screens (EN/ES).
 
 ### Added
 
