@@ -8,6 +8,8 @@
   (name, contacts, locale, currency), and the welcome greeting is the
   generic title. The old clinic-scoped patient-name lookup is gone
   with the removed query.
+- chore(#557): slot/settings permission gates now reference PERMISSIONS constants (no behavior change).
+
 - fix(#531): the verify permanent lockout stays budget-wide on purpose
   (10 retained failures lock the token), and the staff `unlock-public`
   recovery path is now documented in ADR 0006; unlocking also drops

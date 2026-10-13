@@ -298,7 +298,7 @@ frontend as a Nuxt layer under its own Python package.
 
 ### Changed
 
-- **License**: Licensor set to Wikiparty Labs S.L. (#417, #419).
+- **License**: Licensor set to Dentared Odontology Services S.L. (#417, #419).
 - **Payments**: recording a payment is split from collecting one
   through a gateway (#519, #506, thanks @ZoliQua).
 - **Odontogram**: realistic occlusal view and crown profile without
