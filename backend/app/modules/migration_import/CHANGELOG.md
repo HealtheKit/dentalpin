@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- test(#552): branch-scoped uninstall round-trip test (heads, branch downgrade, reinstall).
 - chore(#557): slot/settings permission gates now reference PERMISSIONS constants (no behavior change).
 
 - feat(i18n): Telugu (`te`) locale for the module's frontend layer.
