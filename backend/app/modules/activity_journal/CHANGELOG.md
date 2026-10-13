@@ -4,6 +4,7 @@
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - Subscribe to `prescription.issued` / `prescription.cancelled` (the
   prescriptions module publishes both transactionally with `db=db`),
   so issue/cancel lifecycle lands in the journal.

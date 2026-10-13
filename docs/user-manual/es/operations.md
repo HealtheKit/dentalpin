@@ -24,6 +24,40 @@ Cubre los comandos que ejecuta un operador — no los internos de Python.
   cierra la sesión del usuario y toda escritura falla con "CSRF token
   missing" porque la aplicación tampoco puede leer la cookie `dp_csrf`.
   El backend avisa en el log con el valor a poner.
+  El dominio padre tiene que ser tuyo. Dominios de hosting como
+  `onrender.com`, `vercel.app`, `herokuapp.com` o `sslip.io` son sufijos
+  públicos: el navegador trata cada subdominio como un sitio distinto y
+  rechaza `COOKIE_DOMAIN=.onrender.com`, así que el login responde 200 y
+  `/auth/me` 401. Pon un dominio propio en ambos servicios, o sírvelos
+  desde un único origen.
+- **¿Sin dominio propio (Render, Railway, Vercel…)?** Deja que el frontend
+  haga de proxy de `/api/v1` hacia el backend: el navegador solo habla con
+  el origen de la aplicación y las cookies quedan ligadas a ese host. En el
+  servicio **frontend**: `NUXT_API_PROXY=true`,
+  `NUXT_PUBLIC_API_BASE_URL=https://<host-app>` (la URL de la propia
+  aplicación) y `NUXT_API_BASE_URL_SERVER=https://<host-api>`. En el
+  **backend**: `ALLOWED_ORIGINS=https://<host-app>`, `ENVIRONMENT=production`,
+  `COOKIE_DOMAIN` vacío y `FORWARDED_ALLOW_IPS` (más abajo): el host de la
+  API sigue accesible directamente, así que aquí esta variable importa.
+- **`FORWARDED_ALLOW_IPS` — qué proxies pueden fijar la IP del cliente.**
+  El límite de intentos de login y el `client_ip` de la sesión salen los
+  dos de `X-Forwarded-For`, una cabecera que el cliente puede escribir.
+  uvicorn solo la lee de los pares que figuren en esta lista, y recorre
+  la cabecera de derecha a izquierda tomando como cliente real la primera
+  dirección que *no* esté en la lista. Hay que listar por tanto todos los
+  saltos entre el navegador y el backend: si falta uno, ese salto pasa a
+  ser el "cliente" y todas las peticiones que vengan detrás comparten un
+  único cubo de límite. Nunca `*`: eso se fía de cualquier par y entonces
+  toma la entrada más a la izquierda, la que escribió quien llama, así
+  que cualquiera que alcance el puerto elige su propio cubo y su propia
+  IP de auditoría. El valor por defecto
+  (`127.0.0.1,::1,172.16.0.0/12,192.168.0.0/16`) cubre los rangos de
+  Docker, que es lo correcto para compose y Coolify. En Swarm o
+  Kubernetes añadir `10.0.0.0/8`. Con el proxy anterior el salto más
+  cercano es el contenedor *frontend* y el borde de la plataforma queda
+  entre él y el navegador, así que ambos rangos deben constar. El backend
+  registra el valor efectivo al arrancar: conviene leer esa línea tras
+  cualquier cambio de despliegue, porque los dos errores son silenciosos.
 
 Comprobación rápida:
 
@@ -359,6 +393,7 @@ DELETE FROM alembic_version;
 | Desinstalación bloqueada: "required by ..." | Existe una dependencia inversa | Desinstalar primero los dependientes, o `--force` |
 | Sesión cerrada en cada recarga, aunque navegar funciona | Aplicación y API en hosts distintos con `COOKIE_DOMAIN` vacío: las cookies de sesión nunca llegan a la aplicación | Fijar `COOKIE_DOMAIN` al dominio padre compartido (p. ej. `.example.com`) y reiniciar el backend |
 | Cada guardado responde `403 CSRF token missing or invalid`, aunque leer funciona | La misma causa: la aplicación no puede leer la cookie `dp_csrf`, así que nunca envía la cabecera `X-CSRF-Token` | La misma solución: fijar `COOKIE_DOMAIN` al dominio padre compartido |
+| El login responde 200, luego `/auth/me` 401 y vuelve a la pantalla de login | Aplicación y API en un dominio de hosting que es sufijo público (`*.onrender.com`, `*.vercel.app`…): el navegador rechaza las cookies | Poner un dominio propio en ambos (`app.example.com` + `api.example.com`) y fijar `COOKIE_DOMAIN=.example.com`, o activar el proxy de mismo origen del frontend (`NUXT_API_PROXY=true`, §1) |
 
 ---
 

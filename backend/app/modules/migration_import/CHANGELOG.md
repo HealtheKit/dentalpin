@@ -4,6 +4,7 @@
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - feat(#46): imported professional/user memberships persist the `roles`-row
   FK (`role_id`) alongside the role string.
 

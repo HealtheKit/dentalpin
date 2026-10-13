@@ -14,7 +14,6 @@
       "showAll": "Pokaż wszystkie statusy"
     },
     "receivedAt": "Otrzymano",
-    "availability": "Dostępność",
     "newLead": "Nowe zgłoszenie",
     "websiteForm": "Formularz na stronie",
     "status": {
@@ -42,7 +41,6 @@
     },
     "convert": {
       "title": "Przekształć w pacjenta",
-      "subtitle": "Sprawdź zgłoszenie i uzupełnij kartę pacjenta",
       "enquiry": "Zgłoszenie",
       "patient": "Pacjent",
       "createPatient": "Utwórz pacjenta",
@@ -66,7 +64,6 @@
       "evening": "Wieczory"
     },
     "routing": {
-      "explainer": "Jeśli numer telefonu lub e-mail ze zgłoszenia należy już do pacjenta, nowe zgłoszenie nie powstaje — zamiast tego do Wizyt kontrolnych trafia telefon do wykonania.",
       "recallQueued": "{name} jest już pacjentem — do Wizyt kontrolnych dodano telefon do wykonania.",
       "openRecalls": "Otwórz Wizyty kontrolne"
     },
@@ -82,7 +79,6 @@
       "atLimit": "Przyjmowanie zgłoszeń jest wstrzymane do jutra: dzisiejszy limit został osiągnięty.",
       "capLoweredWarning": "Obniżenie limitu poniżej dzisiejszej liczby natychmiast zablokuje przyjmowanie zgłoszeń.",
       "keyTitle": "Klucz przyjmowania zgłoszeń",
-      "keyConfigured": "Skonfigurowany",
       "keyMissing": "Nie ma jeszcze klucza — przyjmowanie zgłoszeń jest wyłączone, dopóki go nie utworzysz.",
       "keyPrefix": "Prefiks",
       "keyActive": "Aktywny",
@@ -91,10 +87,13 @@
       "never": "Nigdy",
       "rotate": "Wygeneruj / zmień klucz",
       "rotateWarning": "Zmiana klucza natychmiast blokuje stary, ujawniony klucz. Pamiętaj, aby wkleić nowy klucz na swojej stronie — do tego czasu formularz nie będzie działać.",
+      "confirmRotate": {
+        "title": "Zrotować klucz pozyskiwania?",
+        "message": "Obecny klucz przestaje działać natychmiast. Każda strona internetowa, która go jeszcze używa, będzie działać nieprawidłowo, dopóki nie wkleisz nowego klucza."
+      },
       "rotateCopyOnce": "Skopiuj ten klucz teraz: pokazujemy go tylko raz.",
       "copied": "Skopiowano",
       "activate": "Włącz przyjmowanie zgłoszeń",
-      "deactivate": "Wyłącz przyjmowanie zgłoszeń",
       "intakeUrl": "URL przyjmowania zgłoszeń",
       "example": "Przykładowe żądanie",
       "routingNote": "Jeśli numer telefonu lub e-mail ze zgłoszenia należy już do pacjenta, nowe zgłoszenie nie powstaje — trafia ono do Wizyt kontrolnych jako telefon do wykonania.",
@@ -103,7 +102,6 @@
       "copy": "Kopiuj"
     },
     "errors": {
-      "load": "Nie udało się wczytać zgłoszeń",
       "save": "Nie udało się zapisać zgłoszenia",
       "convert": "Nie udało się utworzyć pacjenta",
       "settingsLoad": "Nie udało się wczytać ustawień",

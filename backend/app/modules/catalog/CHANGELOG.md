@@ -4,6 +4,7 @@
 
 - feat(i18n): Hindi (`hi`) locale: Hindi names for the default VAT types and the seeded catalog (categories, treatments, sessions).
 
+- feat(i18n): Telugu (`te`) names for the seeded catalog (categories, treatments, sessions) and the default VAT types.
 - fix(#326): the catalog onboarding rule carries `permission: 'catalog.read'` (module-activation-aware gating).
 
 - refactor(#126): agent-tool name resolution delegates to the shared `app.core.i18n_names.catalog_name` helper; all-empty name dicts now resolve to `None` instead of an empty string.

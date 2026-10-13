@@ -142,8 +142,9 @@ useful for exploring the module without configuring a clinic by hand.
 The module must already be installed (§3.3) before seeding.
 
 ```bash
-./scripts/seed-demo.sh --lang ta                 # Tamil UI, India GST demo (Chennai)
-./scripts/seed-demo.sh --lang hi                 # Hindi UI, India GST demo (New Delhi)
+./scripts/seed-demo.sh --lang ta                 # Tamil UI, India GST demo
+./scripts/seed-demo.sh --lang te                 # Telugu UI, India GST demo (Hyderabad, Telangana)
+./scripts/seed-demo.sh --lang hi                  # Hindi UI, India GST demo (Delhi)
 ./scripts/seed-demo.sh --lang en --country in     # English UI, India GST demo
 ./scripts/seed-demo.sh --lang en                  # default — USA/USD clinic, no GST
 ```
@@ -182,8 +183,13 @@ names read oddly. `--country in` is currently only accepted with
 `--lang es`/`--lang fr` exits with an error. Clinic staff names are
 unaffected by `--country in` in either language.
 
+`--lang te` seeds the same fixture set relocated to Telangana: clinic
+**Hyderabad Dental Care**, GSTIN `36ABCDE1234F1Z1`, `clinic_state="36"`,
+intra-state invoices with place of supply `36` (the inter-state `29` /
+`27` invoices are unchanged), and traditional Telugu patient names.
+
 The default `./scripts/seed-demo.sh` (no flags, or any `--lang` other
-than `ta`/`hi` without `--country in`) is unchanged — a generic non-India
+than `ta`/`te`/`hi`) is unchanged — a generic non-India without `--country in`) is unchanged — a generic non-India
 clinic with the India GST hook inactive.
 
 ---
@@ -360,11 +366,12 @@ The hook hands billing a structured `compliance_section` dict
 block and before legal notices — hooks never pass HTML across the
 module boundary.
 
-### Tamil language support
+### Tamil and Telugu language support
 
-PDF generation supports `locale=ta` (Tamil). Tamil labels are defined
-in `pdf.py::_get_labels` and the CSS font-family includes
-`'Noto Sans Tamil'` (installed via `fonts-noto-core` in the Dockerfile).
+PDF generation supports `locale=ta` (Tamil) and `locale=te` (Telugu).
+Labels are defined in `pdf.py::_get_labels` and the CSS font-family
+includes `'Noto Sans Tamil'` and `'Noto Sans Telugu'` (both installed via
+`fonts-noto-core` in the Dockerfile).
 
 ### Hindi language support
 
@@ -535,10 +542,11 @@ clinical_notes).
 
 ### i18n
 
-Translations are provided in three locales:
+Translations ship for every host locale, including:
 - `i18n/locales/en.json` — English
 - `i18n/locales/es.json` — Spanish
 - `i18n/locales/ta.json` — Tamil
+- `i18n/locales/te.json` — Telugu
 - `i18n/locales/hi.json` — Hindi
 
 ### Utility functions

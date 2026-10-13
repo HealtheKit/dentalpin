@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import ClinicContext, get_clinic_context, require_permission
+from app.core.csv_safety import csv_row
 from app.core.schemas import ApiResponse
 from app.database import get_db
 
@@ -172,7 +173,10 @@ def _csv_response(filename: str, header: list[str], rows: list[list]) -> Respons
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(header)
-    writer.writerows(rows)
+    # Professional names and address areas reach these rows from user data
+    # (#611). csv_row only touches strings, so Decimal totals and counts —
+    # including a legitimately negative one — pass through as numbers.
+    writer.writerows(csv_row(row) for row in rows)
     return Response(
         content=buf.getvalue(),
         media_type="text/csv",

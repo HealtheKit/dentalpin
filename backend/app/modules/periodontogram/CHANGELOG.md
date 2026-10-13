@@ -4,6 +4,7 @@
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - fix(#126): de/it/pl locale parity with en (closeAborted key); fixed an Italian typo (parodontogramma).
 
 - feat(#334): Hungarian (hu) locale for the module's frontend layer.

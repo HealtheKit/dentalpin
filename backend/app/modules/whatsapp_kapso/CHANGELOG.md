@@ -4,6 +4,7 @@
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
 
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - fix: getting-started rule links to `/settings/integrations/whatsapp-kapso` (was a 404).
 
 - fix(#326): the connect-WhatsApp onboarding rule carries `permission: 'whatsapp_kapso.settings.read'`.

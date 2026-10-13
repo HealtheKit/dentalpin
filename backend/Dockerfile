@@ -39,6 +39,13 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY . .
 RUN uv sync --frozen --no-dev
 
+# Seed pip into the venv (#571). uv seeds no pip and ensurepip is absent
+# from the slim base, so without this any in-container `pip install`
+# lands in the system python, invisible to the /opt/venv interpreter
+# that runs the app and the tests. Pinned like the uv binary above;
+# refresh deliberately. Must run before USER appuser (writes /opt/venv).
+RUN uv pip install --python /opt/venv/bin/python "pip==26.2.1"
+
 # Create non-root user and storage directory
 RUN useradd -m -u 1000 appuser \
     && mkdir -p /app/storage \
@@ -50,4 +57,11 @@ USER appuser
 EXPOSE 8000
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+# No --forwarded-allow-ips flag on purpose (#623). Without it uvicorn
+# reads $FORWARDED_ALLOW_IPS, so the trusted-proxy set is deployment
+# configuration instead of a baked-in "*". With "*" uvicorn takes the
+# LEFTMOST X-Forwarded-For entry, which the client writes, so anyone who
+# can reach this port picks their own rate-limit bucket and audit IP.
+# uvicorn's own fallback is "127.0.0.1,::1"; every compose file here sets
+# a value that also covers the proxy container's network.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

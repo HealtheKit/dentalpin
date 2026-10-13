@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+- refactor: the nine `event_bus.publish` call sites that named their event
+  with a string literal now use the matching `EventType` constant
+  (`treatment_plan.created`, `.status_changed`, `.treatment_added`,
+  `.treatment_removed`, `.treatment_completed`,
+  `.budget_sync_requested`). Identical strings, so no behaviour change —
+  but a typo in a literal publishes to nobody and raises nothing, and
+  this module was the only one still publishing that way. A new guard,
+  `tests/test_event_name_constants.py`, fails on any literal publish
+  under `app/`.
+
+- fix: `auto_close_expired_plans` (the daily 03:00 cron) raised
+  `UndefinedColumnError` on its first statement and closed nothing, ever.
+  It selected clinics with `WHERE deleted_at IS NULL` and `clinics` has no
+  such column. Now an ORM query, so a missing column is a test failure
+  rather than a 03:00 log line. Two tests execute the job — the existing
+  scheduler test only asserted its id.
+
+- fix(#590): the professional-membership validation tolerates duplicated
+  membership rows (`.limit(1)` existence read, same fix as #598 for
+  orthodontics). `clinic_memberships` has no unique `(clinic_id, user_id)`
+  constraint, so a duplicate used to 500 with `MultipleResultsFound`.
 - feat(#232): sidebar entry grouped under the Clinical header (`nav.section` "clinical").
 - refactor(#337): owns `AppointmentTreatment` (`appointment_treatments`) — the NOT NULL planned-item FK always made it the plan's visit bridge; the model's backref installs `Appointment.treatments`, the provider gained `attach_planned_items`/`visit_note_row`, and all three of the table's FKs are now declarable. No schema migration; future ALTERs live on the tp branch.
 

@@ -3,6 +3,9 @@
 ## Unreleased
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer; Hindi option in the clinic communication-language picker.
+- feat(i18n): Telugu (`te`) locale (`notifications-te.json`) and Telugu (తెలుగు) in the clinic communications-language picker.
+- feat(#509): communication-language picker offers both Português (Portugal) `pt`
+  and Português (Brasil) `pt-BR`.
 
 - fix(#527): a manual `budget_sent` send no longer raises
   `AttributeError`. `router.py` read `catalog_item.name`; the model has

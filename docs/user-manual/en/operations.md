@@ -24,6 +24,36 @@ operator runs — not the Python internals.
   out, and every write fails with "CSRF token missing" because the app
   cannot read the `dp_csrf` cookie either. The backend logs a warning
   naming the value to set.
+  The parent must be a domain you own. Hosting domains such as
+  `onrender.com`, `vercel.app`, `herokuapp.com` or `sslip.io` are public
+  suffixes: browsers treat each subdomain as a different site and reject
+  `COOKIE_DOMAIN=.onrender.com`, so login answers 200 and `/auth/me` 401.
+  Put a custom domain on both services, or serve them from one origin.
+- **No custom domain (Render, Railway, Vercel…)?** Let the frontend proxy
+  `/api/v1` to the backend, so the browser only ever talks to the app's
+  origin and the cookies are host-only. On the **frontend** service:
+  `NUXT_API_PROXY=true`, `NUXT_PUBLIC_API_BASE_URL=https://<app-host>`
+  (the app's own URL) and `NUXT_API_BASE_URL_SERVER=https://<api-host>`.
+  On the **backend**: `ALLOWED_ORIGINS=https://<app-host>`, `ENVIRONMENT=production`,
+  `COOKIE_DOMAIN` empty, and `FORWARDED_ALLOW_IPS` (below) — the API host
+  stays reachable directly, so this one matters here.
+- **`FORWARDED_ALLOW_IPS` — which proxies may set the client IP.** The
+  login rate limit and the session's `client_ip` both come from
+  `X-Forwarded-For`, which is a header the client can write. uvicorn
+  only reads it from peers in this list, walking the header
+  right-to-left and taking the first address *not* in the list as the
+  real client. So list every hop between the browser and the backend:
+  leave one out and it becomes the "client", putting every request
+  behind it in one rate-limit bucket. Never `*` — that trusts every peer
+  and then takes the leftmost entry, the one the caller wrote, so anyone
+  who can reach the port picks their own bucket and their own audit IP.
+  The default (`127.0.0.1,::1,172.16.0.0/12,192.168.0.0/16`) covers
+  Docker's address pools, which is right for compose and Coolify. Swarm
+  or Kubernetes add `10.0.0.0/8`. With the proxy above, the nearest hop
+  is the *frontend* container and the platform's edge sits between it
+  and the browser, so both ranges belong in the list. The backend logs
+  the effective value at startup — read that line after any deployment
+  change, because both mistakes are silent.
 
 Smoke-check:
 
@@ -347,6 +377,7 @@ DELETE FROM alembic_version;
 | Uninstall blocked: "required by ..." | Reverse dependency exists | Uninstall dependents first, or `--force` |
 | Logged out on every page refresh, while clicking around works | App and API on different hosts with `COOKIE_DOMAIN` empty, so the session cookies never reach the app | Set `COOKIE_DOMAIN` to the shared parent domain (e.g. `.example.com`) and restart the backend |
 | Every save answers `403 CSRF token missing or invalid`, while reading works | Same cause: the app cannot read the `dp_csrf` cookie, so the `X-CSRF-Token` header is never sent | Same fix: set `COOKIE_DOMAIN` to the shared parent domain |
+| Login answers 200, then `/auth/me` 401 and back to the login screen | App and API on a hosting domain that is a public suffix (`*.onrender.com`, `*.vercel.app`…): the browser rejects the cookies | Put a custom domain on both (`app.example.com` + `api.example.com`) and set `COOKIE_DOMAIN=.example.com`, or turn on the frontend's same-origin proxy (`NUXT_API_PROXY=true`, §1) |
 
 ---
 

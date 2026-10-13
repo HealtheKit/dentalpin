@@ -26,6 +26,182 @@ frontend as a Nuxt layer under its own Python package.
 
 - Email templates missing in a locale now fall back to the English
   template instead of rendering nothing.
+### Changed
+
+- **Upgrade note (production):** `BUDGET_PUBLIC_SECRET_KEY` is now
+  required. A production boot without it fails fast with an actionable
+  message instead of signing public budget sessions with the staff-JWT
+  `SECRET_KEY`. Blank, whitespace-only, and whitespace-padded values are
+  also refused, so generate a clean value (e.g. `openssl rand -hex 32`)
+  before upgrading; `docker-compose.prod.yml` and
+  `docker-compose.coolify.yml` now both refuse to start without it.
+
+### Security
+
+- **The backend no longer trusts `X-Forwarded-For` from any peer** (#623).
+  `backend/Dockerfile` and every compose file ran uvicorn with
+  `--forwarded-allow-ips *`; with `*` uvicorn takes the **leftmost**
+  `X-Forwarded-For` entry, which the client writes. The login rate limit
+  keys on `request.client.host` (`get_remote_address`), so a client
+  sending a fresh header per attempt got a fresh bucket per attempt and
+  the limit stopped existing — and the same value is stored as the
+  session's `client_ip`, so the audit trail could be forged with it.
+  The flag is gone; uvicorn now reads `FORWARDED_ALLOW_IPS`, which every
+  compose file sets to loopback plus Docker's address pools and which
+  deployments override for their own proxy chain
+  (`.env.example`, `docs/user-manual/{en,es}/operations.md` §1).
+  Restricted, uvicorn walks the header right-to-left and stops at the
+  first hop outside the list, so the real client is used whether the
+  proxy overwrites the header or appends to it — the append case is
+  spoofable under `*` even behind a proxy. `_client_ip()` no longer
+  re-parses the header, and the backend logs the effective value at
+  startup (error in production if it is still `*`).
+- **Coolify: trust Traefik's 10.0.x networks** (follow-up to #623).
+  `docker-compose.coolify.yml` now defaults `FORWARDED_ALLOW_IPS` to also
+  include `10.0.0.0/8`. Coolify creates its Docker networks there, so the
+  previous default made every client resolve to Traefik's IP and turned
+  the login rate limit global.
+
+- **`allowed_tools` is now enforced, not just declared** (#558).
+  `BaseAgent.allowed_tools` existed with zero enforcement references
+  anywhere in `app/`, while `docs/technical/creating-modules.md` told
+  module authors it was "a hard list — the agent cannot invoke anything
+  outside it". `ToolRegistry.call` now checks it as step 2 of its
+  enforcement order (before guardrails, so a call the agent was never
+  allowed to make cannot consume its rate limit or open an approval
+  request) and audits the refusal as `BLOCKED`. The list reaches the
+  chokepoint through the new `AgentContext.allowed_tools`, where `None`
+  means "no subsetting" — what copilot and other conversational
+  surfaces use, so their behaviour is unchanged — and an empty list
+  permits nothing, which is `BaseAgent`'s default.
+
+### Tests
+
+- **Every declared scheduled job is now executed by a test** (#629).
+  `test_scheduler_jobs.py` asserted the job *ids* and never called them,
+  which is how the 03:00 auto-close cron shipped querying a column that
+  does not exist and failed silently every night for months (#628).
+  `test_scheduled_jobs_run.py` resolves all 17 declared jobs and runs
+  each against a real (empty) schema — a schema-and-import smoke test,
+  not behaviour coverage, which is what keeps it at ~12s. Confirmed it
+  catches #628's regression when the old query is put back.
+
+- **Four tests read the local clock while the code under test uses UTC**,
+  so they pass in CI (UTC) and fail east of UTC for part of every day —
+  `test_budget_expired_detail_410`, `test_strip_excludes_appointments_on_other_days`,
+  `test_get_odontogram_at_date_returns_empty_state` and
+  `test_opposition_roundtrip`. Each now uses `datetime.now(UTC).date()`,
+  matching the route it asserts against. No product code changed.
+  A new `backend-test-east-of-utc` CI job runs the clock-reading tests
+  under `TZ=Pacific/Kiritimati` (UTC+14), selecting the files at run time
+  so a new test of this shape is covered the day it lands.
+
+- **A typo in a route's permission string now fails CI.** The tool
+  registry already guarded this (`test_every_tool_permission_exists`,
+  "would otherwise silently always-deny"); routes gate on the same
+  strings with no equivalent check, and the consequence is worse — a 403
+  for every user, forever, with nothing logged to say the string was the
+  problem. The tree is clean today (673 literal call sites, 189 distinct,
+  all valid), so `test_route_permissions.py` is purely preventive.
+
+### Fixed
+
+- **The split-host cookie warning told PaaS operators to set a value
+  browsers reject** (#444). `_shared_parent` built `.onrender.com` from
+  `app.onrender.com` + `api.onrender.com` — two labels, so it passed the
+  existing "a public suffix is not a parent" check — and the guard then
+  advised `COOKIE_DOMAIN=.onrender.com`, which the browser drops. The
+  operator restarted the backend and nothing changed. Known hosting
+  suffixes now resolve to no parent, and the remedy for that case points
+  at `NUXT_API_PROXY=true` (shipped in 2.8.0 for exactly this shape)
+  instead of suggesting they go and buy a domain. A real multi-label
+  domain such as `.example.co.uk` is still suggested as before.
+
+- **The help-portal build now fails on a fragment slug collision** and
+  warns about a slug the app can never request (#573, partial). Two
+  screens whose routes collapse to the same slug used to write the same
+  `.html`, last one winning, with nothing to show it had happened — and
+  the obvious fix for the periodontogram route (`{id}` → `[id]`) walks
+  straight into that: it would have silently taken the patient-detail
+  page's help away. The underlying question of how a query-selected
+  sub-view gets its own fragment is still open on #573; this only makes
+  the two failure modes visible.
+
+## [2.8.0] - 2026-10-07
+
+### Added
+
+- **Same-origin API proxy for split-domain PaaS hosts** (`NUXT_API_PROXY=true`):
+  the frontend forwards `/api/v1/**` to `NUXT_API_BASE_URL_SERVER`, so
+  deploys on public-suffix hosts (`*.onrender.com`, `*.vercel.app`…) keep
+  host-only session cookies without a custom domain. Off by default (#624). Setup in
+  `docs/user-manual/{en,es}/operations.md` §1.
+- **Telugu (`te`, తెలుగు) locale** (#589 via #617, thanks @tresundios) — core app and every module layer,
+  patient email templates (HTML + TXT), PDF labels, and a Telugu demo
+  seed (`--lang te`): an India GST clinic in Hyderabad, Telangana
+  (state 36) with traditional Telugu patient names. `README.te.md` added.
+- **Brazilian Portuguese (`pt-BR`) as a host-only overlay on `pt`** (#509, #521, thanks @dupotey):
+  small delta locale file, `fallbackLocale` chain `pt-BR → pt → en`, Nuxt UI
+  `pt_br`, communications language + Brazil country preset, PDF Babel `pt_BR`,
+  labels reused from `pt`, email templates falling back `pt-BR → pt`.
+  Only templates with vocabulary deltas live under `backend/templates/email/pt-BR/`).
+- **Orthodontics: installments via plan links** (#578, #270, thanks @lamanji) —
+  link a case to a treatment plan item, generate a down payment + monthly
+  schedule that replaces the pending sessions (total validated), and collect
+  each installment from payments.
+- **`imaging_viewer`** — RVG queue tabs per status with live counts
+  (#587) and the linked sensor identities list with an unlink action
+  (#583), thanks @lamanji.
+- **`leads`** — confirmation before rotating the intake key (#510, thanks
+  @abdd8433).
+- **CI** — `node-image-freshness` job keeps the Dockerfile Node major and
+  the CI pins in step (#581, thanks @lamanji).
+
+### Changed
+
+- **Core migration `0009`: one membership per user per clinic** (#619,
+  thanks @lamanji). Existing duplicate `clinic_memberships` rows are
+  removed, keeping the most recently created one. If you ever had
+  duplicates, check each affected user's role after upgrading.
+- **Rate limiter on by default** outside test runs (`TESTING=true` opts
+  out), `ENVIRONMENT` validated at boot, core migration spine pinned
+  (#604, thanks @lamanji).
+- **Email** — the production compose files forward every `EMAIL_*`
+  setting, and the backend logs an error at startup when production runs
+  the `console` provider (#615, #614, thanks @ZoliQua).
+- **GDPR** — erasure results carry a `coverage_note` stating that only
+  patient-row identity fields are erased (#621, #546, thanks @lamanji).
+
+### Fixed
+
+- **Security** — clinic-scoped clinical getters, sanitized download
+  filenames and repaired copilot guardrails (#596); public budget `/meta`
+  lookup scoped to the budget's clinic (#592); `/health/ready` no longer
+  leaks database error text (#606, thanks @pollychen-lab); CSV exports
+  neutralize spreadsheet formulas everywhere (#613, #611, thanks
+  @ZoliQua); self-demotion and last-admin demotion refused, user list
+  gated on read (#600).
+- **Copilot** — redaction tokens salted per conversation (#601);
+  re-confirming an approved write replays the stored result instead of
+  re-running the tool, and turns have an iteration bound (#603).
+- **Memberships** — duplicate rows no longer 500 membership checks (#598,
+  #599, thanks @lamanji and @Kshot3000).
+- **Module restart** never kills an unsupervised backend (#602).
+- **Reports** — soft-deleted plans no longer counted in the pipeline
+  (#612, #610, thanks @ZoliQua).
+- **`imaging_viewer`** — approving an import whose file vanished marks it
+  as failed instead of leaving it stuck pending (#582).
+- **`leads`** — intake key "last used" in the UI locale (#575); dead
+  availability field and unused keys removed (#618, thanks @abdd8433).
+- **Infra** — pip seeded into the backend venv; empty module layers fail
+  loudly (#595).
+
+### Docs & tests
+
+- Six permission tables filled and migration docstrings corrected
+  (#597); `COOKIE_DOMAIN` cannot be a public suffix (#609); uninstall
+  round-trip tests resolve their downgrade targets (#605).
+
 ## [2.7.1] - 2026-10-02
 
 ### Fixed

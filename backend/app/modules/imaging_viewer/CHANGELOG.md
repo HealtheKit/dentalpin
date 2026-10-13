@@ -4,8 +4,27 @@
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
 
+- fix: the queue list stays visible when the counts call fails (counts
+  fall back to empty instead of blanking the whole queue).
+- fix: drop the stale `{total}` interpolation from the RVG queue title in
+  ar/hu/pl/pt/ta (the title renders without params since the counts moved to
+  the status tabs; en/de/es/fr/it already dropped it on main).
+- fix(i18n): Telugu strings for the RVG linked-identities panel and status tabs.
 - feat: manual scans surface a summary toast (scanned / new / auto-approved /
   failed counts).
+- feat: RVG queue has per-status tabs with live counts (`GET
+  /rvg/imports/counts`), so failed and rejected rows are visible without
+  leaving the inbox. Row actions and suggestions show only on the pending
+  tab; failed rows show their error; the title and empty state are
+  tab-neutral.
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
+- feat: RVG card lists linked sensor identities with patient names and an
+  unlink action, so a wrong DICOM PatientID pairing can be corrected in
+  place; approving also refreshes the links.
+- fix: a failed approve reloads the queue and surfaces the backend's reason
+  instead of the generic failure line, so a vanished file reads as what it
+  is and re-dropping it retries cleanly (rows stay pending; Reject still
+  removes stuck rows).
 - fix: patient selector shows a loading state while resolving `?patient_id=`
   and falls back to an "Unknown patient" label instead of the raw UUID.
 - fix: study cards render the date in the clinic locale instead of raw ISO;

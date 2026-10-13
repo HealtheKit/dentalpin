@@ -3,6 +3,9 @@
 ## Unreleased
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer; Hindi document PDF labels.
+- feat(i18n): Telugu (`te`) locale for the module's frontend layer.
+- feat(i18n): Telugu (`te`) labels for the managed-document PDF.
+- feat(#509): the managed-document PDF for `pt-BR` reuses the `pt` labels.
 
 - fix(#524): the managed-document PDF renders in every host locale.
   `_LABELS` held only `es`/`en`, the endpoint's pattern was `^(es|en)$`

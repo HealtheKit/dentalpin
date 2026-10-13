@@ -26,7 +26,7 @@ DentalPin is built as independent modules under `backend/app/modules/<name>/` wi
 - Respect module isolation. Do **not** create cross-module dependencies that are not declared in the module's `manifest.depends`.
 - Prefer the **event bus** for cross-module reactions. Direct service-to-service imports across modules are forbidden unless the target is in `depends`.
 - Cross-module FKs are allowed **only** when the target is in `depends`. CI rejects migrations otherwise.
-- Each module owns its Alembic branch (`branch_labels = ("<name>",)`). Never thread one module's revisions through another's chain — uninstall safety depends on it (issue #56).
+- Each module owns its Alembic branch (`branch_labels = ("<name>",)`). Never thread one module's revisions through another's chain — uninstall safety depends on it (issue #56). Legacy exception (#555): the `clinical` module predates the branch contract (`legacy: True`, `removable: False`, migrations stay on the main linear chain); the removable gate in `manifest_validator.py` only constrains `removable: True` modules.
 - Permissions are namespaced: a module returns `resource.action` from `get_permissions()`; the registry prefixes with the module name.
 
 **Before adding a feature, read `docs/technical/creating-modules.md`** — it is the source of truth for module structure, lifecycle, manifest, slots, events, tools/agents, and migrations.
@@ -107,6 +107,7 @@ cd frontend && npm run typecheck:layers   # vue-tsc over host + all module layer
 ./scripts/reset-db.sh        # drop, dentalpin db upgrade (core + installed modules)
 ./scripts/seed-demo.sh       # demo clinic, users, sample data
 ./scripts/seed-demo.sh --lang ta                  # + India GST demo (Tamil UI; module must be installed)
+./scripts/seed-demo.sh --lang te                  # + India GST demo (Telugu UI, Hyderabad/Telangana; module must be installed)
 ./scripts/seed-demo.sh --lang hi                  # + India GST demo (Hindi UI, New Delhi; module must be installed)
 ./scripts/seed-demo.sh --lang en --country in      # + India GST demo (English UI) — see docs/modules/india_gst.md §3.5
 
@@ -380,6 +381,7 @@ DEMO_MODE=false           # public demo: blocks user edits/removal + module life
 
 - **"relation does not exist"** / tables wiped after tests: `./scripts/reset-db.sh` then `./scripts/seed-demo.sh`. Manual fallback: `DELETE FROM alembic_version;` then `python -m app.cli db upgrade`.
 - **Frontend changes not showing**: `docker-compose up -d --build frontend`.
+- **Traceless SSR death / stale Node image** (#581): an old anonymous `node_modules` volume or image can shadow the fresh lockfile (exactly one file missing is enough). Rebuild with `docker compose up -d --build frontend`; CI pins the Node major (`node-image-freshness`).
 - **Permission denied but should have access**: check `clinic_memberships` row, exact permission string, `/me` payload, then re-login.
 
 ---

@@ -67,7 +67,14 @@ class OperationalReportService:
         plans = (
             await db.execute(
                 select(TreatmentPlan.status, func.count(TreatmentPlan.id))
-                .where(TreatmentPlan.clinic_id == clinic_id)
+                # Deleted plans are not work in progress (#610). The owning
+                # module soft-deletes (treatment_plan/service.py) and filters
+                # on every read; the sibling billing report does the same
+                # twelve times over. This was the one that did not.
+                .where(
+                    TreatmentPlan.clinic_id == clinic_id,
+                    TreatmentPlan.deleted_at.is_(None),
+                )
                 .group_by(TreatmentPlan.status)
             )
         ).all()

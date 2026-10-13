@@ -906,6 +906,22 @@ class RvgService:
         return items, total
 
     @staticmethod
+    async def count_by_status(db: AsyncSession, clinic_id: UUID) -> dict[str, int]:
+        """Per-status import totals for the inbox badges (single query)."""
+        rows = (
+            await db.execute(
+                select(RvgImport.status, func.count(RvgImport.id))
+                .where(RvgImport.clinic_id == clinic_id)
+                .group_by(RvgImport.status)
+            )
+        ).all()
+        counts = {status: 0 for status in ("pending", "approved", "rejected", "failed")}
+        for status, total in rows:
+            if status in counts:
+                counts[status] = total
+        return counts
+
+    @staticmethod
     async def get_import(db: AsyncSession, clinic_id: UUID, import_id: UUID) -> RvgImport | None:
         return (
             await db.execute(
@@ -949,6 +965,10 @@ class RvgService:
         if patient is None:
             raise LookupError("Patient not found")
         if raw is None:
+            # The row stays pending: a stuck queue entry is removed with
+            # Reject, while a merely missing file heals itself — re-drop
+            # the file and approve again. Failing the row here would make
+            # re-drop unretryable (the tick never retries failed rows).
             raise LookupError("Source file no longer in the watch folder")
 
         document, study = await RvgService._materialize(
