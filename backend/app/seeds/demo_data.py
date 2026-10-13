@@ -175,13 +175,34 @@ def get_clinic_data() -> dict:
                 }
             ),
             "city": t(
-                {"es": "Madrid", "en": "New York", "fr": "Paris", "ta": "சென்னை", "te": "హైదరాబాద్", "hi": "नई दिल्ली"}
+                {
+                    "es": "Madrid",
+                    "en": "New York",
+                    "fr": "Paris",
+                    "ta": "சென்னை",
+                    "te": "హైదరాబాద్",
+                    "hi": "नई दिल्ली",
+                }
             ),
             "postal_code": t(
-                {"es": "28013", "en": "10001", "fr": "75001", "ta": "600001", "te": "500034", "hi": "110001"}
+                {
+                    "es": "28013",
+                    "en": "10001",
+                    "fr": "75001",
+                    "ta": "600001",
+                    "te": "500034",
+                    "hi": "110001",
+                }
             ),
             "country": t(
-                {"es": "España", "en": "USA", "fr": "France", "ta": "இந்தியா", "te": "భారతదేశం", "hi": "भारत"}
+                {
+                    "es": "España",
+                    "en": "USA",
+                    "fr": "France",
+                    "ta": "இந்தியா",
+                    "te": "భారతదేశం",
+                    "hi": "भारत",
+                }
             ),
         },
         "phone": t(
@@ -195,7 +216,9 @@ def get_clinic_data() -> dict:
             }
         ),
         "email": "info@demo.clinic",
-        "currency": t({"es": "EUR", "en": "USD", "fr": "EUR", "ta": "INR", "te": "INR", "hi": "INR"}),
+        "currency": t(
+            {"es": "EUR", "en": "USD", "fr": "EUR", "ta": "INR", "te": "INR", "hi": "INR"}
+        ),
         "timezone": t(
             {
                 "es": "Europe/Madrid",
@@ -757,7 +780,7 @@ PATIENTS_I18N = [
         "es": {"first_name": "David", "last_name": "Martín López", "notes": None},
         "en": {"first_name": "William", "last_name": "Thomas", "notes": None},
         "fr": {"first_name": "Alexandre", "last_name": "Moreau", "notes": None},
-        "ta": {"first_name": "வெங்கடேசன்", "last_name": "இளமாறன்", "notes": None},  
+        "ta": {"first_name": "வெங்கடேசன்", "last_name": "இளமாறன்", "notes": None},
         "te": {"first_name": "కృష్ణ", "last_name": "శర్మ", "notes": None},
         "hi": {"first_name": "विकास", "last_name": "चौहान", "notes": None},
         "phone": {
@@ -904,11 +927,7 @@ PATIENTS_I18N = [
             "last_name": "గౌడ్",
             "notes": "టైప్ 2 మధుమేహం. గాయం మానడాన్ని గమనించండి.",
         },
-        "hi": {
-            "first_name": "संजय",
-            "last_name": "पांडे",
-            "notes": "टाइप 2 मधुमेह। घाव भरने पर नज़र रखें।"
-        },
+        "hi": {"first_name": "संजय", "last_name": "पांडे", "notes": "टाइप 2 मधुमेह। घाव भरने पर नज़र रखें।"},
         "phone": {
             "es": "+34 612 345 007",
             "en": "+1 (212) 555-0007",
@@ -1338,11 +1357,7 @@ PATIENTS_I18N = [
             "last_name": "చౌదరి",
             "notes": "పై దవడకు పాక్షిక కట్టుడు పళ్ళు (partial denture).",
         },
-        "hi": {
-            "first_name": "रमेश",
-            "last_name": "सक्सेना",
-            "notes": "ऊपरी आंशिक डेन्चर।"
-        },
+        "hi": {"first_name": "रमेश", "last_name": "सक्सेना", "notes": "ऊपरी आंशिक डेन्चर।"},
         "phone": {
             "es": "+34 612 345 011",
             "en": "+1 (212) 555-0011",
@@ -1580,7 +1595,7 @@ PATIENTS_I18N = [
             "last_name": "వర్మ",
             "notes": "రక్తం పలుచబరిచే మందులు (blood thinners) వాడుతున్నారు. పన్ను తీసే ముందు వైద్యుడితో సంప్రదించండి.",
         },
-         "hi": {
+        "hi": {
             "first_name": "महेश",
             "last_name": "दुबे",
             "notes": "रक्त पतला करने वाली दवाइयाँ लेते हैं। दाँत निकालने से पहले चिकित्सक से समन्वय करें।",
@@ -3009,9 +3024,7 @@ PATIENT_JOURNEYS = [
                 "hi": "आंशिक भुगतान प्राप्त",
             },
             # India GST (Tamil/Telugu/Hindi, or English + --country in): intra-state (clinic home state) → CGST + SGST.
-            "gst": {
-                "place_of_supply": india_home_state()
-            },
+            "gst": {"place_of_supply": india_home_state()},
         },
     },
     # Patient 6 — Javier / Daniel (diabetic; accepted+signed budget, paid invoice)

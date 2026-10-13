@@ -44,7 +44,14 @@ ES_EXEMPT_LEGAL_NOTE = "Operación exenta de IVA según el art. 20.Uno.5º de la
 # generic preset never inherits the Spanish statute text.
 _EXEMPT_BASE: dict[str, Any] = {
     "key": "exempt",
-    "names": {"es": "Exento", "en": "Exempt", "fr": "Exonéré", "ta": "விலக்கு", "te": "మినహాయింపు", "hi": "कर-मुक्त"},
+    "names": {
+        "es": "Exento",
+        "en": "Exempt",
+        "fr": "Exonéré",
+        "ta": "விலக்கு",
+        "te": "మినహాయింపు",
+        "hi": "कर-मुक्त",
+    },
     "rate": 0.0,
     "is_default": True,
 }
@@ -349,7 +356,7 @@ TREATMENTS: dict[str, list[dict[str, Any]]] = {
                 "fr": "Première visite",
                 "ta": "முதல் வருகை",
                 "te": "మొదటి సందర్శన",
-                 "hi": "पहली विज़िट",
+                "hi": "पहली विज़िट",
             },
             "descriptions": {
                 "es": "Consulta inicial con exploración y diagnóstico",

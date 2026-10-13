@@ -137,7 +137,8 @@ _LABELS = {
         "medical_certificate": "వైద్య సర్టిఫికెట్",
         "referral": "రిఫరల్ లేఖ",
         "radiology_request": "రేడియాలజీ అభ్యర్థన",
-    },"hi": {
+    },
+    "hi": {
         "patient": "मरीज़",
         "dob": "जन्म तिथि",
         "doc": "दस्तावेज़",

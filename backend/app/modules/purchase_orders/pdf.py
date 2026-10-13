@@ -302,7 +302,7 @@ _LABELS = {
             "confirmed": "पुष्टि हुई",
             "received": "प्राप्त",
             "cancelled": "रद्द",
-        }
+        },
     },
 }
 # pt-BR reuses pt labels as there is no differing words so far.

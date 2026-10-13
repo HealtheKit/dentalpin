@@ -748,7 +748,14 @@ async def main(lang: str = "en", country: str = "generic") -> None:
 
     set_language(lang)
     set_country(country)
-    lang_names = {"en": "English", "es": "Spanish", "fr": "French", "ta": "Tamil", "te": "Telugu", "hi": "Hindi"}
+    lang_names = {
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "ta": "Tamil",
+        "te": "Telugu",
+        "hi": "Hindi",
+    }
     lang_name = lang_names.get(lang, lang)
     if country == "in" and lang not in ("ta", "te", "hi"):
         lang_name += " (India GST demo)"
