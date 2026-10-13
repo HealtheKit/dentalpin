@@ -57,28 +57,34 @@ def india_home_state() -> str:
     return get_india_gst_fixture()["clinic_state"]
 
 
-def get_india_gst_fixture() -> dict[str, str]:
-    """India GST settings for the demo clinic (checksum-valid GSTINs)."""
-    if LANG == "te":
-        return {
-            "trade_name": "Hyderabad Dental Care",
-            "gstin": "36ABCDE1234F1Z1",
-            "clinic_state": "36",
-            "label": "TS",
-        }
-    if LANG == "hi":
-        return {
-            "trade_name": "Delhi Dental Care",
-            "gstin": "07ABCDE1234F1Z2",
-            "clinic_state": "07",
-            "label": "DL",
-        }
-    return {
+_INDIA_GST_FIXTURES: dict[str, dict[str, str]] = {
+    "ta": {
         "trade_name": "Chennai Dental Care",
         "gstin": "33ABCDE1234F1Z7",
         "clinic_state": "33",
         "label": "TN",
-    }
+    },
+    "te": {
+        "trade_name": "Hyderabad Dental Care",
+        "gstin": "36ABCDE1234F1Z1",
+        "clinic_state": "36",
+        "label": "TS",
+    },
+    "hi": {
+        "trade_name": "Delhi Dental Care",
+        "gstin": "07ABCDE1234F1Z2",
+        "clinic_state": "07",
+        "label": "DL",
+    },
+}
+
+
+def get_india_gst_fixture() -> dict[str, str]:
+    """India GST settings for the demo clinic (checksum-valid GSTINs).
+
+    Non-India languages with ``--country in`` keep the Chennai (Tamil Nadu) fixture.
+    """
+    return _INDIA_GST_FIXTURES.get(LANG, _INDIA_GST_FIXTURES["ta"])
 
 
 def t(translations: dict[str, str]) -> str:

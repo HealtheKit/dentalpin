@@ -1,6 +1,9 @@
 # Changelog — leads module
 
 ## Unreleased
+- Added user-manual screenshots for the lead queue and web form settings screens (EN/ES).
+
+- chore(#557): slot/settings permission gates now reference PERMISSIONS constants (no behavior change).
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer; Hindi website-form identity label in recall notes.
 ### Added

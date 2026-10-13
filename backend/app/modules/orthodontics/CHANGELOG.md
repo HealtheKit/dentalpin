@@ -3,6 +3,7 @@
 ## Unreleased
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
+- chore(#557): slot/settings permission gates now reference PERMISSIONS constants (no behavior change).
 
 - fix (maintainer review, round 3): plan picker uses the correct
   `/api/v1/treatment_plan/...` prefix; item labels resolve from the

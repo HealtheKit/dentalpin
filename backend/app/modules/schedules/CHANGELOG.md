@@ -3,6 +3,7 @@
 ## Unreleased
 
 - feat(i18n): Hindi (`hi`) locale for the module's frontend layer.
+- chore(#557): slot/settings permission gates now reference PERMISSIONS constants (no behavior change).
 
 - fix(#590): `ProfessionalHoursService.is_professional` tolerates
   duplicated membership rows (`.limit(1)` existence read, same fix as
