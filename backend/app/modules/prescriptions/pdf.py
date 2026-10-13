@@ -215,7 +215,7 @@ def _get_labels(locale: str) -> dict[str, str]:
         "notes": "குறிப்புகள்",
         "draft": "வரைவு",
         "cancelled": "ரத்து செய்யப்பட்டது",
-    },
+    }
     labels_te = {
         "title": "ప్రిస్క్రిప్షన్",
         "signature": "సంతకం",
@@ -233,7 +233,7 @@ def _get_labels(locale: str) -> dict[str, str]:
         "notes": "గమనికలు",
         "draft": "డ్రాఫ్ట్",
         "cancelled": "రద్దు చేయబడింది",
-    },
+    }
     labels_hi = {
         "title": "पर्चा",
         "signature": "हस्ताक्षर",
@@ -251,7 +251,7 @@ def _get_labels(locale: str) -> dict[str, str]:
         "notes": "टिप्पणियाँ",
         "draft": "मसौदा",
         "cancelled": "रद्द",
-    },
+    }
     # English stays the fallback for a locale the host adds before the
     # labels follow (#485). The route accepts every PDF locale, so
     # returning English for eight of the ten printed an English

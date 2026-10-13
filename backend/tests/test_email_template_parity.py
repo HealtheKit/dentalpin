@@ -25,13 +25,15 @@ OVERLAY_LOCALES = {"pt-BR"}
 
 # Country-specific templates a locale deliberately does not ship: Telugu
 # targets Indian clinics, which never run Spain's Verifactu (AEAT).
+_VERIFACTU_TEMPLATES = {
+    "verifactu_cert_expiry.html",
+    "verifactu_cert_expiry.txt",
+    "verifactu_record_rejected.html",
+    "verifactu_record_rejected.txt",
+}
 COUNTRY_EXEMPT: dict[str, set[str]] = {
-    "te": {
-        "verifactu_cert_expiry.html",
-        "verifactu_cert_expiry.txt",
-        "verifactu_record_rejected.html",
-        "verifactu_record_rejected.txt",
-    },
+    "te": _VERIFACTU_TEMPLATES,
+    "hi": _VERIFACTU_TEMPLATES,
 }
 
 

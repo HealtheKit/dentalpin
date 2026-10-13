@@ -54,7 +54,7 @@ def is_india_demo() -> bool:
 
 def india_home_state() -> str:
     """GST state code of the demo clinic — intra-state place of supply."""
-    return "36" if LANG == "te" else "33"
+    return get_india_gst_fixture()["clinic_state"]
 
 
 def get_india_gst_fixture() -> dict[str, str]:
@@ -2849,7 +2849,6 @@ PATIENT_JOURNEYS = [
             # seed_india_gst_invoice_breakdown() never runs the hook against
             # a draft — no CGST/SGST split yet, matching the real "issue"
             # workflow.
-            "gst": {"place_of_supply": HOME_STATE},
             "gst": {"place_of_supply": india_home_state()},
         },
     },
