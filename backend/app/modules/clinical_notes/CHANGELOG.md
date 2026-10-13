@@ -12,6 +12,7 @@
   gained the same eager load; it has no callers yet and fed the same
   response shape.
 
+- chore(#557): slot/settings permission gates now reference PERMISSIONS constants (no behavior change).
 
 - feat(i18n): Telugu (`te`) locale for the module's frontend layer.
 - feat(i18n): Telugu (`te`) demo clinical notes in the seed.
