@@ -11,6 +11,18 @@ frontend as a Nuxt layer under its own Python package.
 
 ## [Unreleased]
 
+### Fixed
+
+- **An admin editing another user's clinical note always returned 500.**
+  `NoteService.update` fetched the note without eager-loading `author`,
+  and `ClinicalNoteResponse` declares that field, so building the
+  response lazy-loaded the relationship inside an async session and
+  raised `MissingGreenlet`. Editing your *own* note worked, because the
+  author is the caller and already in the session's identity map — so
+  the only broken path was the documented admin override, and it had no
+  test. Found by exercising every mutating endpoint against a seeded
+  database.
+
 ### Changed
 
 - **Upgrade note (production):** `BUDGET_PUBLIC_SECRET_KEY` is now
